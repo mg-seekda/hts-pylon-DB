@@ -36,8 +36,8 @@ ARG VERSION
 # Add labels for better container metadata
 LABEL org.opencontainers.image.title="HTS Dashboard"
 LABEL org.opencontainers.image.description="Hotel Technology Support Dashboard with Pylon Integration"
-LABEL org.opencontainers.image.url="https://github.com/${{ github.repository }}"
-LABEL org.opencontainers.image.source="https://github.com/${{ github.repository }}"
+LABEL org.opencontainers.image.url="https://github.com/ghotso/hts-pylon-DB"
+LABEL org.opencontainers.image.source="https://github.com/ghotso/hts-pylon-DB"
 LABEL org.opencontainers.image.version="${VERSION}"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${VCS_REF}"
