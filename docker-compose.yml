@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  hts-dashboard:
+    build: .
+    container_name: hts-dashboard
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - PYLON_API_URL=${PYLON_API_URL}
+      - PYLON_API_TOKEN=${PYLON_API_TOKEN}
+      - REDIS_URL=redis://redis:6379
+      - REDIS_ENABLED=true
+      - CAS_LOGIN_URL=${CAS_LOGIN_URL:-https://login.seekda.com/login}
+      - CAS_VALIDATE_URL=${CAS_VALIDATE_URL:-https://login.seekda.com/serviceValidate}
+      - DEV_BYPASS_AUTH=${DEV_BYPASS_AUTH:-false}
+      - DEV_USER=${DEV_USER:-dev@example.com}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3001}
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - hts-network
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: hts-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - hts-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: hts-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - hts-dashboard
+    restart: unless-stopped
+    networks:
+      - hts-network
+
+volumes:
+  redis_data:
+
+networks:
+  hts-network:
+    driver: bridge

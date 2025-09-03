@@ -1,0 +1,23 @@
+{
+  "name": "hts-dashboard-server",
+  "version": "1.0.0",
+  "description": "Backend server for HTS Dashboard",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0",
+    "dayjs": "^1.11.10",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "redis": "^4.6.10"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
