@@ -2,6 +2,7 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, RefreshCw } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import dayjs from 'dayjs';
 
 const DailyFlowChart: React.FC = () => {
@@ -14,6 +15,15 @@ const DailyFlowChart: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('MMM DD');
+  };
+
+  const handleBarClick = (dataKey: string) => {
+    if (dataKey === 'closed') {
+      openPylon(PYLON_VIEWS.CLOSED_BY_ASSIGNEE);
+    } else {
+      // For 'created' and 'cancelled' series
+      openPylon(PYLON_VIEWS.ALL);
+    }
   };
 
   if (loading.analytics) {
@@ -129,9 +139,27 @@ const DailyFlowChart: React.FC = () => {
                 }}
                 labelFormatter={(value) => `Date: ${formatDate(value)}`}
               />
-              <Bar dataKey="created" fill="#A78BFA" name="Created" />
-              <Bar dataKey="closed" fill="#10B981" name="Closed" />
-              <Bar dataKey="cancelled" fill="#F97316" name="Cancelled" />
+              <Bar 
+                dataKey="created" 
+                fill="#A78BFA" 
+                name="Created" 
+                onClick={() => handleBarClick('created')}
+                style={{ cursor: 'pointer' }}
+              />
+              <Bar 
+                dataKey="closed" 
+                fill="#10B981" 
+                name="Closed" 
+                onClick={() => handleBarClick('closed')}
+                style={{ cursor: 'pointer' }}
+              />
+              <Bar 
+                dataKey="cancelled" 
+                fill="#F97316" 
+                name="Cancelled" 
+                onClick={() => handleBarClick('cancelled')}
+                style={{ cursor: 'pointer' }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

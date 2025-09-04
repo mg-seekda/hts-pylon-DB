@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Users, User, RefreshCw, ChevronUp, ChevronDown } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { openPylon, resolveAssignmentLink } from '../utils/pylonUtils';
 
 
 const TicketAssignmentTable: React.FC = () => {
@@ -14,17 +15,18 @@ const TicketAssignmentTable: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<string>('closedToday');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  const handleTicketClick = async (assigneeId: string, status: string) => {
-    try {
-      // This would typically open a new window/tab with the filtered Pylon view
-      // For now, we'll just log the action
-      console.log(`Opening Pylon view for assignee: ${assigneeId}, status: ${status}`);
-      
-      // In a real implementation, you would construct the Pylon URL and open it
-      // const pylonUrl = `https://your-pylon-instance.com/tickets?assignee=${assigneeId}&status=${status}`;
-      // window.open(pylonUrl, '_blank');
-    } catch (error) {
-      console.error('Error opening Pylon view:', error);
+  // Get current user email (you might want to get this from context or props)
+  const currentUserEmail = 'current-user@example.com'; // TODO: Get from auth context
+
+  const handleCellClick = (row: any, columnKey: 'new' | 'waiting' | 'hold' | 'closedToday' | 'totalOpen') => {
+    const url = resolveAssignmentLink(row, columnKey, currentUserEmail);
+    openPylon(url);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent, row: any, columnKey: 'new' | 'waiting' | 'hold' | 'closedToday' | 'totalOpen') => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCellClick(row, columnKey);
     }
   };
 
@@ -281,9 +283,14 @@ const TicketAssignmentTable: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => handleTicketClick(user.id, status)}
-                      className="text-blue-400 hover:text-primary-300 font-medium transition-colors"
+                      onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
+                      onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
+                      className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
                       disabled={user.statusCounts[status] === 0}
+                      role="button"
+                      tabIndex={0}
+                      title="Open in Pylon"
+                      aria-label={`Open ${status} tickets in Pylon`}
                     >
                       {user.statusCounts[status] || 0}
                     </motion.button>
@@ -294,16 +301,33 @@ const TicketAssignmentTable: React.FC = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => handleTicketClick(user.id, 'closed_today')}
-                    className="text-success-400 hover:text-success-300 font-medium transition-colors"
+                    onClick={() => handleCellClick(user, 'closedToday')}
+                    onKeyDown={(e) => handleKeyDown(e, user, 'closedToday')}
+                    className="text-success-400 hover:text-success-300 font-medium transition-colors cursor-pointer"
                     disabled={user.closedToday === 0}
+                    role="button"
+                    tabIndex={0}
+                    title="Open in Pylon"
+                    aria-label="Open closed today tickets in Pylon"
                   >
                     {user.closedToday || 0}
                   </motion.button>
                 </td>
                 
-                <td className="text-center font-semibold text-white">
-                  {user.totalOpen}
+                <td className="text-center">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleCellClick(user, 'totalOpen')}
+                    onKeyDown={(e) => handleKeyDown(e, user, 'totalOpen')}
+                    className="text-white hover:text-gray-300 font-semibold transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    title="Open in Pylon"
+                    aria-label="Open total open tickets in Pylon"
+                  >
+                    {user.totalOpen}
+                  </motion.button>
                 </td>
               </motion.tr>
             ))}
@@ -326,22 +350,52 @@ const TicketAssignmentTable: React.FC = () => {
               
               {assignmentTable.statuses.map((status) => (
                 <td key={status} className="text-center">
-                  <span className="text-blue-400 font-bold">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleCellClick({ isTotals: true }, status as 'new' | 'waiting' | 'hold')}
+                    onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, status as 'new' | 'waiting' | 'hold')}
+                    className="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    title="Open in Pylon"
+                    aria-label={`Open all ${status} tickets in Pylon`}
+                  >
                     {totals.statusCounts[status]}
-                  </span>
+                  </motion.button>
                 </td>
               ))}
               
               <td className="text-center">
-                <span className="text-success-400 font-bold">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleCellClick({ isTotals: true }, 'closedToday')}
+                  onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'closedToday')}
+                  className="text-success-400 hover:text-success-300 font-bold transition-colors cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  title="Open in Pylon"
+                  aria-label="Open all closed today tickets in Pylon"
+                >
                   {totals.closedToday}
-                </span>
+                </motion.button>
               </td>
               
               <td className="text-center">
-                <span className="text-white font-bold">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleCellClick({ isTotals: true }, 'totalOpen')}
+                  onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'totalOpen')}
+                  className="text-white hover:text-gray-300 font-bold transition-colors cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  title="Open in Pylon"
+                  aria-label="Open all total open tickets in Pylon"
+                >
                   {totals.totalOpen}
-                </span>
+                </motion.button>
               </td>
             </motion.tr>
           </tbody>

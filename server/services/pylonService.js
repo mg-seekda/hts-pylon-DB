@@ -22,14 +22,9 @@ class PylonService {
     });
   }
 
-  // Generic API call method with rate limiting protection
-  async apiCall(endpoint, method = 'GET', data = null, retryCount = 0) {
-    const maxRetries = 1; // Reduce to only 1 retry to minimize API calls
-    
+  // Generic API call method
+  async apiCall(endpoint, method = 'GET', data = null) {
     try {
-      // Add longer delay to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       const response = await this.client({
         method,
         url: endpoint,
@@ -38,21 +33,7 @@ class PylonService {
       return response.data;
     } catch (error) {
       console.error(`Pylon API Error (${endpoint}):`, error.response?.data || error.message);
-      
-      // If rate limited and we haven't exceeded max retries, wait and retry
-      if (error.response?.status === 429 && retryCount < maxRetries) {
-        const waitTime = 5000; // Wait 5 seconds before retry
-        // Rate limited, waiting before retry
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        return this.apiCall(endpoint, method, data, retryCount + 1);
-      }
-      
-      // For other errors or max retries exceeded, don't retry
-      if (error.response?.status === 429) {
-        console.error(`Rate limit exceeded after ${maxRetries} retries. Skipping request.`);
-      }
-      
-      throw new Error(`Pylon API call failed: ${error.response?.statusText || error.message}`);
+      throw error;
     }
   }
 

@@ -255,18 +255,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const fetchAnalytics = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
     try {
-      const [analytics, hourlyHeatmap] = await Promise.all([
-        apiService.getAnalytics(),
-        apiService.getHourlyHeatmap()
-      ]);
-      
-      // Merge the hourly heatmap data into analytics
-      const mergedAnalytics = {
-        ...analytics,
-        hourlyHeatmap
-      };
-      
-      dispatch({ type: 'SET_ANALYTICS', payload: mergedAnalytics });
+      const analytics = await apiService.getAnalytics();
+      dispatch({ type: 'SET_ANALYTICS', payload: analytics });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch analytics' });
     }

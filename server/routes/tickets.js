@@ -14,21 +14,34 @@ router.get('/kpis', async (req, res) => {
       return res.json(cached);
     }
 
-    const [
-      openTickets,
-      ticketsCreatedToday,
-      onHoldTickets,
-      openOver24h,
-      closedTodayTickets,
-      closedTicketsLast30Days
-    ] = await Promise.all([
-      pylonService.getIssues(pylonService.buildOpenTicketsFilter()),
-      pylonService.getIssues(pylonService.buildTicketsCreatedTodayFilter()),
-      pylonService.getIssues(pylonService.buildOnHoldTicketsFilter()),
-      pylonService.getIssues(pylonService.buildOpenOver24hFilter()),
-      pylonService.getIssues(pylonService.buildClosedTodayFilter()),
-      pylonService.getIssues(pylonService.buildClosedTicketsLast30DaysFilter())
-    ]);
+    let openTickets, ticketsCreatedToday, onHoldTickets, openOver24h, closedTodayTickets, closedTicketsLast30Days;
+    
+    try {
+      [
+        openTickets,
+        ticketsCreatedToday,
+        onHoldTickets,
+        openOver24h,
+        closedTodayTickets,
+        closedTicketsLast30Days
+      ] = await Promise.all([
+        pylonService.getIssues(pylonService.buildOpenTicketsFilter()),
+        pylonService.getIssues(pylonService.buildTicketsCreatedTodayFilter()),
+        pylonService.getIssues(pylonService.buildOnHoldTicketsFilter()),
+        pylonService.getIssues(pylonService.buildOpenOver24hFilter()),
+        pylonService.getIssues(pylonService.buildClosedTodayFilter()),
+        pylonService.getIssues(pylonService.buildClosedTicketsLast30DaysFilter())
+      ]);
+    } catch (error) {
+      console.error('Error fetching KPI data:', error);
+      // Return empty data structure to prevent dashboard crash
+      openTickets = { data: [], total: 0 };
+      ticketsCreatedToday = { data: [], total: 0 };
+      onHoldTickets = { data: [], total: 0 };
+      openOver24h = { data: [], total: 0 };
+      closedTodayTickets = { data: [], total: 0 };
+      closedTicketsLast30Days = { data: [], total: 0 };
+    }
 
     // Calculate average resolution time for closed tickets in last 30 days
     let avgResolutionTime = 0;

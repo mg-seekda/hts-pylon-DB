@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, RefreshCw } from 'lucide-react';
+import { Calendar, RefreshCw, ExternalLink } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 
 const HourlyHeatmap: React.FC = () => {
   const { state, refreshHourlyHeatmap } = useData();
@@ -141,14 +142,25 @@ const HourlyHeatmap: React.FC = () => {
               Ticket creation patterns by day and hour
             </p>
           </div>
-          <button
-            onClick={refreshHourlyHeatmap}
-            disabled={loading.analytics}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-                          <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
-            Refresh Analytics
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => openPylon(PYLON_VIEWS.ALL)}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-800 hover:bg-blue-700 text-blue-200 rounded-lg border border-blue-600 transition-colors"
+              title="Open all issues in Pylon"
+              aria-label="Open all issues in Pylon"
+            >
+              <ExternalLink className="w-4 h-4" />
+              More
+            </button>
+            <button
+              onClick={refreshHourlyHeatmap}
+              disabled={loading.analytics}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
+              Refresh Analytics
+            </button>
+          </div>
         </div>
       </div>
       <div className="card-body flex-1 flex flex-col">

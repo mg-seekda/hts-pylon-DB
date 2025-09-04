@@ -2,10 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 
 const KPISection: React.FC = () => {
   const { state, refreshKPIs } = useData();
   const { kpis, loading } = state;
+
+  const handleCardClick = (viewKey: keyof typeof PYLON_VIEWS) => {
+    openPylon(PYLON_VIEWS[viewKey]);
+  };
 
   const kpiCards = [
     {
@@ -15,6 +20,7 @@ const KPISection: React.FC = () => {
       color: 'text-purple-400',
       bgColor: 'bg-purple-900/20',
       borderColor: 'border-purple-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
     {
       title: 'Total Open',
@@ -23,6 +29,7 @@ const KPISection: React.FC = () => {
       color: 'text-blue-400',
       bgColor: 'bg-blue-900/20',
       borderColor: 'border-blue-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
     {
       title: 'On Hold',
@@ -31,6 +38,7 @@ const KPISection: React.FC = () => {
       color: 'text-orange-400',
       bgColor: 'bg-orange-900/20',
       borderColor: 'border-orange-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
     {
       title: 'Open >24h',
@@ -39,6 +47,7 @@ const KPISection: React.FC = () => {
       color: 'text-red-400',
       bgColor: 'bg-red-900/20',
       borderColor: 'border-red-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
     {
       title: 'Closed Today',
@@ -47,6 +56,7 @@ const KPISection: React.FC = () => {
       color: 'text-green-400',
       bgColor: 'bg-green-900/20',
       borderColor: 'border-green-700',
+      pylonView: 'CLOSED_BY_ASSIGNEE' as keyof typeof PYLON_VIEWS,
     },
     {
       title: 'Avg Resolution Time\n(last 30 days)',
@@ -55,7 +65,8 @@ const KPISection: React.FC = () => {
       color: 'text-cyan-400',
       bgColor: 'bg-cyan-900/20',
       borderColor: 'border-cyan-700',
-      format: (value: number) => `${value}h`
+      format: (value: number) => `${value}h`,
+      pylonView: null, // No link for this card
     },
   ];
 
@@ -82,7 +93,20 @@ const KPISection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.5 }}
-            className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg`}
+            className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg ${
+              kpi.pylonView ? 'cursor-pointer hover:shadow-xl transition-all duration-200' : ''
+            }`}
+            onClick={kpi.pylonView ? () => handleCardClick(kpi.pylonView!) : undefined}
+            onKeyDown={kpi.pylonView ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleCardClick(kpi.pylonView!);
+              }
+            } : undefined}
+            role={kpi.pylonView ? 'button' : undefined}
+            tabIndex={kpi.pylonView ? 0 : undefined}
+            title={kpi.pylonView ? 'Open in Pylon' : undefined}
+            aria-label={kpi.pylonView ? `Open ${kpi.title} in Pylon` : undefined}
           >
             <div className="absolute top-3 left-3">
               <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
