@@ -169,6 +169,34 @@ class PylonService {
     };
   }
 
+  // Build filter for new tickets (status = new, no matter when created)
+  buildNewTicketsFilter() {
+    return {
+      search: true,
+      limit: 1000,
+      filter: {
+        field: 'state',
+        operator: 'equals',
+        value: 'new'
+      }
+    };
+  }
+
+  // Build filter for tickets with external issues (status not cancelled or closed, no matter when created)
+  // Note: We can't filter by external_issues directly in Pylon API, so we fetch all open tickets
+  // and filter them in the application code
+  buildExternalIssuesTicketsFilter() {
+    return {
+      search: true,
+      limit: 1000,
+      filter: {
+        field: 'state',
+        operator: 'not_in',
+        values: ['closed', 'cancelled']
+      }
+    };
+  }
+
   // Get daily flow data (created vs closed vs cancelled for last 14 days)
   async getDailyFlowData() {
     const dailyData = [];

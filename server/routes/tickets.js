@@ -14,7 +14,7 @@ router.get('/kpis', async (req, res) => {
       return res.json(cached);
     }
 
-    let openTickets, ticketsCreatedToday, onHoldTickets, openOver24h, closedTodayTickets, closedTicketsLast30Days;
+    let openTickets, ticketsCreatedToday, onHoldTickets, openOver24h, closedTodayTickets, closedTicketsLast30Days, newTickets, allOpenTickets, externalIssuesTickets;
     
     try {
       [
@@ -23,15 +23,30 @@ router.get('/kpis', async (req, res) => {
         onHoldTickets,
         openOver24h,
         closedTodayTickets,
-        closedTicketsLast30Days
+        closedTicketsLast30Days,
+        newTickets,
+        allOpenTickets
       ] = await Promise.all([
         pylonService.getIssues(pylonService.buildOpenTicketsFilter()),
         pylonService.getIssues(pylonService.buildTicketsCreatedTodayFilter()),
         pylonService.getIssues(pylonService.buildOnHoldTicketsFilter()),
         pylonService.getIssues(pylonService.buildOpenOver24hFilter()),
         pylonService.getIssues(pylonService.buildClosedTodayFilter()),
-        pylonService.getIssues(pylonService.buildClosedTicketsLast30DaysFilter())
+        pylonService.getIssues(pylonService.buildClosedTicketsLast30DaysFilter()),
+        pylonService.getIssues(pylonService.buildNewTicketsFilter()),
+        pylonService.getIssues(pylonService.buildExternalIssuesTicketsFilter())
       ]);
+      
+      // Filter external issues tickets in application code
+      externalIssuesTickets = {
+        data: allOpenTickets.data?.filter(ticket => 
+          ticket.external_issues && 
+          Array.isArray(ticket.external_issues) && 
+          ticket.external_issues.length > 0
+        ) || [],
+        total: 0
+      };
+      
     } catch (error) {
       console.error('Error fetching KPI data:', error);
       // Return empty data structure to prevent dashboard crash
@@ -41,6 +56,8 @@ router.get('/kpis', async (req, res) => {
       openOver24h = { data: [], total: 0 };
       closedTodayTickets = { data: [], total: 0 };
       closedTicketsLast30Days = { data: [], total: 0 };
+      newTickets = { data: [], total: 0 };
+      externalIssuesTickets = { data: [], total: 0 };
     }
 
     // Calculate average resolution time for closed tickets in last 30 days
@@ -75,7 +92,9 @@ router.get('/kpis', async (req, res) => {
       onHold: onHoldTickets.data?.length || 0,
       openOver24h: openOver24h.data?.length || 0,
       closedToday: closedTodayTickets.data?.length || 0,
-      avgResolutionTime: Math.round(avgResolutionTime * 10) / 10 // Round to 1 decimal place
+      avgResolutionTime: Math.round(avgResolutionTime * 10) / 10, // Round to 1 decimal place
+      newTickets: newTickets.data?.length || 0,
+      externalIssues: externalIssuesTickets.data?.length || 0
     };
 
     // Try to cache, but don't fail if Redis is not available

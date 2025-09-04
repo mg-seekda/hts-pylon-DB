@@ -68,6 +68,24 @@ const KPISection: React.FC = () => {
       format: (value: number) => `${value}h`,
       pylonView: null, // No link for this card
     },
+    {
+      title: 'New Tickets',
+      value: kpis?.newTickets || 0,
+      icon: Plus,
+      color: 'text-yellow-400',
+      bgColor: 'bg-yellow-900/20',
+      borderColor: 'border-yellow-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+    },
+    {
+      title: 'External Issues',
+      value: kpis?.externalIssues || 0,
+      icon: AlertTriangle,
+      color: 'text-pink-400',
+      bgColor: 'bg-pink-900/20',
+      borderColor: 'border-pink-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+    },
   ];
 
   return (
@@ -83,7 +101,7 @@ const KPISection: React.FC = () => {
           Refresh KPIs
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {kpiCards.map((kpi, index) => {
         const Icon = kpi.icon;
         
@@ -93,7 +111,7 @@ const KPISection: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.5 }}
-            className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg ${
+            className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg h-28 flex flex-col justify-between ${
               kpi.pylonView ? 'cursor-pointer hover:shadow-xl transition-all duration-200' : ''
             }`}
             onClick={kpi.pylonView ? () => handleCardClick(kpi.pylonView!) : undefined}
@@ -114,34 +132,36 @@ const KPISection: React.FC = () => {
               </div>
             </div>
             
-            <div className="kpi-value mb-2 text-center">
-              {loading.kpis ? (
-                <div className="animate-pulse">
-                  <div className="h-6 bg-gray-700 rounded w-12 mx-auto"></div>
-                </div>
-              ) : (
-                <motion.span
-                  key={kpi.value}
-                  initial={{ scale: 1.2 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-2xl font-bold text-white"
-                >
-                  {kpi.format ? kpi.format(kpi.value) : kpi.value.toLocaleString()}
-                </motion.span>
-              )}
-            </div>
-            
-            <div className="kpi-label text-xs text-gray-300 font-medium whitespace-pre-line text-center">
-              {kpi.title === 'Avg Resolution Time\n(last 30 days)' ? (
-                <>
-                  <span className="font-medium">AVG RESOLUTION TIME</span>
-                  <br />
-                  <span className="font-light">(last 30 days)</span>
-                </>
-              ) : (
-                kpi.title
-              )}
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="kpi-value mb-2 text-center">
+                {loading.kpis ? (
+                  <div className="animate-pulse">
+                    <div className="h-6 bg-gray-700 rounded w-12 mx-auto"></div>
+                  </div>
+                ) : (
+                  <motion.span
+                    key={kpi.value}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-2xl font-bold text-white"
+                  >
+                    {kpi.format ? kpi.format(kpi.value) : kpi.value.toLocaleString()}
+                  </motion.span>
+                )}
+              </div>
+              
+              <div className="kpi-label text-xs text-gray-300 font-medium whitespace-pre-line text-center">
+                {kpi.title === 'Avg Resolution Time\n(last 30 days)' ? (
+                  <>
+                    <span className="font-medium">AVG RESOLUTION TIME</span>
+                    <br />
+                    <span className="font-light">(last 30 days)</span>
+                  </>
+                ) : (
+                  kpi.title
+                )}
+              </div>
             </div>
           </motion.div>
         );

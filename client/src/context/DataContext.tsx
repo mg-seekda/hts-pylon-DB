@@ -9,6 +9,8 @@ export interface KPIs {
   openOver24h: number;
   closedToday: number;
   avgResolutionTime: number; // in hours
+  newTickets: number;
+  externalIssues: number;
 }
 
 export interface User {
