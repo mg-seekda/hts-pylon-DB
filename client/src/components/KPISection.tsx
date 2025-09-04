@@ -13,6 +13,7 @@ const KPISection: React.FC = () => {
   };
 
   const kpiCards = [
+    // Row 1: Daily focus
     {
       title: 'Created Today',
       value: kpis?.createdToday || 0,
@@ -22,6 +23,34 @@ const KPISection: React.FC = () => {
       borderColor: 'border-purple-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
+    {
+      title: 'Closed Today',
+      value: kpis?.closedToday || 0,
+      icon: CheckCircle,
+      color: 'text-green-400',
+      bgColor: 'bg-green-900/20',
+      borderColor: 'border-green-700',
+      pylonView: 'CLOSED_BY_ASSIGNEE' as keyof typeof PYLON_VIEWS,
+    },
+    {
+      title: 'New Tickets',
+      value: kpis?.newTickets || 0,
+      icon: Plus,
+      color: 'text-yellow-400',
+      bgColor: 'bg-yellow-900/20',
+      borderColor: 'border-yellow-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+    },
+    {
+      title: 'Open Tickets with Jira Link',
+      value: kpis?.externalIssues || 0,
+      icon: AlertTriangle,
+      color: 'text-pink-400',
+      bgColor: 'bg-pink-900/20',
+      borderColor: 'border-pink-700',
+      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+    },
+    // Row 2: Status & performance
     {
       title: 'Total Open',
       value: kpis?.totalOpen || 0,
@@ -50,15 +79,6 @@ const KPISection: React.FC = () => {
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
     {
-      title: 'Closed Today',
-      value: kpis?.closedToday || 0,
-      icon: CheckCircle,
-      color: 'text-green-400',
-      bgColor: 'bg-green-900/20',
-      borderColor: 'border-green-700',
-      pylonView: 'CLOSED_BY_ASSIGNEE' as keyof typeof PYLON_VIEWS,
-    },
-    {
       title: 'Avg Resolution Time\n(last 30 days)',
       value: kpis?.avgResolutionTime || 0,
       icon: Timer,
@@ -67,24 +87,6 @@ const KPISection: React.FC = () => {
       borderColor: 'border-cyan-700',
       format: (value: number) => `${value}h`,
       pylonView: null, // No link for this card
-    },
-    {
-      title: 'New Tickets',
-      value: kpis?.newTickets || 0,
-      icon: Plus,
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-900/20',
-      borderColor: 'border-yellow-700',
-      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
-    },
-    {
-      title: 'External Issues',
-      value: kpis?.externalIssues || 0,
-      icon: AlertTriangle,
-      color: 'text-pink-400',
-      bgColor: 'bg-pink-900/20',
-      borderColor: 'border-pink-700',
-      pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
   ];
 
