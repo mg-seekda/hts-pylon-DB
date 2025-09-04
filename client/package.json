@@ -48,7 +48,8 @@
     "@types/jest": "^29.5.5"
   },
   "overrides": {
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "nth-check": "^2.0.1"
   },
   "proxy": "http://localhost:3001"
 }
