@@ -51,7 +51,7 @@ router.get('/dashboard', async (req, res) => {
 
     // Fetching fresh analytics data
     
-    // Only fetch daily flow data since we removed other components
+    // Fetch daily flow data
     let dailyFlowData;
     try {
       dailyFlowData = await pylonService.getDailyFlowData();
@@ -60,10 +60,24 @@ router.get('/dashboard', async (req, res) => {
       dailyFlowData = [];
     }
 
+    // Fetch hourly heatmap data
+    let hourlyHeatmapData;
+    try {
+      const hourlyResponse = await pylonService.getHourlyTicketCreationData();
+      hourlyHeatmapData = hourlyResponse.data || [];
+    } catch (error) {
+      console.error('Error fetching hourly heatmap data:', error);
+      hourlyHeatmapData = [];
+    }
+
     const result = {
       dailyFlow: {
         data: dailyFlowData,
         period: '14 days'
+      },
+      hourlyHeatmap: {
+        data: hourlyHeatmapData,
+        period: '7 days'
       },
       generatedAt: new Date().toISOString()
     };
