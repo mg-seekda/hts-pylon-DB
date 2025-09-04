@@ -74,7 +74,7 @@
   }
   
   .kpi-label {
-    @apply text-sm text-gray-400 uppercase tracking-wide;
+    @apply text-sm text-gray-300 uppercase tracking-wide;
   }
   
   .status-badge {

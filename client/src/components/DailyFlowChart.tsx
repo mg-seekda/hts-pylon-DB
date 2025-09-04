@@ -22,18 +22,18 @@ const DailyFlowChart: React.FC = () => {
         <div className="card-header">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <h2 className="text-xl font-semibold text-white flex items-center">
                 <TrendingUp className="w-5 h-5 mr-2" />
                 Daily Flow (14 days)
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-300 mt-1">
                 Ticket creation, closure, and cancellation trends
               </p>
             </div>
             <button
               onClick={refreshDailyFlow}
               disabled={loading.analytics}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
               Refresh Daily Flow
@@ -43,9 +43,9 @@ const DailyFlowChart: React.FC = () => {
         <div className="card-body">
           <div className="flex items-center justify-center py-6" style={{ height: '320px' }}>
             <div className="text-center">
-              <RefreshCw className="w-6 h-6 animate-spin text-primary-400 mx-auto mb-3" />
-              <p className="text-gray-600 dark:text-gray-400">Loading analytics data...</p>
-              <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">This may take a few seconds</p>
+              <RefreshCw className="w-6 h-6 animate-spin text-blue-400 mx-auto mb-3" />
+              <p className="text-gray-300">Loading analytics data...</p>
+              <p className="text-sm text-gray-300 mt-1">This may take a few seconds</p>
             </div>
           </div>
         </div>
@@ -59,18 +59,18 @@ const DailyFlowChart: React.FC = () => {
         <div className="card-header">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <h2 className="text-xl font-semibold text-white flex items-center">
                 <TrendingUp className="w-5 h-5 mr-2" />
                 Daily Flow (14 days)
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-300 mt-1">
                 Ticket creation, closure, and cancellation trends
               </p>
             </div>
             <button
               onClick={refreshDailyFlow}
               disabled={loading.analytics}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
               Refresh Daily Flow
@@ -79,7 +79,7 @@ const DailyFlowChart: React.FC = () => {
         </div>
         <div className="card-body">
           <div className="flex items-center justify-center" style={{ height: '320px' }}>
-            <p className="text-gray-600 dark:text-gray-400">No analytics data available</p>
+            <p className="text-gray-300">No analytics data available</p>
           </div>
         </div>
       </div>
@@ -91,18 +91,18 @@ const DailyFlowChart: React.FC = () => {
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+            <h2 className="text-xl font-semibold text-white flex items-center">
               <TrendingUp className="w-5 h-5 mr-2" />
               Daily Flow (14 days)
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-300 mt-1">
               Ticket creation and closure trends
             </p>
           </div>
           <button
             onClick={refreshDailyFlow}
             disabled={loading.analytics}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
             Refresh Analytics
@@ -140,15 +140,15 @@ const DailyFlowChart: React.FC = () => {
         <div className="flex items-center justify-center gap-6 mt-4">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded" style={{ backgroundColor: '#A78BFA' }}></div>
-            <span className="text-sm text-gray-400">Created</span>
+            <span className="text-sm text-gray-300">Created</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10B981' }}></div>
-            <span className="text-sm text-gray-400">Closed</span>
+            <span className="text-sm text-gray-300">Closed</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded" style={{ backgroundColor: '#F97316' }}></div>
-            <span className="text-sm text-gray-400">Cancelled</span>
+            <span className="text-sm text-gray-300">Cancelled</span>
           </div>
         </div>
       </div>

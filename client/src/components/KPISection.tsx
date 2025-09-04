@@ -12,49 +12,49 @@ const KPISection: React.FC = () => {
       title: 'Created Today',
       value: kpis?.createdToday || 0,
       icon: Plus,
-      color: 'text-violet-400',
-      bgColor: 'bg-violet-900/20',
-      borderColor: 'border-violet-700',
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-900/20',
+      borderColor: 'border-purple-700',
     },
     {
       title: 'Total Open',
       value: kpis?.totalOpen || 0,
       icon: Ticket,
-      color: 'text-primary-400',
-      bgColor: 'bg-primary-900/20',
-      borderColor: 'border-primary-700',
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-900/20',
+      borderColor: 'border-blue-700',
     },
     {
       title: 'On Hold',
       value: kpis?.onHold || 0,
       icon: AlertTriangle,
-      color: 'text-warning-400',
-      bgColor: 'bg-warning-900/20',
-      borderColor: 'border-warning-700',
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-900/20',
+      borderColor: 'border-orange-700',
     },
     {
       title: 'Open >24h',
       value: kpis?.openOver24h || 0,
       icon: Clock,
-      color: 'text-danger-400',
-      bgColor: 'bg-danger-900/20',
-      borderColor: 'border-danger-700',
+      color: 'text-red-400',
+      bgColor: 'bg-red-900/20',
+      borderColor: 'border-red-700',
     },
     {
       title: 'Closed Today',
       value: kpis?.closedToday || 0,
       icon: CheckCircle,
-      color: 'text-success-400',
-      bgColor: 'bg-success-900/20',
-      borderColor: 'border-success-700',
+      color: 'text-green-400',
+      bgColor: 'bg-green-900/20',
+      borderColor: 'border-green-700',
     },
     {
       title: 'Avg Resolution Time\n(last 30 days)',
       value: kpis?.avgResolutionTime || 0,
       icon: Timer,
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-900/20',
-      borderColor: 'border-blue-700',
+      color: 'text-cyan-400',
+      bgColor: 'bg-cyan-900/20',
+      borderColor: 'border-cyan-700',
       format: (value: number) => `${value}h`
     },
   ];
@@ -62,11 +62,11 @@ const KPISection: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Key Performance Indicators</h2>
+        <h2 className="text-xl font-semibold text-white">Key Performance Indicators</h2>
         <button
           onClick={refreshKPIs}
           disabled={loading.kpis}
-          className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw className={`w-4 h-4 ${loading.kpis ? 'animate-spin' : ''}`} />
           Refresh KPIs
@@ -101,14 +101,14 @@ const KPISection: React.FC = () => {
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.3 }}
-                  className="text-2xl font-bold text-gray-900 dark:text-white"
+                  className="text-2xl font-bold text-white"
                 >
                   {kpi.format ? kpi.format(kpi.value) : kpi.value.toLocaleString()}
                 </motion.span>
               )}
             </div>
             
-            <div className="kpi-label text-xs text-gray-600 dark:text-gray-200 font-medium whitespace-pre-line text-center">
+            <div className="kpi-label text-xs text-gray-300 font-medium whitespace-pre-line text-center">
               {kpi.title === 'Avg Resolution Time\n(last 30 days)' ? (
                 <>
                   <span className="font-medium">AVG RESOLUTION TIME</span>

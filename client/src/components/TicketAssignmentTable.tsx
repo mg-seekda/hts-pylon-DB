@@ -65,7 +65,7 @@ const TicketAssignmentTable: React.FC = () => {
     return (
       <div className="card">
         <div className="card-header">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+          <h2 className="text-xl font-semibold text-white flex items-center">
             <Users className="w-5 h-5 mr-2" />
             Ticket Assignment
           </h2>
@@ -85,13 +85,13 @@ const TicketAssignmentTable: React.FC = () => {
     return (
       <div className="card">
         <div className="card-header">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+          <h2 className="text-xl font-semibold text-white flex items-center">
             <Users className="w-5 h-5 mr-2" />
             Ticket Assignment
           </h2>
         </div>
         <div className="card-body">
-          <p className="text-gray-600 dark:text-gray-400">No assignment data available</p>
+          <p className="text-gray-300">No assignment data available</p>
         </div>
       </div>
     );
@@ -158,18 +158,18 @@ const TicketAssignmentTable: React.FC = () => {
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+            <h2 className="text-xl font-semibold text-white flex items-center">
               <Users className="w-5 h-5 mr-2" />
               Ticket Assignment
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-300 mt-1">
               Total: {assignmentTable.totalTickets} tickets
             </p>
           </div>
           <button
             onClick={refreshAssignmentTable}
             disabled={loading.assignmentTable}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`w-4 h-4 ${loading.assignmentTable ? 'animate-spin' : ''}`} />
             Refresh Table
@@ -246,7 +246,7 @@ const TicketAssignmentTable: React.FC = () => {
                         <img 
                           src={user.avatarUrl} 
                           alt={user.name}
-                          className="w-8 h-8 rounded-full object-cover mr-3 border border-gray-300 dark:border-gray-600"
+                          className="w-8 h-8 rounded-full object-cover mr-3 border border-gray-600"
                           onError={(e) => {
                             // Hide the image and show fallback
                             const img = e.currentTarget;
@@ -259,18 +259,18 @@ const TicketAssignmentTable: React.FC = () => {
                         />
                         {/* Fallback icon (hidden by default) */}
                         <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-3 hidden absolute top-0 left-0">
-                          <Users className="w-4 h-4 text-gray-900 dark:text-white" />
+                          <Users className="w-4 h-4 text-white" />
                         </div>
                       </div>
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-3">
-                        <Users className="w-4 h-4 text-gray-900 dark:text-white" />
+                        <Users className="w-4 h-4 text-white" />
                       </div>
                     )}
                     <div>
-                      <div className="text-gray-900 dark:text-white">{user.name}</div>
+                      <div className="text-white">{user.name}</div>
                       {user.email && (
-                        <div className="text-xs text-gray-600 dark:text-gray-400">{user.email}</div>
+                        <div className="text-xs text-gray-300">{user.email}</div>
                       )}
                     </div>
                   </div>
@@ -282,7 +282,7 @@ const TicketAssignmentTable: React.FC = () => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleTicketClick(user.id, status)}
-                      className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                      className="text-blue-400 hover:text-primary-300 font-medium transition-colors"
                       disabled={user.statusCounts[status] === 0}
                     >
                       {user.statusCounts[status] || 0}
@@ -302,7 +302,7 @@ const TicketAssignmentTable: React.FC = () => {
                   </motion.button>
                 </td>
                 
-                <td className="text-center font-semibold text-gray-900 dark:text-white">
+                <td className="text-center font-semibold text-white">
                   {user.totalOpen}
                 </td>
               </motion.tr>
@@ -313,12 +313,12 @@ const TicketAssignmentTable: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: sortedUsers.length * 0.05 + 0.1 }}
-              className="border-t-2 border-gray-300 dark:border-gray-600 bg-gray-800/50 font-semibold"
+              className="border-t-2 border-gray-600 bg-gray-800/50 font-semibold"
             >
-              <td className="font-bold text-gray-900 dark:text-white">
+              <td className="font-bold text-white">
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-3">
-                    <Users className="w-4 h-4 text-gray-900 dark:text-white" />
+                    <Users className="w-4 h-4 text-white" />
                   </div>
                   <span>TOTALS</span>
                 </div>
@@ -326,7 +326,7 @@ const TicketAssignmentTable: React.FC = () => {
               
               {assignmentTable.statuses.map((status) => (
                 <td key={status} className="text-center">
-                  <span className="text-primary-400 font-bold">
+                  <span className="text-blue-400 font-bold">
                     {totals.statusCounts[status]}
                   </span>
                 </td>
@@ -339,7 +339,7 @@ const TicketAssignmentTable: React.FC = () => {
               </td>
               
               <td className="text-center">
-                <span className="text-gray-900 dark:text-white font-bold">
+                <span className="text-white font-bold">
                   {totals.totalOpen}
                 </span>
               </td>
@@ -349,7 +349,7 @@ const TicketAssignmentTable: React.FC = () => {
       </div>
       
       <div className="px-4 py-3 border-t border-gray-700">
-        <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center">
+        <p className="text-xs text-gray-300 flex items-center">
           <ExternalLink className="w-3 h-3 mr-1" />
           Click numbers to view tickets in Pylon
         </p>

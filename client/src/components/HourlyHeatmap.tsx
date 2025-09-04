@@ -98,18 +98,18 @@ const HourlyHeatmap: React.FC = () => {
         <div className="card-header">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+              <h2 className="text-xl font-semibold text-white flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
                 Hourly Heatmap
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-300 mt-1">
                 Ticket creation patterns by day and hour
               </p>
             </div>
             <button
               onClick={refreshHourlyHeatmap}
               disabled={loading.analytics}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
               Refresh Heatmap
@@ -119,8 +119,8 @@ const HourlyHeatmap: React.FC = () => {
         <div className="card-body">
           <div className="flex items-center justify-center py-6" style={{ height: '320px' }}>
             <div className="text-center">
-              <RefreshCw className="w-6 h-6 animate-spin text-primary-400 mx-auto mb-3" />
-              <p className="text-gray-600 dark:text-gray-400">Loading heatmap data...</p>
+              <RefreshCw className="w-6 h-6 animate-spin text-blue-400 mx-auto mb-3" />
+              <p className="text-gray-300">Loading heatmap data...</p>
             </div>
           </div>
         </div>
@@ -133,18 +133,18 @@ const HourlyHeatmap: React.FC = () => {
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+            <h2 className="text-xl font-semibold text-white flex items-center">
               <Calendar className="w-5 h-5 mr-2" />
               Hourly Heatmap
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm text-gray-300 mt-1">
               Ticket creation patterns by day and hour
             </p>
           </div>
           <button
             onClick={refreshHourlyHeatmap}
             disabled={loading.analytics}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
                           <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
             Refresh Analytics
@@ -158,7 +158,7 @@ const HourlyHeatmap: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute z-10 bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white shadow-lg pointer-events-none min-w-[140px]"
+                className="absolute z-10 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white shadow-lg pointer-events-none min-w-[140px]"
                 style={{
                   left: Math.min(Math.max(hoveredCell.hour * 24 + 12, 70), 400), // Better positioning with bounds for 24px cells
                   top: Math.min(Math.max(hoveredCell.day * 24 + 12, 30), 100),
@@ -172,7 +172,7 @@ const HourlyHeatmap: React.FC = () => {
                   {hoveredCell.count} ticket{hoveredCell.count !== 1 ? 's' : ''} created
                 </div>
                 {hoveredCell.count > 0 && (
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="text-xs text-gray-300 mt-1">
                     {hoveredCell.count === 1 ? 'Single ticket' : 
                      hoveredCell.count <= p25 ? 'Low activity' :
                      hoveredCell.count <= p50 ? 'Medium activity' :
@@ -188,10 +188,10 @@ const HourlyHeatmap: React.FC = () => {
               <div className="space-y-1.5 overflow-x-auto">
                 {/* Hour labels row */}
                 <div className="flex items-center gap-4 min-w-fit">
-                  <div className="w-6 text-xs text-gray-500 dark:text-gray-500 flex-shrink-0"></div> {/* Empty space for day labels */}
+                  <div className="w-6 text-xs text-gray-400 flex-shrink-0"></div> {/* Empty space for day labels */}
                   <div className="flex gap-0.5 min-w-fit">
                     {hours.map(hour => (
-                      <div key={hour} className="w-6 h-6 text-xs text-gray-500 dark:text-gray-500 text-center flex items-center justify-center flex-shrink-0">
+                      <div key={hour} className="w-6 h-6 text-xs text-gray-400 text-center flex items-center justify-center flex-shrink-0">
                         {hour % 2 === 0 ? hour : ''}
                       </div>
                     ))}
@@ -202,7 +202,7 @@ const HourlyHeatmap: React.FC = () => {
                 {days.map((day, dayIndex) => (
                   <div key={day} className="flex items-center gap-4 min-w-fit">
                     {/* Day label */}
-                    <div className="w-6 text-xs text-gray-500 dark:text-gray-500 text-right pr-6 flex-shrink-0">
+                    <div className="w-6 text-xs text-gray-400 text-right pr-6 flex-shrink-0">
                       {day}
                     </div>
                     
@@ -239,7 +239,7 @@ const HourlyHeatmap: React.FC = () => {
               </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-between mt-3 text-xs text-gray-500 dark:text-gray-500">
+            <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
               <span>Less</span>
               <div className="flex items-center gap-0.5">
                 <div className="w-6 h-6 rounded-sm bg-gray-800" title="No activity"></div>
@@ -253,7 +253,7 @@ const HourlyHeatmap: React.FC = () => {
             </div>
             
             {/* Data Summary */}
-            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 text-center">
+            <div className="mt-2 text-xs text-gray-300 text-center">
               {nonZeroData.length > 0 && (
                 <span>
                   {nonZeroData.length} active time slots • Max: {maxCount} tickets • Avg: {avgCount.toFixed(1)} tickets
