@@ -89,11 +89,11 @@ class PylonService {
     };
   }
 
-  // Build filter for tickets open > 24h
+  // Build filter for tickets open > 24h (new or on_you status, not on_hold/closed/cancelled)
   buildOpenOver24hFilter() {
     const twentyFourHoursAgo = dayjs().subtract(24, 'hour').toISOString();
     
-    return {
+    const filter = {
       search: true,
       limit: 1000,
       filter: {
@@ -101,8 +101,13 @@ class PylonService {
         subfilters: [
           {
             field: 'state',
+            operator: 'in',
+            values: ['new', 'on_you']
+          },
+          {
+            field: 'state',
             operator: 'not_in',
-            values: ['closed', 'cancelled']
+            values: ['on_hold', 'closed', 'cancelled']
           },
           {
             field: 'created_at',
@@ -112,6 +117,8 @@ class PylonService {
         ]
       }
     };
+    
+    return filter;
   }
 
   // Build filter for closed tickets today

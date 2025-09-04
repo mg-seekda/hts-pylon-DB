@@ -30,7 +30,7 @@ router.get('/kpis', async (req, res) => {
         pylonService.getIssues(pylonService.buildOpenTicketsFilter()),
         pylonService.getIssues(pylonService.buildTicketsCreatedTodayFilter()),
         pylonService.getIssues(pylonService.buildOnHoldTicketsFilter()),
-        pylonService.getIssues(pylonService.buildOpenOver24hFilter()),
+        pylonService.getIssues(pylonService.buildOpenOver24hFilter()), // Tickets with status 'new' or 'on_you', not on_hold/closed/cancelled, older than 24h
         pylonService.getIssues(pylonService.buildClosedTodayFilter()),
         pylonService.getIssues(pylonService.buildClosedTicketsLast30DaysFilter()),
         pylonService.getIssues(pylonService.buildNewTicketsFilter()),
@@ -96,6 +96,7 @@ router.get('/kpis', async (req, res) => {
       newTickets: newTickets.data?.length || 0,
       externalIssues: externalIssuesTickets.data?.length || 0
     };
+
 
     // Try to cache, but don't fail if Redis is not available
     try {

@@ -257,9 +257,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const fetchAnalytics = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
     try {
+      console.log('Fetching analytics data...');
       const analytics = await apiService.getAnalytics();
+      console.log('Analytics data received:', analytics);
       dispatch({ type: 'SET_ANALYTICS', payload: analytics });
     } catch (error) {
+      console.error('Error fetching analytics:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch analytics' });
     }
   }, []);
@@ -280,23 +283,37 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   }, [fetchAnalytics]);
 
   const refreshDailyFlow = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
-      const dailyFlow = await apiService.getDailyFlow();
+      console.log('Refreshing daily flow data...');
+      const response = await apiService.getDailyFlow();
+      console.log('Daily flow response received:', response);
+      // Extract the dailyFlow data from the response
+      const dailyFlow = response.dailyFlow;
+      console.log('Daily flow data extracted:', dailyFlow);
       // Update only the daily flow part of analytics
       dispatch({ type: 'UPDATE_DAILY_FLOW', payload: dailyFlow });
     } catch (error) {
+      console.error('Error refreshing daily flow:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch daily flow data' });
     }
   }, []);
 
   const refreshHourlyHeatmap = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
-      const hourlyHeatmap = await apiService.getHourlyHeatmap();
+      console.log('Refreshing hourly heatmap data...');
+      const response = await apiService.getHourlyHeatmap();
+      console.log('Hourly heatmap response received:', response);
+      // Extract the hourlyHeatmap data from the response
+      const hourlyHeatmap = response.hourlyHeatmap;
+      console.log('Hourly heatmap data extracted:', hourlyHeatmap);
       // Update only the hourly heatmap part of analytics
       dispatch({ type: 'UPDATE_HOURLY_HEATMAP', payload: hourlyHeatmap });
     } catch (error) {
+      console.error('Error refreshing hourly heatmap:', error);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch hourly heatmap data' });
     }
   }, []);

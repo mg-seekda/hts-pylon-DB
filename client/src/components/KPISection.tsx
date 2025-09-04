@@ -70,7 +70,7 @@ const KPISection: React.FC = () => {
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
     },
     {
-      title: 'Open >24h',
+      title: 'Open >24h\n( New | On You )',
       value: kpis?.openOver24h || 0,
       icon: Clock,
       color: 'text-red-400',
@@ -159,6 +159,12 @@ const KPISection: React.FC = () => {
                     <span className="font-medium">AVG RESOLUTION TIME</span>
                     <br />
                     <span className="font-light">(last 30 days)</span>
+                  </>
+                ) : kpi.title === 'Open >24h\n( New | On You )' ? (
+                  <>
+                    <span className="font-medium">OPEN &gt;24H</span>
+                    <br />
+                    <span className="font-light">( New | On You )</span>
                   </>
                 ) : (
                   kpi.title

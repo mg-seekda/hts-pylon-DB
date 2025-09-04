@@ -16,8 +16,10 @@ router.get('/daily-flow', async (req, res) => {
     const dailyFlowData = await pylonService.getDailyFlowData();
     
     const result = {
-      data: dailyFlowData,
-      period: '14 days',
+      dailyFlow: {
+        data: dailyFlowData,
+        period: '14 days'
+      },
       generatedAt: new Date().toISOString()
     };
 
@@ -36,6 +38,41 @@ router.get('/daily-flow', async (req, res) => {
 });
 
 
+
+// Get hourly heatmap data
+router.get('/hourly-heatmap', async (req, res) => {
+  try {
+    const cacheKey = 'analytics:hourly-heatmap';
+    const cached = await cache.get(cacheKey);
+    
+    if (cached) {
+      return res.json(cached);
+    }
+
+    const hourlyResponse = await pylonService.getHourlyTicketCreationData();
+    const hourlyHeatmapData = hourlyResponse.data || [];
+    
+    const result = {
+      hourlyHeatmap: {
+        data: hourlyHeatmapData,
+        period: '7 days'
+      },
+      generatedAt: new Date().toISOString()
+    };
+
+    // Try to cache, but don't fail if Redis is not available
+    try {
+      await cache.set(cacheKey, result, 60); // Cache for 60 seconds
+    } catch (cacheError) {
+      console.log('Cache not available, skipping cache set');
+    }
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching hourly heatmap data:', error);
+    res.status(500).json({ error: 'Failed to fetch hourly heatmap data' });
+  }
+});
 
 // Get comprehensive analytics dashboard data
 router.get('/dashboard', async (req, res) => {
