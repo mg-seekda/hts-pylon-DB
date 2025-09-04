@@ -2,6 +2,10 @@
 
 A modern, real-time dashboard for Hotel Technology Support teams, providing unified visibility into support tickets through direct Pylon API integration.
 
+## Why
+
+We recently migrated our ticketing system to **Pylon**. In **Odoo**, we previously relied on a custom operations dashboard. This project rebuilds that dashboard from scratch—modernized and directly integrated with Pylon—to restore the same core functionality while adding extended capabilities for better visibility, faster decisions, and a smoother daily workflow.
+
 ## Features
 
 ### 🎯 Global KPIs
@@ -29,6 +33,12 @@ A modern, real-time dashboard for Hotel Technology Support teams, providing unif
 - **Frontend**: React, TypeScript, TailwindCSS, Recharts, Framer Motion
 - **Authentication**: CAS (Central Authentication Service) via reverse proxy
 - **Deployment**: Docker, Docker Compose, Nginx, GitHub Actions
+
+## Development Transparency (AI Ready)
+
+This Proof of Concept was built in approximately **5–6 hours** with support from **Cursor IDE** and **ChatGPT (GPT-5)**.  
+The value lies in the architecture and integration work (Pylon API, Docker, Redis caching, Cloudflare Access) and in turning AI-generated scaffolding into a reliable, production-ready dashboard.  
+AI was used as a productivity tool—prompts, iteration, and validation were driven by engineering judgement to ensure correctness, security, and maintainability.
 
 ## Quick Start
 
@@ -232,6 +242,19 @@ hts-pylon-DB/
 - Security headers via Nginx
 - Input validation and sanitization
 - CORS configuration
+
+## Limitations & Next Steps
+
+### Current Limitations
+- Focused on **ticket-level analytics only** (no ticket details or customer data surfaced)
+- **PoC** currently runs in a homelab environment (secured via **Cloudflare Tunnel & Access**)
+- **No persistent data storage** (only short-lived in-memory caches)
+
+### Next Steps
+- Evaluate a deployment within **company-controlled infrastructure**
+- Expand with **Task integrations** as soon as the relevant Pylon API becomes available
+- Iterate on dashboards based on **team feedback** and usability testing
+- Implement **Team Lead reporting visuals** (escalation-ready views for TL → Management)
 
 ## Troubleshooting
 
