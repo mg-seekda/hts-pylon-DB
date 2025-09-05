@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Calendar, RefreshCw, ExternalLink } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
+import InfoIcon from './InfoIcon';
 
 const HourlyHeatmap: React.FC = () => {
   const { state, refreshHourlyHeatmap } = useData();
@@ -130,7 +131,7 @@ const HourlyHeatmap: React.FC = () => {
   }
 
   return (
-    <div className="card h-full flex flex-col">
+    <div className="card h-full flex flex-col relative">
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
@@ -275,6 +276,21 @@ const HourlyHeatmap: React.FC = () => {
             </div>
           </div>
       </div>
+      
+      {/* Info Icon */}
+      <InfoIcon
+        title="Hourly Heatmap"
+        description="Visualizes ticket creation patterns across days of the week and hours of the day. Each cell represents a specific time slot, with color intensity indicating the number of tickets created."
+        features={[
+          'Green intensity shows ticket creation volume',
+          'Lighter green = more tickets created',
+          'Hover cells for detailed statistics',
+          'Monday to Sunday rows, 24-hour columns',
+          'Helps identify peak activity times',
+          'Shows weekly patterns and trends'
+        ]}
+        position="bottom-right"
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
+import InfoIcon from './InfoIcon';
 
 const KPISection: React.FC = () => {
   const { state, refreshKPIs } = useData();
@@ -22,6 +23,15 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-purple-900/20',
       borderColor: 'border-purple-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'Created Today',
+        description: 'Shows the total number of tickets created today. This helps track daily workload and incoming ticket volume.',
+        features: [
+          'Real-time count of new tickets',
+          'Click to open all tickets in Pylon',
+          'Updated automatically throughout the day'
+        ]
+      }
     },
     {
       title: 'Closed Today',
@@ -31,6 +41,15 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-green-900/20',
       borderColor: 'border-green-700',
       pylonView: 'CLOSED_BY_ASSIGNEE' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'Closed Today',
+        description: 'Displays the number of tickets closed today by the whole team. Tracks daily productivity and completion rate.',
+        features: [
+          'Shows tickets closed today',
+          'Click to view closed tickets in Pylon',
+          'Helps measure daily productivity'
+        ]
+      }
     },
     {
       title: 'New Tickets',
@@ -40,6 +59,15 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-yellow-900/20',
       borderColor: 'border-yellow-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'New Tickets',
+        description: 'Indicates the number of new tickets that need attention. These are tickets in the initial state currentlywaiting for first response.',
+        features: [
+          'Tickets in "New" status',
+          'Click to view all new tickets in Pylon',
+          'Tickets requiring first response'
+        ]
+      }
     },
     {
       title: 'Open Tickets with Jira Link',
@@ -49,6 +77,15 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-pink-900/20',
       borderColor: 'border-pink-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'Open Tickets with Jira Link',
+        description: 'Shows tickets that are open and have external Jira links, and are waiting for DEV or 2nd-LvL Support',
+        features: [
+          'Tickets with external Jira references',
+          'Click to view all external tickets in Pylon',
+          'Helps identify cross-system dependencies'
+        ]
+      }
     },
     // Row 2: Status & performance
     {
@@ -59,6 +96,15 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-blue-900/20',
       borderColor: 'border-blue-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'Total Open',
+        description: 'The total number of open tickets across all statuses. Provides an overview of current workload and backlog size.',
+        features: [
+          'All tickets in statuses other than Closed or Cancelled',
+          'Click to view all open tickets in Pylon',
+          'Overall workload indicator'
+        ]
+      }
     },
     {
       title: 'On Hold',
@@ -68,6 +114,15 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-orange-900/20',
       borderColor: 'border-orange-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'On Hold',
+        description: 'Tickets that are currently on hold, waiting for external dependencies, or other blockers.',
+        features: [
+          'Tickets in "on hold" status',
+          'Click to view on-hold tickets in Pylon',
+          'Identifies blocked work items'
+        ]
+      }
     },
     {
       title: 'Open >24h\n( New | On You )',
@@ -77,6 +132,16 @@ const KPISection: React.FC = () => {
       bgColor: 'bg-red-900/20',
       borderColor: 'border-red-700',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
+      info: {
+        title: 'Open >24h (New | On You)',
+        description: 'Tickets that have been open for more than 24 hours in "new" or "waiting on you" status. These may need priority attention.',
+        features: [
+          'Tickets open for more than 24 hours',
+          'Includes "new" and "waiting on you" statuses',
+          'Click to view aging tickets in Pylon',
+          'Helps identify overdue items'
+        ]
+      }
     },
     {
       title: 'Avg Resolution Time\n(last 30 days)',
@@ -87,6 +152,16 @@ const KPISection: React.FC = () => {
       borderColor: 'border-cyan-700',
       format: (value: number) => `${value}h`,
       pylonView: null, // No link for this card
+      info: {
+        title: 'Average Resolution Time (last 30 days)',
+        description: 'The average time taken to resolve tickets over the last 30 days. Measured in hours and helps track efficiency trends.',
+        features: [
+          'Calculated from last 30 days of data',
+          'Shows average resolution time in hours',
+          'Helps measure performance trends',
+          'No Pylon link (calculated metric)'
+        ]
+      }
     },
   ];
 
@@ -133,6 +208,14 @@ const KPISection: React.FC = () => {
                 <Icon className={`w-4 h-4 ${kpi.color}`} />
               </div>
             </div>
+            
+            {/* Info Icon */}
+            <InfoIcon
+              title={kpi.info.title}
+              description={kpi.info.description}
+              features={kpi.info.features}
+              position="top-right"
+            />
             
             <div className="flex-1 flex flex-col justify-center">
               <div className="kpi-value mb-2 text-center">

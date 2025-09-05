@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ExternalLink, Users, User, RefreshCw, ChevronUp, ChevronDown } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, resolveAssignmentLink } from '../utils/pylonUtils';
+import InfoIcon from './InfoIcon';
 
 
 const TicketAssignmentTable: React.FC = () => {
@@ -156,7 +157,7 @@ const TicketAssignmentTable: React.FC = () => {
   });
 
   return (
-    <div className="card">
+    <div className="card relative">
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
@@ -408,6 +409,22 @@ const TicketAssignmentTable: React.FC = () => {
           Click numbers to view tickets in Pylon
         </p>
       </div>
+      
+      {/* Info Icon */}
+      <InfoIcon
+        title="Ticket Assignment Table"
+        description="Shows ticket distribution across team members and different status categories. Displays workload distribution, individual performance metrics, and team capacity overview."
+        features={[
+          'Agent column: Team member names and avatars',
+          'Status columns: New, Waiting, On Hold ticket counts',
+          'Closed Today: Tickets closed by each agent today',
+          'Total Open: Current open ticket count per agent',
+          'Click any number to view tickets in Pylon',
+          'Sort by clicking column headers',
+          'Totals row shows team-wide statistics'
+        ]}
+        position="bottom-right"
+      />
     </div>
   );
 };

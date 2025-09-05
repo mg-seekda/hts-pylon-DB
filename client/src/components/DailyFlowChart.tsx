@@ -4,6 +4,7 @@ import { TrendingUp, RefreshCw } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import dayjs from 'dayjs';
+import InfoIcon from './InfoIcon';
 
 const DailyFlowChart: React.FC = () => {
   const { state, refreshDailyFlow } = useData();
@@ -97,7 +98,7 @@ const DailyFlowChart: React.FC = () => {
   }
 
   return (
-    <div className="card h-full flex flex-col">
+    <div className="card h-full flex flex-col relative">
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
@@ -180,6 +181,21 @@ const DailyFlowChart: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Info Icon */}
+      <InfoIcon
+        title="Daily Flow Chart"
+        description="Shows ticket creation, closure, and cancellation trends over the last 14 days. Each bar represents a day with three data series showing different ticket lifecycle events."
+        features={[
+          'Purple bars: Tickets created each day',
+          'Green bars: Tickets closed each day',
+          'Orange bars: Tickets cancelled each day',
+          'Click bars to open corresponding tickets in Pylon',
+          'Hover for detailed daily statistics',
+          'Updated automatically with latest data'
+        ]}
+        position="bottom-right"
+      />
     </div>
   );
 };
