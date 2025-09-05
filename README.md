@@ -21,11 +21,18 @@ We recently migrated our ticketing system to **Pylon**. In **Odoo**, we previous
 - Unassigned tickets row
 - Direct links to Pylon filtered views
 - Closed Today column for each agent
+- **User Status Indicators** - Green/gray dots showing agent availability (Online/Out of Office)
+- **Interactive Tooltips** - Hover over agents to see their current status
 
 ### 📈 Analytics & Insights
 - **Daily Flow Chart** - Created vs Closed vs Cancelled tickets (last 14 days)
 - **Hourly Heatmap** - Ticket creation patterns by day and hour
 - **Ticket Assignment** - Agent workload distribution
+
+### ℹ️ Interactive Information
+- **Info Icons** - Click the "i" icon on any component for detailed explanations
+- **Component Descriptions** - Learn about functionality and features of each dashboard element
+- **Tooltips** - Hover over elements for quick information and status updates
 
 ## Tech Stack
 
