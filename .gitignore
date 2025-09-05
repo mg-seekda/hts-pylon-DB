@@ -73,3 +73,6 @@ nginx/ssl/
 # Temporary files
 tmp/
 temp/
+
+# Cursor Directory
+.cursor/
