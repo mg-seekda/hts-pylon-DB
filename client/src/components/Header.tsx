@@ -126,14 +126,6 @@ const Header: React.FC = () => {
         </div>
       </div>
       
-      {/* Info Section */}
-      <div className="flex items-center justify-end -mt-1">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
-          <Info className="w-4 h-4" />
-          <span>Click the info icon on each element for detailed information and functionality</span>
-        </div>
-      </div>
-      
       {state.error && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
