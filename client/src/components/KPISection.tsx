@@ -4,6 +4,7 @@ import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer, Info
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
+import Tooltip from './Tooltip';
 
 const KPISection: React.FC = () => {
   const { state, refreshKPIs } = useData();
@@ -183,26 +184,30 @@ const KPISection: React.FC = () => {
         const Icon = kpi.icon;
         
         return (
-          <motion.div
+          <Tooltip 
             key={kpi.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
-            className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg h-28 flex flex-col justify-between ${
-              kpi.pylonView ? 'cursor-pointer hover:shadow-xl transition-all duration-200' : ''
-            }`}
-            onClick={kpi.pylonView ? () => handleCardClick(kpi.pylonView!) : undefined}
-            onKeyDown={kpi.pylonView ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleCardClick(kpi.pylonView!);
-              }
-            } : undefined}
-            role={kpi.pylonView ? 'button' : undefined}
-            tabIndex={kpi.pylonView ? 0 : undefined}
-            title={kpi.pylonView ? 'Open in Pylon' : undefined}
-            aria-label={kpi.pylonView ? `Open ${kpi.title} in Pylon` : undefined}
+            content={kpi.pylonView ? 'Open in Pylon' : ''} 
+            position="top"
+            className={kpi.pylonView ? '' : 'pointer-events-none'}
           >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg h-28 flex flex-col justify-between ${
+                kpi.pylonView ? 'cursor-pointer hover:shadow-xl transition-all duration-200' : ''
+              }`}
+              onClick={kpi.pylonView ? () => handleCardClick(kpi.pylonView!) : undefined}
+              onKeyDown={kpi.pylonView ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCardClick(kpi.pylonView!);
+                }
+              } : undefined}
+              role={kpi.pylonView ? 'button' : undefined}
+              tabIndex={kpi.pylonView ? 0 : undefined}
+              aria-label={kpi.pylonView ? `Open ${kpi.title} in Pylon` : undefined}
+            >
             <div className="absolute top-3 left-3">
               <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
                 <Icon className={`w-4 h-4 ${kpi.color}`} />
@@ -254,7 +259,8 @@ const KPISection: React.FC = () => {
                 )}
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </Tooltip>
         );
       })}
       </div>

@@ -4,6 +4,7 @@ import { Calendar, RefreshCw, ExternalLink } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
+import Tooltip from './Tooltip';
 
 const HourlyHeatmap: React.FC = () => {
   const { state, refreshHourlyHeatmap } = useData();
@@ -144,15 +145,16 @@ const HourlyHeatmap: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => openPylon(PYLON_VIEWS.ALL)}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-800 hover:bg-blue-700 text-blue-200 rounded-lg border border-blue-600 transition-colors"
-              title="Open all issues in Pylon"
-              aria-label="Open all issues in Pylon"
-            >
-              <ExternalLink className="w-4 h-4" />
-              More
-            </button>
+            <Tooltip content="Open all issues in Pylon" position="top">
+              <button
+                onClick={() => openPylon(PYLON_VIEWS.ALL)}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-800 hover:bg-blue-700 text-blue-200 rounded-lg border border-blue-600 transition-colors"
+                aria-label="Open all issues in Pylon"
+              >
+                <ExternalLink className="w-4 h-4" />
+                More
+              </button>
+            </Tooltip>
             <button
               onClick={refreshHourlyHeatmap}
               disabled={loading.hourlyHeatmap}
@@ -255,12 +257,24 @@ const HourlyHeatmap: React.FC = () => {
             <div className="flex items-center justify-between mt-3 text-xs text-gray-400">
               <span>Less</span>
               <div className="flex items-center gap-0.5">
-                <div className="w-6 h-6 rounded-sm bg-gray-800" title="No activity"></div>
-                <div className="w-6 h-6 rounded-sm bg-green-900" title="1 ticket"></div>
-                <div className="w-6 h-6 rounded-sm bg-green-800" title={`2-${p25} tickets`}></div>
-                <div className="w-6 h-6 rounded-sm bg-green-600" title={`${p25+1}-${p50} tickets`}></div>
-                <div className="w-6 h-6 rounded-sm bg-green-500" title={`${p50+1}-${p75} tickets`}></div>
-                <div className="w-6 h-6 rounded-sm bg-green-400" title={`${p75+1}+ tickets`}></div>
+                <Tooltip content="No activity" position="top">
+                  <div className="w-6 h-6 rounded-sm bg-gray-800"></div>
+                </Tooltip>
+                <Tooltip content="1 ticket" position="top">
+                  <div className="w-6 h-6 rounded-sm bg-green-900"></div>
+                </Tooltip>
+                <Tooltip content={`2-${p25} tickets`} position="top">
+                  <div className="w-6 h-6 rounded-sm bg-green-800"></div>
+                </Tooltip>
+                <Tooltip content={`${p25+1}-${p50} tickets`} position="top">
+                  <div className="w-6 h-6 rounded-sm bg-green-600"></div>
+                </Tooltip>
+                <Tooltip content={`${p50+1}-${p75} tickets`} position="top">
+                  <div className="w-6 h-6 rounded-sm bg-green-500"></div>
+                </Tooltip>
+                <Tooltip content={`${p75+1}+ tickets`} position="top">
+                  <div className="w-6 h-6 rounded-sm bg-green-400"></div>
+                </Tooltip>
               </div>
               <span>More</span>
             </div>

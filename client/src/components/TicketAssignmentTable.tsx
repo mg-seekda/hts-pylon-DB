@@ -4,6 +4,7 @@ import { ExternalLink, Users, User, RefreshCw, ChevronUp, ChevronDown } from 'lu
 import { useData } from '../context/DataContext';
 import { openPylon, resolveAssignmentLink } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
+import Tooltip from './Tooltip';
 
 
 const TicketAssignmentTable: React.FC = () => {
@@ -317,54 +318,57 @@ const TicketAssignmentTable: React.FC = () => {
                 
                 {assignmentTable.statuses.map((status) => (
                   <td key={status} className="text-center">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
-                      onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
-                      className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
-                      disabled={user.statusCounts[status] === 0}
-                      role="button"
-                      tabIndex={0}
-                      title="Open in Pylon"
-                      aria-label={`Open ${status} tickets in Pylon`}
-                    >
-                      {user.statusCounts[status] || 0}
-                    </motion.button>
+                    <Tooltip content="Open in Pylon" position="top">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
+                        onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
+                        className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
+                        disabled={user.statusCounts[status] === 0}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Open ${status} tickets in Pylon`}
+                      >
+                        {user.statusCounts[status] || 0}
+                      </motion.button>
+                    </Tooltip>
                   </td>
                 ))}
                 
                 <td className="text-center">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleCellClick(user, 'closedToday')}
-                    onKeyDown={(e) => handleKeyDown(e, user, 'closedToday')}
-                    className="text-success-400 hover:text-success-300 font-medium transition-colors cursor-pointer"
-                    disabled={user.closedToday === 0}
-                    role="button"
-                    tabIndex={0}
-                    title="Open in Pylon"
-                    aria-label="Open closed today tickets in Pylon"
-                  >
-                    {user.closedToday || 0}
-                  </motion.button>
+                  <Tooltip content="Open in Pylon" position="top">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleCellClick(user, 'closedToday')}
+                      onKeyDown={(e) => handleKeyDown(e, user, 'closedToday')}
+                      className="text-success-400 hover:text-success-300 font-medium transition-colors cursor-pointer"
+                      disabled={user.closedToday === 0}
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Open closed today tickets in Pylon"
+                    >
+                      {user.closedToday || 0}
+                    </motion.button>
+                  </Tooltip>
                 </td>
                 
                 <td className="text-center">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleCellClick(user, 'totalOpen')}
-                    onKeyDown={(e) => handleKeyDown(e, user, 'totalOpen')}
-                    className="text-white hover:text-gray-300 font-semibold transition-colors cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    title="Open in Pylon"
-                    aria-label="Open total open tickets in Pylon"
-                  >
-                    {user.totalOpen}
-                  </motion.button>
+                  <Tooltip content="Open in Pylon" position="top">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleCellClick(user, 'totalOpen')}
+                      onKeyDown={(e) => handleKeyDown(e, user, 'totalOpen')}
+                      className="text-white hover:text-gray-300 font-semibold transition-colors cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Open total open tickets in Pylon"
+                    >
+                      {user.totalOpen}
+                    </motion.button>
+                  </Tooltip>
                 </td>
               </motion.tr>
             ))}
@@ -387,52 +391,55 @@ const TicketAssignmentTable: React.FC = () => {
               
               {assignmentTable.statuses.map((status) => (
                 <td key={status} className="text-center">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleCellClick({ isTotals: true }, status as 'new' | 'waiting' | 'hold')}
-                    onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, status as 'new' | 'waiting' | 'hold')}
-                    className="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer"
-                    role="button"
-                    tabIndex={0}
-                    title="Open in Pylon"
-                    aria-label={`Open all ${status} tickets in Pylon`}
-                  >
-                    {totals.statusCounts[status]}
-                  </motion.button>
+                  <Tooltip content="Open in Pylon" position="top">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleCellClick({ isTotals: true }, status as 'new' | 'waiting' | 'hold')}
+                      onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, status as 'new' | 'waiting' | 'hold')}
+                      className="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Open all ${status} tickets in Pylon`}
+                    >
+                      {totals.statusCounts[status]}
+                    </motion.button>
+                  </Tooltip>
                 </td>
               ))}
               
               <td className="text-center">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleCellClick({ isTotals: true }, 'closedToday')}
-                  onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'closedToday')}
-                  className="text-success-400 hover:text-success-300 font-bold transition-colors cursor-pointer"
-                  role="button"
-                  tabIndex={0}
-                  title="Open in Pylon"
-                  aria-label="Open all closed today tickets in Pylon"
-                >
-                  {totals.closedToday}
-                </motion.button>
+                <Tooltip content="Open in Pylon" position="top">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleCellClick({ isTotals: true }, 'closedToday')}
+                    onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'closedToday')}
+                    className="text-success-400 hover:text-success-300 font-bold transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Open all closed today tickets in Pylon"
+                  >
+                    {totals.closedToday}
+                  </motion.button>
+                </Tooltip>
               </td>
               
               <td className="text-center">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleCellClick({ isTotals: true }, 'totalOpen')}
-                  onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'totalOpen')}
-                  className="text-white hover:text-gray-300 font-bold transition-colors cursor-pointer"
-                  role="button"
-                  tabIndex={0}
-                  title="Open in Pylon"
-                  aria-label="Open all total open tickets in Pylon"
-                >
-                  {totals.totalOpen}
-                </motion.button>
+                <Tooltip content="Open in Pylon" position="top">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleCellClick({ isTotals: true }, 'totalOpen')}
+                    onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'totalOpen')}
+                    className="text-white hover:text-gray-300 font-bold transition-colors cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Open all total open tickets in Pylon"
+                  >
+                    {totals.totalOpen}
+                  </motion.button>
+                </Tooltip>
               </td>
             </motion.tr>
           </tbody>

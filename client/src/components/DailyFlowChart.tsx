@@ -133,10 +133,22 @@ const DailyFlowChart: React.FC = () => {
               <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#1F2937', 
+                  backgroundColor: '#111827', 
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#F9FAFB'
+                  color: '#F9FAFB',
+                  fontSize: '12px',
+                  padding: '8px 12px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                }}
+                labelStyle={{
+                  color: '#F9FAFB',
+                  fontSize: '12px',
+                  fontWeight: '500'
+                }}
+                itemStyle={{
+                  color: '#F9FAFB',
+                  fontSize: '12px'
                 }}
                 labelFormatter={(value) => `Date: ${formatDate(value)}`}
               />
