@@ -24,12 +24,12 @@ To build and push a Docker image:
 
 The image will be built and pushed to:
 ```
-ghcr.io/your-username/hts-pylon-db:latest
+ghcr.io/mg-seekda/hts-pylon-db:latest
 ```
 
 ### Pulling the Image
 ```bash
-docker pull ghcr.io/your-username/hts-pylon-db:latest
+docker pull ghcr.io/mg-seekda/hts-pylon-db:latest
 ```
 
 ### Running the Image
@@ -40,7 +40,7 @@ docker run -d \
   -e PYLON_API_URL=your_api_url \
   -e PYLON_API_TOKEN=your_api_token \
   -e REDIS_URL=redis://your_redis_url \
-  ghcr.io/your-username/hts-pylon-db:latest
+  ghcr.io/mg-seekda/hts-pylon-db:latest
 ```
 
 ## Configuration

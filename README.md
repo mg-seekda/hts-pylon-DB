@@ -78,12 +78,12 @@ AI was used as a productivity tool—prompts, iteration, and validation were dri
 3. Click "Run workflow"
 4. Pull and run the image:
 ```bash
-docker pull ghcr.io/your-username/hts-pylon-db:latest
+docker pull ghcr.io/mg-seekda/hts-pylon-db:latest
 docker run -d --name hts-dashboard -p 3000:3001 \
   -e PYLON_API_URL=your_api_url \
   -e PYLON_API_TOKEN=your_api_token \
   -e REDIS_URL=redis://your_redis_url \
-  ghcr.io/your-username/hts-pylon-db:latest
+  ghcr.io/mg-seekda/hts-pylon-db:latest
 ```
 
 **Manual Deploy:**
@@ -103,7 +103,7 @@ docker-compose up -d
 The project includes automated Docker builds via GitHub Actions:
 
 - **Manual Build**: Go to Actions tab → "Build Docker Image" → Run workflow
-- **Image Location**: `ghcr.io/your-username/hts-pylon-db:latest`
+- **Image Location**: `ghcr.io/mg-seekda/hts-pylon-db:latest`
 - **Documentation**: See [GITHUB_ACTIONS.md](docs/GITHUB_ACTIONS.md)
 
 ## Configuration
