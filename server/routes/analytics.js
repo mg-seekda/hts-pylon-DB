@@ -62,7 +62,7 @@ router.get('/hourly-heatmap', async (req, res) => {
 
     // Try to cache, but don't fail if Redis is not available
     try {
-      await cache.set(cacheKey, result, 60); // Cache for 60 seconds
+      await cache.set(cacheKey, result, 3600); // Cache for 60 minutes
     } catch (cacheError) {
       console.log('Cache not available, skipping cache set');
     }
