@@ -27,7 +27,7 @@ const DailyFlowChart: React.FC = () => {
     }
   };
 
-  if (loading.analytics) {
+  if (loading.dailyFlow) {
     return (
       <div className="card h-full flex flex-col">
         <div className="card-header">
@@ -43,10 +43,10 @@ const DailyFlowChart: React.FC = () => {
             </div>
             <button
               onClick={refreshDailyFlow}
-              disabled={loading.analytics}
+              disabled={loading.dailyFlow}
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading.dailyFlow ? 'animate-spin' : ''}`} />
               Refresh Daily Flow
             </button>
           </div>
@@ -80,10 +80,10 @@ const DailyFlowChart: React.FC = () => {
             </div>
             <button
               onClick={refreshDailyFlow}
-              disabled={loading.analytics}
+              disabled={loading.dailyFlow}
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading.dailyFlow ? 'animate-spin' : ''}`} />
               Refresh Daily Flow
             </button>
           </div>
@@ -112,10 +112,10 @@ const DailyFlowChart: React.FC = () => {
           </div>
           <button
             onClick={refreshDailyFlow}
-            disabled={loading.analytics}
+            disabled={loading.dailyFlow}
             className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading.dailyFlow ? 'animate-spin' : ''}`} />
             Refresh Analytics
           </button>
         </div>

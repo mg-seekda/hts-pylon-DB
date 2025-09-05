@@ -94,7 +94,7 @@ const HourlyHeatmap: React.FC = () => {
     return `${year}-${month}-${day}`;
   };
 
-  if (loading.analytics) {
+  if (loading.hourlyHeatmap) {
     return (
       <div className="card h-full flex flex-col">
         <div className="card-header">
@@ -110,10 +110,10 @@ const HourlyHeatmap: React.FC = () => {
             </div>
             <button
               onClick={refreshHourlyHeatmap}
-              disabled={loading.analytics}
+              disabled={loading.hourlyHeatmap}
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading.hourlyHeatmap ? 'animate-spin' : ''}`} />
               Refresh Heatmap
             </button>
           </div>
@@ -155,10 +155,10 @@ const HourlyHeatmap: React.FC = () => {
             </button>
             <button
               onClick={refreshHourlyHeatmap}
-              disabled={loading.analytics}
+              disabled={loading.hourlyHeatmap}
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw className={`w-4 h-4 ${loading.analytics ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading.hourlyHeatmap ? 'animate-spin' : ''}`} />
               Refresh Analytics
             </button>
           </div>

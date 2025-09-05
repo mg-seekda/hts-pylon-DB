@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, Clock, ExternalLink, ChevronDown } from 'lucide-react';
+import { RefreshCw, Clock, ExternalLink, ChevronDown, Info } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import dayjs from 'dayjs';
@@ -123,6 +123,14 @@ const Header: React.FC = () => {
             />
             <span>Refresh</span>
           </motion.button>
+        </div>
+      </div>
+      
+      {/* Info Section */}
+      <div className="flex items-center justify-end -mt-1">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Info className="w-4 h-4" />
+          <span>Click the info icon on each element for detailed information and functionality</span>
         </div>
       </div>
       

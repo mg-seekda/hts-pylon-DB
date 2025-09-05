@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer } from 'lucide-react';
+import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer, Info } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
@@ -134,17 +134,17 @@ const KPISection: React.FC = () => {
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
       info: {
         title: 'Open >24h (New | On You)',
-        description: 'Tickets that have been open for more than 24 hours in "new" or "waiting on you" status. These may need priority attention.',
+        description: 'Tickets that have been open for more than 24 hours in "New" or "Waiting on You" status. These may need priority attention.',
         features: [
           'Tickets open for more than 24 hours',
-          'Includes "new" and "waiting on you" statuses',
+          'Includes "New" and "Waiting on You" statuses',
           'Click to view aging tickets in Pylon',
           'Helps identify overdue items'
         ]
       }
     },
     {
-      title: 'Avg Resolution Time\n(last 30 days)',
+      title: 'Avg Resolution Time\n( last 30 days )',
       value: kpis?.avgResolutionTime || 0,
       icon: Timer,
       color: 'text-cyan-400',
@@ -236,21 +236,21 @@ const KPISection: React.FC = () => {
                 )}
               </div>
               
-              <div className="kpi-label text-xs text-gray-300 font-medium whitespace-pre-line text-center">
-                {kpi.title === 'Avg Resolution Time\n(last 30 days)' ? (
+              <div className="kpi-label text-xs text-gray-300 whitespace-pre-line text-center">
+                {kpi.title === 'Avg Resolution Time\n( last 30 days )' ? (
                   <>
-                    <span className="font-medium">AVG RESOLUTION TIME</span>
+                    <span className="font-medium text-gray-100" style={{ fontSize: '15px' }}>AVG RESOLUTION TIME</span>
                     <br />
-                    <span className="font-light">(last 30 days)</span>
+                    <span className="font-light text-xs">( last 30 days )</span>
                   </>
                 ) : kpi.title === 'Open >24h\n( New | On You )' ? (
                   <>
-                    <span className="font-medium">OPEN &gt;24H</span>
+                    <span className="font-medium text-gray-100" style={{ fontSize: '15px' }}>OPEN &gt;24H</span>
                     <br />
-                    <span className="font-light">( New | On You )</span>
+                    <span className="font-light text-xs">( New | On You )</span>
                   </>
                 ) : (
-                  kpi.title
+                  <span className="font-medium text-gray-100" style={{ fontSize: '15px' }}>{kpi.title}</span>
                 )}
               </div>
             </div>

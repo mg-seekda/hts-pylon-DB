@@ -112,6 +112,10 @@
   .status-completed {
     @apply bg-green-900 text-green-200;
   }
+  
+  .kpi-subtitle-thin {
+    font-weight: 200 !important;
+  }
 }
 
 @layer utilities {

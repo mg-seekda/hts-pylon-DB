@@ -102,6 +102,8 @@ interface DataState {
     kpis: boolean;
     assignmentTable: boolean;
     analytics: boolean;
+    dailyFlow: boolean;
+    hourlyHeatmap: boolean;
   };
   error: string | null;
   lastUpdated: string | null;
@@ -125,6 +127,8 @@ const initialState: DataState = {
     kpis: false,
     assignmentTable: false,
     analytics: false,
+    dailyFlow: false,
+    hourlyHeatmap: false,
   },
   error: null,
   lastUpdated: null,
@@ -166,20 +170,20 @@ const dataReducer = (state: DataState, action: DataAction): DataState => {
       return {
         ...state,
         analytics: {
-          ...state.analytics,
+          ...(state.analytics || {}),
           dailyFlow: action.payload,
         },
-        loading: { ...state.loading, analytics: false },
+        loading: { ...state.loading, dailyFlow: false },
         error: null,
       };
     case 'UPDATE_HOURLY_HEATMAP':
       return {
         ...state,
         analytics: {
-          ...state.analytics,
+          ...(state.analytics || {}),
           hourlyHeatmap: action.payload,
         },
-        loading: { ...state.loading, analytics: false },
+        loading: { ...state.loading, hourlyHeatmap: false },
         error: null,
       };
     case 'SET_ERROR':
@@ -190,6 +194,8 @@ const dataReducer = (state: DataState, action: DataAction): DataState => {
           kpis: false,
           assignmentTable: false,
           analytics: false,
+          dailyFlow: false,
+          hourlyHeatmap: false,
         },
       };
     case 'SET_LAST_UPDATED':
@@ -283,7 +289,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   }, [fetchAnalytics]);
 
   const refreshDailyFlow = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
       console.log('Refreshing daily flow data...');
@@ -301,7 +307,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   }, []);
 
   const refreshHourlyHeatmap = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
       console.log('Refreshing hourly heatmap data...');
@@ -323,9 +329,10 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     await Promise.all([
       fetchKPIs(),
       fetchAssignmentTable(),
-      fetchAnalytics(),
+      refreshDailyFlow(),
+      refreshHourlyHeatmap(),
     ]);
-  }, [fetchKPIs, fetchAssignmentTable, fetchAnalytics]);
+  }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap]);
 
   // Initial data fetch
   useEffect(() => {
