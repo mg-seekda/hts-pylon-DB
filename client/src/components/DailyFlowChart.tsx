@@ -5,10 +5,11 @@ import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import dayjs from 'dayjs';
 import InfoIcon from './InfoIcon';
+import CacheStatus from './CacheStatus';
 
 const DailyFlowChart: React.FC = () => {
   const { state, refreshDailyFlow } = useData();
-  const { analytics, loading } = state;
+  const { analytics, loading, cacheStatus } = state;
 
   // Debug logging
   console.log('DailyFlowChart - analytics:', analytics);
@@ -109,6 +110,10 @@ const DailyFlowChart: React.FC = () => {
             <p className="text-sm text-gray-300 mt-1">
               Ticket creation and closure trends
             </p>
+            <CacheStatus 
+              metadata={cacheStatus.dailyFlow} 
+              className="mt-1" 
+            />
           </div>
           <button
             onClick={refreshDailyFlow}

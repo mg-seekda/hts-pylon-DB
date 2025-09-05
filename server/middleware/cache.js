@@ -78,6 +78,51 @@ const cache = {
     }
   },
 
+  // Stale-while-revalidate cache with metadata
+  async getWithMetadata(key) {
+    if (!redisClient) return null;
+    try {
+      const data = await redisClient.get(key);
+      if (!data) return null;
+      
+      const parsed = JSON.parse(data);
+      const now = Date.now();
+      
+      return {
+        data: parsed.data,
+        metadata: {
+          cachedAt: parsed.metadata?.cachedAt || now,
+          ttl: parsed.metadata?.ttl || 60,
+          staleTime: parsed.metadata?.staleTime || 60,
+          isStale: now - (parsed.metadata?.cachedAt || now) > (parsed.metadata?.staleTime || 60) * 1000,
+          isExpired: now - (parsed.metadata?.cachedAt || now) > (parsed.metadata?.ttl || 60) * 1000
+        }
+      };
+    } catch (err) {
+      console.error('Cache get error:', err);
+      return null;
+    }
+  },
+
+  async setWithMetadata(key, data, ttl = 60, staleTime = 60) {
+    if (!redisClient) return false;
+    try {
+      const cacheData = {
+        data,
+        metadata: {
+          cachedAt: Date.now(),
+          ttl,
+          staleTime
+        }
+      };
+      await redisClient.setEx(key, ttl, JSON.stringify(cacheData));
+      return true;
+    } catch (err) {
+      console.error('Cache set error:', err);
+      return false;
+    }
+  },
+
   async del(key) {
     if (!redisClient) return false;
     try {

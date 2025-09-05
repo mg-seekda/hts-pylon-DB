@@ -5,10 +5,11 @@ import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
 import Tooltip from './Tooltip';
+import CacheStatus from './CacheStatus';
 
 const HourlyHeatmap: React.FC = () => {
   const { state, refreshHourlyHeatmap } = useData();
-  const { analytics, loading } = state;
+  const { analytics, loading, cacheStatus } = state;
   const data = analytics?.hourlyHeatmap?.data || [];
 
   // Debug logging
@@ -66,10 +67,6 @@ const HourlyHeatmap: React.FC = () => {
     return 'bg-green-300';
   };
 
-  // Format time for tooltip (24h format)
-  const formatTime = (hour: number): string => {
-    return `${hour.toString().padStart(2, '0')}:00`;
-  };
 
   // Format day for tooltip
   const formatDay = (day: number): string => {
@@ -131,6 +128,10 @@ const HourlyHeatmap: React.FC = () => {
             <p className="text-sm text-gray-300 mt-1">
               Average ticket creation patterns by day and hour (30-day average)
             </p>
+            <CacheStatus 
+              metadata={cacheStatus.hourlyHeatmap} 
+              className="mt-1" 
+            />
           </div>
           <div className="flex items-center gap-2">
             <Tooltip content="Open all issues in Pylon" position="top">

@@ -67,6 +67,13 @@ export interface HeatmapData {
   count: number;
 }
 
+export interface CacheMetadata {
+  cachedAt: string;
+  isStale: boolean;
+  servingCached: boolean;
+  warning?: string;
+}
+
 export interface AnalyticsData {
   dailyFlow?: {
     data: DailyFlowData[];
@@ -93,6 +100,7 @@ export interface AnalyticsData {
     count: number;
   };
   generatedAt?: string;
+  cacheMetadata?: CacheMetadata;
 }
 
 interface DataState {
@@ -108,6 +116,10 @@ interface DataState {
   };
   error: string | null;
   lastUpdated: string | null;
+  cacheStatus: {
+    dailyFlow?: CacheMetadata;
+    hourlyHeatmap?: CacheMetadata;
+  };
 }
 
 type DataAction =
@@ -117,6 +129,7 @@ type DataAction =
   | { type: 'SET_ANALYTICS'; payload: AnalyticsData }
   | { type: 'UPDATE_DAILY_FLOW'; payload: any }
   | { type: 'UPDATE_HOURLY_HEATMAP'; payload: any }
+  | { type: 'UPDATE_CACHE_STATUS'; payload: { key: keyof DataState['cacheStatus']; metadata: CacheMetadata } }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_LAST_UPDATED'; payload: string };
 
@@ -133,6 +146,7 @@ const initialState: DataState = {
   },
   error: null,
   lastUpdated: null,
+  cacheStatus: {},
 };
 
 const dataReducer = (state: DataState, action: DataAction): DataState => {
@@ -186,6 +200,14 @@ const dataReducer = (state: DataState, action: DataAction): DataState => {
         },
         loading: { ...state.loading, hourlyHeatmap: false },
         error: null,
+      };
+    case 'UPDATE_CACHE_STATUS':
+      return {
+        ...state,
+        cacheStatus: {
+          ...state.cacheStatus,
+          [action.payload.key]: action.payload.metadata,
+        },
       };
     case 'SET_ERROR':
       return {
@@ -278,14 +300,31 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       console.log('Refreshing daily flow data...');
       const response = await apiService.getDailyFlow();
       console.log('Daily flow response received:', response);
-      // Extract the dailyFlow data from the response
+      
+      // Extract the dailyFlow data and cache metadata from the response
       const dailyFlow = response.dailyFlow;
+      const cacheMetadata = response.cacheMetadata;
+      
       console.log('Daily flow data extracted:', dailyFlow);
+      console.log('Cache metadata:', cacheMetadata);
+      
       // Update only the daily flow part of analytics
       dispatch({ type: 'UPDATE_DAILY_FLOW', payload: dailyFlow });
+      
+      // Update cache status if metadata is available
+      if (cacheMetadata) {
+        dispatch({ 
+          type: 'UPDATE_CACHE_STATUS', 
+          payload: { key: 'dailyFlow', metadata: cacheMetadata } 
+        });
+      }
+      
+      // Clear any previous errors
+      dispatch({ type: 'SET_ERROR', payload: null });
     } catch (error) {
       console.error('Error refreshing daily flow:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch daily flow data' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch daily flow data';
+      dispatch({ type: 'SET_ERROR', payload: `Daily Flow: ${errorMessage}` });
     }
   }, []);
 
@@ -296,14 +335,31 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       console.log('Refreshing hourly heatmap data...');
       const response = await apiService.getHourlyHeatmap();
       console.log('Hourly heatmap response received:', response);
-      // Extract the hourlyHeatmap data from the response
+      
+      // Extract the hourlyHeatmap data and cache metadata from the response
       const hourlyHeatmap = response.hourlyHeatmap;
+      const cacheMetadata = response.cacheMetadata;
+      
       console.log('Hourly heatmap data extracted:', hourlyHeatmap);
+      console.log('Cache metadata:', cacheMetadata);
+      
       // Update only the hourly heatmap part of analytics
       dispatch({ type: 'UPDATE_HOURLY_HEATMAP', payload: hourlyHeatmap });
+      
+      // Update cache status if metadata is available
+      if (cacheMetadata) {
+        dispatch({ 
+          type: 'UPDATE_CACHE_STATUS', 
+          payload: { key: 'hourlyHeatmap', metadata: cacheMetadata } 
+        });
+      }
+      
+      // Clear any previous errors
+      dispatch({ type: 'SET_ERROR', payload: null });
     } catch (error) {
       console.error('Error refreshing hourly heatmap:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch hourly heatmap data' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch hourly heatmap data';
+      dispatch({ type: 'SET_ERROR', payload: `Hourly Heatmap: ${errorMessage}` });
     }
   }, []);
 
