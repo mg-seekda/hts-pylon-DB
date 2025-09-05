@@ -4,7 +4,6 @@ import { RefreshCw, Clock, ExternalLink, ChevronDown } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import dayjs from 'dayjs';
-import Tooltip from './Tooltip';
 
 const Header: React.FC = () => {
   const { state, refreshAll } = useData();

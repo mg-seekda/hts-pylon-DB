@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer, Info } from 'lucide-react';
+import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
