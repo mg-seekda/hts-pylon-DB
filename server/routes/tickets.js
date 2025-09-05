@@ -169,6 +169,7 @@ router.get('/assignment-table', async (req, res) => {
         name: user.name,
         email: user.email,
         avatarUrl: user.avatar_url || user.avatarUrl || null,
+        status: user.status, // Include user status field
         statusCounts,
         closedToday: userClosedToday.length,
         totalOpen: userTickets.length

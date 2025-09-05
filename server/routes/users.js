@@ -17,8 +17,11 @@ router.get('/', async (req, res) => {
     const users = response.data || [];
     
     const result = {
-      users: users.filter(user => user.status === 'active'), // Only active users
-      count: users.filter(user => user.status === 'active').length,
+      users: users.map(user => ({
+        ...user,
+        status: user.status // Include status field for all users
+      })), // Include all users, not just active ones
+      count: users.length,
       total: users.length
     };
 

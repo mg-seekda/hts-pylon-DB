@@ -18,6 +18,7 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string | null;
+  status: string; // User status: 'active', 'inactive', etc.
   statusCounts: Record<string, number>;
   closedToday: number;
   totalOpen: number;

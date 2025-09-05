@@ -46,6 +46,14 @@ const TicketAssignmentTable: React.FC = () => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
+  const getUserStatusColor = (status: string) => {
+    return status === 'active' ? 'bg-green-500' : 'bg-gray-500';
+  };
+
+  const getUserStatusText = (status: string) => {
+    return status === 'active' ? 'Online' : 'Out of Office';
+  };
+
   const handleSort = (column: string) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -245,7 +253,7 @@ const TicketAssignmentTable: React.FC = () => {
                         <User className="w-4 h-4 text-gray-300" />
                       </div>
                     ) : user.avatarUrl ? (
-                      <div className="relative">
+                      <div className="relative group">
                         <img 
                           src={user.avatarUrl} 
                           alt={user.name}
@@ -264,16 +272,44 @@ const TicketAssignmentTable: React.FC = () => {
                         <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-3 hidden absolute top-0 left-0">
                           <Users className="w-4 h-4 text-white" />
                         </div>
+                        {/* Status indicator dot */}
+                        {user.status && (
+                          <div className={`absolute -bottom-0 right-2 w-3 h-3 rounded-full border-2 border-gray-800 ${getUserStatusColor(user.status)}`}></div>
+                        )}
+                        {/* Tooltip */}
+                        {user.status && (
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            {getUserStatusText(user.status)}
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-3">
-                        <Users className="w-4 h-4 text-white" />
+                      <div className="relative group">
+                        <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center mr-3">
+                          <Users className="w-4 h-4 text-white" />
+                        </div>
+                        {/* Status indicator dot */}
+                        {user.status && (
+                          <div className={`absolute -bottom-1 right-1 w-3 h-3 rounded-full border-2 border-gray-800 ${getUserStatusColor(user.status)}`}></div>
+                        )}
+                        {/* Tooltip */}
+                        {user.status && (
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            {getUserStatusText(user.status)}
+                          </div>
+                        )}
                       </div>
                     )}
-                    <div>
+                    <div className="group">
                       <div className="text-white">{user.name}</div>
                       {user.email && (
                         <div className="text-xs text-gray-300">{user.email}</div>
+                      )}
+                      {/* Tooltip for name/email area */}
+                      {user.status && (
+                        <div className="absolute bottom-full left-0 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                          Status: {getUserStatusText(user.status)}
+                        </div>
                       )}
                     </div>
                   </div>
