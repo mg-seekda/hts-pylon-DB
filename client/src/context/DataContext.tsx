@@ -213,10 +213,8 @@ interface DataContextType {
   state: DataState;
   fetchKPIs: () => Promise<void>;
   fetchAssignmentTable: () => Promise<void>;
-  fetchAnalytics: () => Promise<void>;
   refreshKPIs: () => Promise<void>;
   refreshAssignmentTable: () => Promise<void>;
-  refreshAnalytics: () => Promise<void>;
   refreshDailyFlow: () => Promise<void>;
   refreshHourlyHeatmap: () => Promise<void>;
   refreshAll: () => Promise<void>;
@@ -261,18 +259,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
 
 
-  const fetchAnalytics = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'analytics', value: true } });
-    try {
-      console.log('Fetching analytics data...');
-      const analytics = await apiService.getAnalytics();
-      console.log('Analytics data received:', analytics);
-      dispatch({ type: 'SET_ANALYTICS', payload: analytics });
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch analytics' });
-    }
-  }, []);
 
   const refreshKPIs = useCallback(async () => {
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
@@ -284,10 +270,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     await fetchAssignmentTable();
   }, [fetchAssignmentTable]);
 
-  const refreshAnalytics = useCallback(async () => {
-    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
-    await fetchAnalytics();
-  }, [fetchAnalytics]);
 
   const refreshDailyFlow = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
@@ -349,10 +331,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     state,
     fetchKPIs,
     fetchAssignmentTable,
-    fetchAnalytics,
     refreshKPIs,
     refreshAssignmentTable,
-    refreshAnalytics,
     refreshDailyFlow,
     refreshHourlyHeatmap,
     refreshAll,

@@ -47,7 +47,7 @@ const DailyFlowChart: React.FC = () => {
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.dailyFlow ? 'animate-spin' : ''}`} />
-              Refresh Daily Flow
+              {loading.dailyFlow ? 'Refreshing...' : 'Refresh Daily Flow'}
             </button>
           </div>
         </div>
@@ -84,7 +84,7 @@ const DailyFlowChart: React.FC = () => {
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.dailyFlow ? 'animate-spin' : ''}`} />
-              Refresh Daily Flow
+              {loading.dailyFlow ? 'Refreshing...' : 'Refresh Daily Flow'}
             </button>
           </div>
         </div>
@@ -116,7 +116,7 @@ const DailyFlowChart: React.FC = () => {
             className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`w-4 h-4 ${loading.dailyFlow ? 'animate-spin' : ''}`} />
-            Refresh Analytics
+            {loading.dailyFlow ? 'Refreshing...' : 'Refresh Daily Flow'}
           </button>
         </div>
       </div>

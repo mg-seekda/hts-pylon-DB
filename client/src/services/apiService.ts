@@ -79,13 +79,6 @@ export const apiService = {
 
 
 
-  // Analytics
-  async getAnalytics(): Promise<AnalyticsData> {
-    const response = await apiClient.get('/analytics/dashboard', {
-      timeout: 30000 // 30 seconds timeout for analytics
-    });
-    return response.data;
-  },
 
   // Daily flow data
   async getDailyFlow() {

@@ -13,8 +13,10 @@ const HourlyHeatmap: React.FC = () => {
 
   // Debug logging
   console.log('HourlyHeatmap - analytics:', analytics);
+  console.log('HourlyHeatmap - hourlyHeatmap:', analytics?.hourlyHeatmap);
   console.log('HourlyHeatmap - heatmap data:', data);
   console.log('HourlyHeatmap - data length:', data.length);
+  console.log('HourlyHeatmap - loading state:', loading.hourlyHeatmap);
   const [hoveredCell, setHoveredCell] = useState<{ day: number; hour: number; count: number } | null>(null);
 
   // Days of the week (Monday to Sunday)
@@ -74,25 +76,11 @@ const HourlyHeatmap: React.FC = () => {
     return days[day];
   };
 
-  // Get the actual date for a given day of the week (Monday=0, Sunday=6)
-  const getDateForDay = (dayIndex: number): string => {
-    const today = new Date();
-    const currentDay = today.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-    
-    // Convert to Monday=0, Tuesday=1, ..., Sunday=6
-    const currentMondayIndex = currentDay === 0 ? 6 : currentDay - 1;
-    
-    // Calculate the date for the requested day
-    const daysDiff = dayIndex - currentMondayIndex;
-    const targetDate = new Date(today);
-    targetDate.setDate(today.getDate() + daysDiff);
-    
-    // Format as yyyy-mm-dd
-    const year = targetDate.getFullYear();
-    const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = targetDate.getDate().toString().padStart(2, '0');
-    
-    return `${year}-${month}-${day}`;
+  // Get time range for tooltip (e.g., "09:00-10:00")
+  const getTimeRange = (hour: number): string => {
+    const startHour = hour.toString().padStart(2, '0');
+    const endHour = (hour + 1).toString().padStart(2, '0');
+    return `${startHour}:00-${endHour}:00`;
   };
 
   if (loading.hourlyHeatmap) {
@@ -106,7 +94,7 @@ const HourlyHeatmap: React.FC = () => {
                 Hourly Heatmap
               </h2>
               <p className="text-sm text-gray-300 mt-1">
-                Ticket creation patterns by day and hour
+                Average ticket creation patterns by day and hour (30-day average)
               </p>
             </div>
             <button
@@ -115,7 +103,7 @@ const HourlyHeatmap: React.FC = () => {
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.hourlyHeatmap ? 'animate-spin' : ''}`} />
-              Refresh Heatmap
+              {loading.hourlyHeatmap ? 'Refreshing...' : 'Refresh Heatmap'}
             </button>
           </div>
         </div>
@@ -141,7 +129,7 @@ const HourlyHeatmap: React.FC = () => {
               Hourly Heatmap
             </h2>
             <p className="text-sm text-gray-300 mt-1">
-              Ticket creation patterns by day and hour
+              Average ticket creation patterns by day and hour (30-day average)
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -161,7 +149,7 @@ const HourlyHeatmap: React.FC = () => {
               className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg border border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw className={`w-4 h-4 ${loading.hourlyHeatmap ? 'animate-spin' : ''}`} />
-              Refresh Analytics
+              {loading.hourlyHeatmap ? 'Refreshing...' : 'Refresh Heatmap'}
             </button>
           </div>
         </div>
@@ -181,14 +169,14 @@ const HourlyHeatmap: React.FC = () => {
                 } as React.CSSProperties}
               >
                 <div className="font-medium text-green-400">
-                  {formatDay(hoveredCell.day)} {getDateForDay(hoveredCell.day)} {formatTime(hoveredCell.hour)}
+                  {formatDay(hoveredCell.day)} {getTimeRange(hoveredCell.hour)}
                 </div>
                 <div className="text-gray-300">
-                  {hoveredCell.count} ticket{hoveredCell.count !== 1 ? 's' : ''} created
+                  Avg. {hoveredCell.count} ticket{hoveredCell.count !== 1 ? 's' : ''} created
                 </div>
                 {hoveredCell.count > 0 && (
                   <div className="text-xs text-gray-300 mt-1">
-                    {hoveredCell.count === 1 ? 'Single ticket' : 
+                    {hoveredCell.count < 0.5 ? 'Very low activity' : 
                      hoveredCell.count <= p25 ? 'Low activity' :
                      hoveredCell.count <= p50 ? 'Medium activity' :
                      hoveredCell.count <= p75 ? 'High activity' : 'Peak activity'}
@@ -244,7 +232,7 @@ const HourlyHeatmap: React.FC = () => {
                             onBlur={() => setHoveredCell(null)}
                             tabIndex={0}
                             role="button"
-                            aria-label={`${formatDay(dayIndex)} ${getDateForDay(dayIndex)} ${formatTime(hour)}: ${count} tickets created`}
+                            aria-label={`${formatDay(dayIndex)} ${getTimeRange(hour)}: Average ${count} tickets created`}
                           />
                         );
                       })}
@@ -260,19 +248,19 @@ const HourlyHeatmap: React.FC = () => {
                 <Tooltip content="No activity" position="top">
                   <div className="w-6 h-6 rounded-sm bg-gray-800"></div>
                 </Tooltip>
-                <Tooltip content="1 ticket" position="top">
+                <Tooltip content="~1 ticket avg" position="top">
                   <div className="w-6 h-6 rounded-sm bg-green-900"></div>
                 </Tooltip>
-                <Tooltip content={`2-${p25} tickets`} position="top">
+                <Tooltip content={`~${p25} tickets avg`} position="top">
                   <div className="w-6 h-6 rounded-sm bg-green-800"></div>
                 </Tooltip>
-                <Tooltip content={`${p25+1}-${p50} tickets`} position="top">
+                <Tooltip content={`~${p50} tickets avg`} position="top">
                   <div className="w-6 h-6 rounded-sm bg-green-600"></div>
                 </Tooltip>
-                <Tooltip content={`${p50+1}-${p75} tickets`} position="top">
+                <Tooltip content={`~${p75} tickets avg`} position="top">
                   <div className="w-6 h-6 rounded-sm bg-green-500"></div>
                 </Tooltip>
-                <Tooltip content={`${p75+1}+ tickets`} position="top">
+                <Tooltip content={`${p75+1}+ tickets avg`} position="top">
                   <div className="w-6 h-6 rounded-sm bg-green-400"></div>
                 </Tooltip>
               </div>
@@ -283,7 +271,7 @@ const HourlyHeatmap: React.FC = () => {
             <div className="mt-2 text-xs text-gray-300 text-center">
               {nonZeroData.length > 0 && (
                 <span>
-                  {nonZeroData.length} active time slots • Max: {maxCount} tickets • Avg: {avgCount.toFixed(1)} tickets
+                  {nonZeroData.length} active time slots • Max: {maxCount.toFixed(1)} avg tickets • Overall avg: {avgCount.toFixed(1)} tickets
                 </span>
               )}
             </div>
@@ -294,14 +282,14 @@ const HourlyHeatmap: React.FC = () => {
       {/* Info Icon */}
       <InfoIcon
         title="Hourly Heatmap"
-        description="Visualizes ticket creation patterns across days of the week and hours of the day. Each cell represents a specific time slot, with color intensity indicating the number of tickets created."
+        description="Visualizes average ticket creation patterns across days of the week and hours of the day over the last 30 days. Each cell represents a specific time slot, with color intensity indicating the average number of tickets created."
         features={[
-          'Green intensity shows ticket creation volume',
-          'Lighter green = more tickets created',
+          'Green intensity shows average ticket creation volume',
+          'Lighter green = higher average ticket creation',
           'Hover cells for detailed statistics',
           'Monday to Sunday rows, 24-hour columns',
-          'Helps identify peak activity times',
-          'Shows weekly patterns and trends'
+          'Shows 30-day averages for better patterns',
+          'Helps identify peak activity times'
         ]}
         position="bottom-right"
       />

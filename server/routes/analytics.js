@@ -55,7 +55,7 @@ router.get('/hourly-heatmap', async (req, res) => {
     const result = {
       hourlyHeatmap: {
         data: hourlyHeatmapData,
-        period: '7 days'
+        period: '30 days (averages)'
       },
       generatedAt: new Date().toISOString()
     };
@@ -74,64 +74,5 @@ router.get('/hourly-heatmap', async (req, res) => {
   }
 });
 
-// Get comprehensive analytics dashboard data
-router.get('/dashboard', async (req, res) => {
-  try {
-    // Analytics dashboard endpoint called
-    const cacheKey = 'analytics:dashboard';
-    const cached = await cache.get(cacheKey);
-    
-    if (cached) {
-      // Returning cached analytics data
-      return res.json(cached);
-    }
-
-    // Fetching fresh analytics data
-    
-    // Fetch daily flow data
-    let dailyFlowData;
-    try {
-      dailyFlowData = await pylonService.getDailyFlowData();
-    } catch (error) {
-      console.error('Error fetching daily flow data:', error);
-      dailyFlowData = [];
-    }
-
-    // Fetch hourly heatmap data
-    let hourlyHeatmapData;
-    try {
-      const hourlyResponse = await pylonService.getHourlyTicketCreationData();
-      hourlyHeatmapData = hourlyResponse.data || [];
-    } catch (error) {
-      console.error('Error fetching hourly heatmap data:', error);
-      hourlyHeatmapData = [];
-    }
-
-    const result = {
-      dailyFlow: {
-        data: dailyFlowData,
-        period: '14 days'
-      },
-      hourlyHeatmap: {
-        data: hourlyHeatmapData,
-        period: '7 days'
-      },
-      generatedAt: new Date().toISOString()
-    };
-
-    // Analytics data prepared, attempting to cache
-
-    // Try to cache, but don't fail if Redis is not available
-    try {
-      await cache.set(cacheKey, result, 60); // Cache for 60 seconds
-    } catch (cacheError) {
-      // Cache not available, skipping cache set
-    }
-    res.json(result);
-  } catch (error) {
-    console.error('Error fetching dashboard analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard analytics' });
-  }
-});
 
 module.exports = router;

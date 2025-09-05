@@ -5,10 +5,13 @@ class PylonService {
   constructor() {
     this.baseURL = process.env.PYLON_API_URL;
     this.apiToken = process.env.PYLON_API_TOKEN;
+    this.isConfigured = !!(this.baseURL && this.apiToken);
     
-    if (!this.baseURL || !this.apiToken) {
+    if (!this.isConfigured) {
       console.error('❌ Pylon API configuration missing! Please check your .env file.');
       console.error('Required: PYLON_API_URL and PYLON_API_TOKEN');
+      // Create a dummy client that will throw errors
+      this.client = null;
       return;
     }
     
@@ -23,12 +26,17 @@ class PylonService {
   }
 
   // Generic API call method
-  async apiCall(endpoint, method = 'GET', data = null) {
+  async apiCall(endpoint, method = 'GET', data = null, params = null) {
+    if (!this.isConfigured) {
+      throw new Error('Pylon API not configured. Please check your environment variables.');
+    }
+    
     try {
       const response = await this.client({
         method,
         url: endpoint,
-        data
+        data,
+        params
       });
       return response.data;
     } catch (error) {
@@ -441,27 +449,14 @@ class PylonService {
       const endTime = dayjs();
       const startTime = endTime.subtract(days, 'day');
       
+      // Use the same format as daily flow data - direct time parameters
       const filter = {
-        search: true,
-        limit: 1000,
-        filter: {
-          operator: 'and',
-          subfilters: [
-            {
-              field: 'created_at',
-              operator: 'time_is_after',
-              value: startTime.toISOString()
-            },
-            {
-              field: 'created_at',
-              operator: 'time_is_before',
-              value: endTime.toISOString()
-            }
-          ]
-        }
+        limit: 2000, // Increased limit for better statistical significance
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString()
       };
 
-      const response = await this.apiCall('/issues/search', 'POST', filter);
+      const response = await this.apiCall('/issues', 'GET', null, filter);
       
       if (!response.data) {
         return { data: [] };
@@ -479,18 +474,47 @@ class PylonService {
         hourlyData[key] = (hourlyData[key] || 0) + 1;
       });
 
-      // Convert to array format
+      // Calculate how many times each day of week appears in the 30-day period
+      // For 30 days, each day of the week appears exactly 4-5 times
+      const startDate = dayjs().subtract(days, 'day');
+      const endDate = dayjs();
+      
+      // Count actual occurrences of each day of week in the period
+      const dayOccurrences = {};
+      for (let day = 0; day < 7; day++) {
+        dayOccurrences[day] = 0;
+      }
+      
+      // Count each day of week in the period
+      let currentDate = startDate;
+      while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
+        const dayOfWeek = currentDate.day();
+        dayOccurrences[dayOfWeek]++;
+        currentDate = currentDate.add(1, 'day');
+      }
+
+      // Convert to array format with averages
       const result = [];
+      console.log('Day occurrences in period:', dayOccurrences);
+      console.log('Total tickets processed:', response.data.length);
+      
       for (let day = 0; day < 7; day++) {
         for (let hour = 0; hour < 24; hour++) {
           const key = `${day}-${hour}`;
+          const totalCount = hourlyData[key] || 0;
+          const occurrences = dayOccurrences[day];
+          const averageCount = occurrences > 0 ? totalCount / occurrences : 0;
+          
           result.push({
             day,
             hour,
-            count: hourlyData[key] || 0
+            count: Math.round(averageCount * 100) / 100 // Round to 2 decimal places
           });
         }
       }
+      
+      console.log('Generated heatmap data points:', result.length);
+      console.log('Sample data points:', result.slice(0, 5));
 
       return { data: result };
     } catch (error) {
