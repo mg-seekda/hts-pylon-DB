@@ -1,11 +1,13 @@
 const database = require('./database');
 const pylonService = require('./pylonService');
 const TimezoneUtils = require('../utils/timezone');
+const TicketLifecycleAggregationService = require('./ticketLifecycleAggregation');
 
 class DailyIngestionService {
   constructor() {
     this.isRunning = false;
     this.lastRun = null;
+    this.aggregationService = new TicketLifecycleAggregationService();
   }
 
   async runDailyIngestion() {
@@ -106,6 +108,20 @@ class DailyIngestionService {
             updated_at = EXCLUDED.updated_at
         `, [assigneeId, assigneeName, new Date().toISOString()]);
       }
+
+      // Run ticket lifecycle aggregations
+      console.log('🔄 Running ticket lifecycle aggregations...');
+      
+      // Daily aggregation for yesterday
+      await this.aggregationService.runDailyAggregation(yesterday.toDate());
+      console.log('✅ Daily lifecycle aggregation completed');
+      
+      // Weekly aggregation for the previous week (run daily to catch any missed weeks)
+      const previousWeek = yesterday.subtract(1, 'week');
+      const year = previousWeek.isoYear();
+      const week = previousWeek.isoWeek();
+      await this.aggregationService.runWeeklyAggregation(year, week);
+      console.log(`✅ Weekly lifecycle aggregation completed for ${year}-W${week.toString().padStart(2, '0')}`);
 
       this.lastRun = new Date();
       console.log(`✅ Daily ingestion completed: ${tickets.length} tickets processed, ${Object.keys(assigneeCounts).length} assignees`);
