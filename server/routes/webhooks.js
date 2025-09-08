@@ -13,7 +13,16 @@ const verifyWebhookSignature = (req, res, next) => {
   const timestamp = req.headers['x-pylon-timestamp'];
   const webhookSecret = process.env.PYLON_WEBHOOK_SECRET;
 
+  console.log('🔐 Webhook authentication attempt:', {
+    hasSignature: !!signature,
+    hasTimestamp: !!timestamp,
+    hasSecret: !!webhookSecret,
+    timestamp: timestamp,
+    signature: signature ? `${signature.substring(0, 8)}...` : 'none'
+  });
+
   if (!signature || !timestamp || !webhookSecret) {
+    console.log('❌ Missing webhook authentication');
     return res.status(401).json({ error: 'Missing webhook authentication' });
   }
 
@@ -22,6 +31,7 @@ const verifyWebhookSignature = (req, res, next) => {
   const webhookTime = parseInt(timestamp);
   
   if (Math.abs(now - webhookTime) > 300) { // 5 minutes
+    console.log('❌ Request timestamp too old:', { now, webhookTime, diff: Math.abs(now - webhookTime) });
     return res.status(401).json({ error: 'Request timestamp too old' });
   }
 
@@ -33,9 +43,14 @@ const verifyWebhookSignature = (req, res, next) => {
     .digest('hex');
 
   if (signature !== expectedSignature) {
+    console.log('❌ Invalid webhook signature:', {
+      expected: `${expectedSignature.substring(0, 8)}...`,
+      received: `${signature.substring(0, 8)}...`
+    });
     return res.status(401).json({ error: 'Invalid webhook signature' });
   }
 
+  console.log('✅ Webhook authenticated successfully');
   next();
 };
 
@@ -49,17 +64,28 @@ const verifyWebhookSignature = (req, res, next) => {
 // Note: event_id and occurred_at are generated server-side
 router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
   try {
+    console.log('📥 Webhook received:', {
+      type: req.body.type,
+      ticket_id: req.body.ticket_id,
+      status: req.body.status,
+      timestamp: new Date().toISOString()
+    });
+
     const { type, ticket_id, status } = req.body;
 
     // Validate required fields
     if (!type || !ticket_id || !status) {
+      console.log('❌ Missing required fields:', { type, ticket_id, status });
       return res.status(400).json({ 
         error: 'Missing required fields: type, ticket_id, status' 
       });
     }
 
+    console.log('✅ Webhook validation passed');
+
     // Only process status change and creation events
     if (!['ticket.status_changed', 'ticket.created'].includes(type)) {
+      console.log('ℹ️ Event type not relevant for lifecycle tracking:', type);
       return res.status(200).json({ message: 'Event type not relevant for lifecycle tracking' });
     }
 
@@ -69,6 +95,8 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
     // Use current server time as occurred_at
     const occurredAt = new Date();
 
+    console.log('🆔 Generated event details:', { eventId, occurredAt: occurredAt.toISOString() });
+
     // Check for duplicate events (using our generated event_id)
     const existingEvent = await databaseService.query(
       'SELECT id FROM ticket_status_events WHERE event_id = $1',
@@ -76,6 +104,7 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
     );
 
     if (existingEvent.rows.length > 0) {
+      console.log('⚠️ Event already processed:', eventId);
       return res.status(200).json({ message: 'Event already processed' });
     }
 
@@ -85,15 +114,18 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
     `, [eventId, ticket_id, status, occurredAt.toISOString(), JSON.stringify(req.body)]);
 
+    console.log('💾 Event stored in database:', eventId);
+
     // Enqueue segment processing (async)
     processTicketSegments(ticket_id).catch(error => {
       console.error(`Error processing segments for ticket ${ticket_id}:`, error);
     });
 
+    console.log('✅ Webhook processed successfully');
     res.status(200).json({ message: 'Event processed successfully' });
 
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error('❌ Webhook processing error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -164,6 +196,7 @@ async function processTicketSegments(ticketId) {
 
 // Health check endpoint
 router.get('/health', (req, res) => {
+  console.log('🏥 Health check requested');
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
