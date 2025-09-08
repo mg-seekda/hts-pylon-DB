@@ -21,18 +21,6 @@ const verifyWebhookSignature = (req, res, next) => {
     signature: signature ? `${signature.substring(0, 8)}...` : 'none'
   });
 
-  // Debug: Log all headers and body
-  console.log('📋 All headers:', req.headers);
-  console.log('📦 Request body:', req.body);
-  console.log('📦 Body type:', typeof req.body);
-  console.log('📦 Body stringified:', JSON.stringify(req.body));
-
-  // For now, let's bypass authentication to see what Pylon is actually sending
-  console.log('⚠️ BYPASSING AUTHENTICATION FOR DEBUGGING');
-  next();
-  
-  // Original authentication code (commented out for debugging)
-  /*
   if (!signature || !webhookSecret) {
     console.log('❌ Missing webhook authentication');
     return res.status(401).json({ error: 'Missing webhook authentication' });
@@ -49,38 +37,24 @@ const verifyWebhookSignature = (req, res, next) => {
     }
   }
 
-  // Verify signature - Pylon uses different signature format
+  // Verify signature - Pylon uses payload-only format
   const payload = JSON.stringify(req.body);
-  
-  // Try different signature formats that Pylon might use
-  let expectedSignature;
-  
-  if (timestamp) {
-    // Format 1: timestamp + payload (our original format)
-    expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(timestamp + payload)
-      .digest('hex');
-  } else {
-    // Format 2: just payload (common webhook format)
-    expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(payload)
-      .digest('hex');
-  }
+  const expectedSignature = crypto
+    .createHmac('sha256', webhookSecret)
+    .update(payload)
+    .digest('hex');
 
   if (signature !== expectedSignature) {
     console.log('❌ Invalid webhook signature:', {
       expected: `${expectedSignature.substring(0, 8)}...`,
       received: `${signature.substring(0, 8)}...`,
-      format: timestamp ? 'timestamp+payload' : 'payload-only'
+      format: 'payload-only'
     });
     return res.status(401).json({ error: 'Invalid webhook signature' });
   }
 
   console.log('✅ Webhook authenticated successfully');
   next();
-  */
 };
 
 // POST /webhooks/pylon/tickets
