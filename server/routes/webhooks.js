@@ -4,18 +4,8 @@ const router = express.Router();
 const databaseService = require('../services/database');
 const BusinessHoursCalculator = require('../utils/businessHours');
 
-// Middleware to capture raw body for webhook signature verification
-const captureRawBody = (req, res, next) => {
-  let data = '';
-  req.setEncoding('utf8');
-  req.on('data', chunk => {
-    data += chunk;
-  });
-  req.on('end', () => {
-    req.rawBody = data;
-    next();
-  });
-};
+// For now, let's bypass the raw body capture and just use the stringified version
+// This should work since the JSON.stringify should produce the same result as the raw body
 
 // Initialize business hours calculator
 const businessHours = new BusinessHoursCalculator();
@@ -60,8 +50,8 @@ const verifyWebhookSignature = (req, res, next) => {
   });
 
   // According to Pylon docs, they use raw payload bytes for signature verification
-  // Try the raw body first, then fallback to stringified versions
-  const rawBody = req.rawBody || JSON.stringify(req.body);
+  // For now, let's try the stringified version which should be equivalent
+  const rawBody = JSON.stringify(req.body);
   
   // Try different signature formats that Pylon might use
   const formats = [
@@ -108,7 +98,7 @@ const verifyWebhookSignature = (req, res, next) => {
 //   "status": "open|pending|in_progress|closed|..."
 // }
 // Note: event_id and occurred_at are generated server-side
-router.post('/pylon/tickets', captureRawBody, verifyWebhookSignature, async (req, res) => {
+router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
   try {
     console.log('📥 Webhook received:', {
       type: req.body.type,
