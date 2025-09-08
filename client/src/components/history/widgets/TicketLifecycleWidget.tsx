@@ -45,8 +45,17 @@ const TicketLifecycleWidget: React.FC = () => {
   // Initialize with default values
   useEffect(() => {
     const thisWeek = presets.thisWeek;
-    setFromDate(thisWeek.from);
-    setToDate(thisWeek.to);
+    if (thisWeek && thisWeek.from && thisWeek.to) {
+      setFromDate(thisWeek.from);
+      setToDate(thisWeek.to);
+    } else {
+      // Fallback to current week if presets not available
+      const today = dayjs();
+      const weekStart = today.startOf('week').add(1, 'day'); // Monday
+      const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
+      setFromDate(weekStart.format('YYYY-MM-DD'));
+      setToDate(weekEnd.format('YYYY-MM-DD'));
+    }
   }, [presets.thisWeek]);
 
   // Color palette for different statuses
@@ -63,6 +72,12 @@ const TicketLifecycleWidget: React.FC = () => {
   };
 
   const fetchData = useCallback(async () => {
+    // Don't fetch if dates are not set
+    if (!fromDate || !toDate) {
+      console.log('Skipping fetch - dates not set yet');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -173,80 +188,126 @@ const TicketLifecycleWidget: React.FC = () => {
     setGrouping(newBucket);
   };
 
-  if (loading && !data) {
-    return (
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">Ticket Lifecycle</h3>
+  // Render content based on state
+  const renderContent = () => {
+    if (loading && !data) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2 text-gray-400">
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            Loading lifecycle data...
           </div>
         </div>
-        <div className="card-body">
-          <div className="flex items-center justify-center h-64">
-            <div className="flex items-center gap-2 text-gray-400">
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Loading lifecycle data...
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">Ticket Lifecycle</h3>
+    if (error) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="text-red-400 mb-2">Error loading data</div>
+            <div className="text-gray-400 text-sm mb-4">{error}</div>
+            <button
+              onClick={handleRefresh}
+              className="btn btn-primary btn-sm"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry
+            </button>
           </div>
         </div>
-        <div className="card-body">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="text-red-400 mb-2">Error loading data</div>
-              <div className="text-gray-400 text-sm mb-4">{error}</div>
-              <button
-                onClick={handleRefresh}
-                className="btn btn-primary btn-sm"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!data || data.data.length === 0) {
-    return (
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">Ticket Lifecycle</h3>
-            <InfoIcon 
-              title="Ticket Lifecycle"
-              description="Shows average time spent in each ticket status. Data collection starts when this feature ships."
-            />
+    if (!data || data.data.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center text-gray-400">
+            <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <div className="text-lg mb-2">No data yet</div>
+            <div className="text-sm">Lifecycle tracking started on deployment date</div>
           </div>
         </div>
-        <div className="card-body">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center text-gray-400">
-              <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <div className="text-lg mb-2">No data yet</div>
-              <div className="text-sm">Lifecycle tracking started on deployment date</div>
+      );
+    }
+
+    return (
+      <>
+        {/* Chart */}
+        <div style={{ height: '400px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis 
+                dataKey="date" 
+                tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                tickFormatter={formatDate}
+              />
+              <YAxis 
+                tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                tickFormatter={(value) => formatDuration(value)}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#111827', 
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#F9FAFB',
+                  fontSize: '12px',
+                  padding: '8px 12px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                }}
+                labelStyle={{
+                  color: '#F9FAFB',
+                  fontSize: '12px',
+                  fontWeight: '500'
+                }}
+                itemStyle={{
+                  color: '#F9FAFB',
+                  fontSize: '12px'
+                }}
+                labelFormatter={(value) => `Date: ${formatDate(value)}`}
+                formatter={(value, name) => [
+                  formatDuration(value as number),
+                  name
+                ]}
+              />
+              <Legend />
+              {selectedStatuses.map(status => (
+                <Bar
+                  key={status}
+                  dataKey={status}
+                  stackId="status"
+                  fill={statusColors[status] || '#6B7280'}
+                  name={status}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Summary Stats */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Total Samples</div>
+            <div className="text-2xl font-bold text-white">{data.totalSamples.toLocaleString()}</div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Time Period</div>
+            <div className="text-lg font-semibold text-white">
+              {dayjs(data.from).format('MMM DD')} - {dayjs(data.to).format('MMM DD')}
+            </div>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Grouping</div>
+            <div className="text-lg font-semibold text-white capitalize">
+              {data.grouping}
             </div>
           </div>
         </div>
-      </div>
+      </>
     );
-  }
+  };
 
   return (
     <div className="card">
@@ -274,7 +335,7 @@ const TicketLifecycleWidget: React.FC = () => {
       </div>
 
       <div className="card-body">
-        {/* Date Range and Grouping Controls */}
+        {/* Date Range and Grouping Controls - Always Visible */}
         <div className="bg-gray-800 rounded-lg p-4 mb-6 border border-gray-700">
           <div className="flex flex-wrap items-center gap-4">
             {/* Preset Selector */}
@@ -385,7 +446,7 @@ const TicketLifecycleWidget: React.FC = () => {
           </div>
         </div>
 
-        {/* Widget-specific Controls */}
+        {/* Widget-specific Controls - Always Visible */}
         <div className="flex flex-wrap items-center gap-4 mb-6">
           {/* Hours Mode Toggle */}
           <div className="flex items-center gap-2">
@@ -437,78 +498,8 @@ const TicketLifecycleWidget: React.FC = () => {
           </div>
         </div>
 
-        {/* Chart */}
-        <div style={{ height: '400px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={formatDate}
-              />
-              <YAxis 
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => formatDuration(value)}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#111827', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB',
-                  fontSize: '12px',
-                  padding: '8px 12px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                }}
-                labelStyle={{
-                  color: '#F9FAFB',
-                  fontSize: '12px',
-                  fontWeight: '500'
-                }}
-                itemStyle={{
-                  color: '#F9FAFB',
-                  fontSize: '12px'
-                }}
-                labelFormatter={(value) => `Date: ${formatDate(value)}`}
-                formatter={(value, name) => [
-                  formatDuration(value as number),
-                  name
-                ]}
-              />
-              <Legend />
-              {selectedStatuses.map(status => (
-                <Bar
-                  key={status}
-                  dataKey={status}
-                  stackId="status"
-                  fill={statusColors[status] || '#6B7280'}
-                  name={status}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Total Samples</div>
-            <div className="text-2xl font-bold text-white">{data.totalSamples.toLocaleString()}</div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Time Period</div>
-            <div className="text-lg font-semibold text-white">
-              {dayjs(data.from).format('MMM DD')} - {dayjs(data.to).format('MMM DD')}
-            </div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Grouping</div>
-            <div className="text-lg font-semibold text-white capitalize">
-              {data.grouping}
-            </div>
-          </div>
-        </div>
+        {/* Dynamic Content */}
+        {renderContent()}
       </div>
     </div>
   );
