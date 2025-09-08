@@ -233,6 +233,63 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// GET /api/ticket-lifecycle/date-range
+router.get('/date-range', async (req, res) => {
+  try {
+    const cacheKey = 'ticket-lifecycle:date-range';
+    
+    // Try to get from cache first
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
+    // Get the actual date range where we have data
+    const [earliestData, latestData] = await Promise.all([
+      databaseService.query(`
+        SELECT MIN(bucket_date) as earliest_date 
+        FROM ticket_status_agg_daily 
+        WHERE count_segments > 0
+      `),
+      databaseService.query(`
+        SELECT MAX(bucket_date) as latest_date 
+        FROM ticket_status_agg_daily 
+        WHERE count_segments > 0
+      `)
+    ]);
+
+    const earliestDate = earliestData.rows[0]?.earliest_date;
+    const latestDate = latestData.rows[0]?.latest_date;
+
+    if (!earliestDate || !latestDate) {
+      return res.json({
+        hasData: false,
+        message: 'No ticket lifecycle data available yet'
+      });
+    }
+
+    const dateRange = {
+      hasData: true,
+      from: earliestDate,
+      to: latestDate,
+      fromFormatted: dayjs(earliestDate).format('YYYY-MM-DD'),
+      toFormatted: dayjs(latestDate).format('YYYY-MM-DD'),
+      totalDays: dayjs(latestDate).diff(dayjs(earliestDate), 'day') + 1
+    };
+
+    // Cache for 10 minutes
+    await cache.set(cacheKey, dateRange, 600);
+
+    res.json(dateRange);
+
+  } catch (error) {
+    console.error('Error fetching ticket lifecycle date range:', error);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
 // Helper function to determine cache TTL based on date range
 function getCacheTTL(from, to) {
   const fromDate = dayjs(from);

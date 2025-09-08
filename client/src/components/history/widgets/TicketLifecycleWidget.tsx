@@ -42,21 +42,49 @@ const TicketLifecycleWidget: React.FC = () => {
 
   const presets = TimezoneUtils.getDatePresets();
 
-  // Initialize with default values
+  // Initialize with default values - fetch actual data range
   useEffect(() => {
-    const thisWeek = presets.thisWeek;
-    if (thisWeek && thisWeek.from && thisWeek.to) {
-      setFromDate(thisWeek.from);
-      setToDate(thisWeek.to);
-    } else {
-      // Fallback to current week if presets not available
-      const today = dayjs();
-      const weekStart = today.startOf('week').add(1, 'day'); // Monday
-      const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
-      setFromDate(weekStart.format('YYYY-MM-DD'));
-      setToDate(weekEnd.format('YYYY-MM-DD'));
-    }
-  }, [presets.thisWeek]);
+    const initializeWithKnownData = async () => {
+      try {
+        const response = await fetch('/api/ticket-lifecycle/date-range');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.hasData) {
+            setFromDate(data.fromFormatted);
+            setToDate(data.toFormatted);
+            setSelectedPreset('knownData');
+          } else {
+            // Fallback to current week if no data available
+            const today = dayjs();
+            const weekStart = today.startOf('week').add(1, 'day'); // Monday
+            const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
+            setFromDate(weekStart.format('YYYY-MM-DD'));
+            setToDate(weekEnd.format('YYYY-MM-DD'));
+            setSelectedPreset('');
+          }
+        } else {
+          // Fallback to current week if API fails
+          const today = dayjs();
+          const weekStart = today.startOf('week').add(1, 'day'); // Monday
+          const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
+          setFromDate(weekStart.format('YYYY-MM-DD'));
+          setToDate(weekEnd.format('YYYY-MM-DD'));
+          setSelectedPreset('');
+        }
+      } catch (error) {
+        console.error('Error fetching known data range:', error);
+        // Fallback to current week if error
+        const today = dayjs();
+        const weekStart = today.startOf('week').add(1, 'day'); // Monday
+        const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
+        setFromDate(weekStart.format('YYYY-MM-DD'));
+        setToDate(weekEnd.format('YYYY-MM-DD'));
+        setSelectedPreset('');
+      }
+    };
+
+    initializeWithKnownData();
+  }, []);
 
   // Color palette for different statuses
   const statusColors: { [key: string]: string } = {
@@ -347,7 +375,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 className="btn btn-secondary flex items-center space-x-2"
               >
                 <Calendar className="w-4 h-4" />
-                <span>{selectedPreset ? presets[selectedPreset as keyof typeof presets]?.label : 'Select Preset'}</span>
+                <span>{selectedPreset === 'knownData' ? 'Known Data' : selectedPreset ? presets[selectedPreset as keyof typeof presets]?.label : 'Select Preset'}</span>
                 <ChevronDown className="w-4 h-4" />
               </motion.button>
 
@@ -359,6 +387,32 @@ const TicketLifecycleWidget: React.FC = () => {
                   className="absolute top-full left-0 mt-2 w-48 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-50"
                 >
                   <div className="py-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/ticket-lifecycle/date-range');
+                          if (response.ok) {
+                            const data = await response.json();
+                            if (data.hasData) {
+                              setFromDate(data.fromFormatted);
+                              setToDate(data.toFormatted);
+                              setSelectedPreset('knownData');
+                              setIsCustomRange(false);
+                              setIsPresetOpen(false);
+                            } else {
+                              console.log('No ticket lifecycle data available yet');
+                              setIsPresetOpen(false);
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Error fetching known data range:', error);
+                          setIsPresetOpen(false);
+                        }
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 transition-colors"
+                    >
+                      Known Data
+                    </button>
                     {Object.entries(presets).map(([key, preset]) => (
                       <button
                         key={key}
@@ -437,6 +491,47 @@ const TicketLifecycleWidget: React.FC = () => {
                   Week
                 </button>
               </div>
+            </div>
+
+            {/* Quick buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/ticket-lifecycle/date-range');
+                    if (response.ok) {
+                      const data = await response.json();
+                      if (data.hasData) {
+                        setFromDate(data.fromFormatted);
+                        setToDate(data.toFormatted);
+                        setSelectedPreset('knownData');
+                        setIsCustomRange(false);
+                      } else {
+                        // Show message if no data available
+                        console.log('No ticket lifecycle data available yet');
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error fetching known data range:', error);
+                  }
+                }}
+                className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition-colors"
+              >
+                Known Data
+              </button>
+              <button
+                onClick={() => {
+                  const today = dayjs();
+                  const weekAgo = today.subtract(7, 'day');
+                  setFromDate(weekAgo.format('YYYY-MM-DD'));
+                  setToDate(today.format('YYYY-MM-DD'));
+                  setSelectedPreset('');
+                  setIsCustomRange(true);
+                }}
+                className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+              >
+                Last 7 Days
+              </button>
             </div>
 
             {/* Timezone Indicator */}
