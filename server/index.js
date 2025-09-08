@@ -29,7 +29,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parsing
+// Webhook routes need raw body access before JSON parsing
+app.use('/webhooks', express.raw({ type: 'application/json' }), require('./routes/webhooks'));
+
+// Body parsing for other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -47,7 +50,6 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/history', require('./routes/history'));
 app.use('/api/ticket-lifecycle', require('./routes/ticketLifecycle'));
-app.use('/webhooks', require('./routes/webhooks'));
 
 // Health check
 app.get('/api/health', (req, res) => {
