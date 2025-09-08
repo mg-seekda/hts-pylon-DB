@@ -37,21 +37,49 @@ const verifyWebhookSignature = (req, res, next) => {
     }
   }
 
-  // Verify signature - Pylon uses payload-only format
+  // Debug: Let's see what Pylon is actually sending
   const payload = JSON.stringify(req.body);
-  const expectedSignature = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(payload)
-    .digest('hex');
+  console.log('🔍 Debug signature verification:', {
+    payload: payload,
+    payloadLength: payload.length,
+    webhookSecret: webhookSecret,
+    receivedSignature: signature
+  });
 
-  if (signature !== expectedSignature) {
-    console.log('❌ Invalid webhook signature:', {
-      expected: `${expectedSignature.substring(0, 8)}...`,
-      received: `${signature.substring(0, 8)}...`,
-      format: 'payload-only'
+  // Try different signature formats that Pylon might use
+  const formats = [
+    { name: 'payload-only', data: payload },
+    { name: 'payload-raw', data: req.body },
+    { name: 'payload-stringified-raw', data: JSON.stringify(req.body, null, 0) },
+    { name: 'payload-with-timestamp', data: `${Date.now()}${payload}` },
+    { name: 'payload-with-content-type', data: `application/json${payload}` }
+  ];
+
+  let validSignature = null;
+  for (const format of formats) {
+    const testSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(format.data)
+      .digest('hex');
+    
+    console.log(`🧪 Testing ${format.name}:`, {
+      data: format.data.substring(0, 100) + '...',
+      signature: `${testSignature.substring(0, 8)}...`,
+      matches: testSignature === signature
     });
+    
+    if (testSignature === signature) {
+      validSignature = format.name;
+      break;
+    }
+  }
+
+  if (!validSignature) {
+    console.log('❌ No matching signature format found');
     return res.status(401).json({ error: 'Invalid webhook signature' });
   }
+
+  console.log(`✅ Signature verified using format: ${validSignature}`);
 
   console.log('✅ Webhook authenticated successfully');
   next();
