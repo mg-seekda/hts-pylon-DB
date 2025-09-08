@@ -21,31 +21,47 @@ const verifyWebhookSignature = (req, res, next) => {
     signature: signature ? `${signature.substring(0, 8)}...` : 'none'
   });
 
-  if (!signature || !timestamp || !webhookSecret) {
+  if (!signature || !webhookSecret) {
     console.log('❌ Missing webhook authentication');
     return res.status(401).json({ error: 'Missing webhook authentication' });
   }
 
-  // Check timestamp to prevent replay attacks (5 minute window)
-  const now = Math.floor(Date.now() / 1000);
-  const webhookTime = parseInt(timestamp);
-  
-  if (Math.abs(now - webhookTime) > 300) { // 5 minutes
-    console.log('❌ Request timestamp too old:', { now, webhookTime, diff: Math.abs(now - webhookTime) });
-    return res.status(401).json({ error: 'Request timestamp too old' });
+  // If timestamp is provided, check for replay attacks (5 minute window)
+  if (timestamp) {
+    const now = Math.floor(Date.now() / 1000);
+    const webhookTime = parseInt(timestamp);
+    
+    if (Math.abs(now - webhookTime) > 300) { // 5 minutes
+      console.log('❌ Request timestamp too old:', { now, webhookTime, diff: Math.abs(now - webhookTime) });
+      return res.status(401).json({ error: 'Request timestamp too old' });
+    }
   }
 
-  // Verify signature
+  // Verify signature - Pylon uses different signature format
   const payload = JSON.stringify(req.body);
-  const expectedSignature = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(timestamp + payload)
-    .digest('hex');
+  
+  // Try different signature formats that Pylon might use
+  let expectedSignature;
+  
+  if (timestamp) {
+    // Format 1: timestamp + payload (our original format)
+    expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(timestamp + payload)
+      .digest('hex');
+  } else {
+    // Format 2: just payload (common webhook format)
+    expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(payload)
+      .digest('hex');
+  }
 
   if (signature !== expectedSignature) {
     console.log('❌ Invalid webhook signature:', {
       expected: `${expectedSignature.substring(0, 8)}...`,
-      received: `${signature.substring(0, 8)}...`
+      received: `${signature.substring(0, 8)}...`,
+      format: timestamp ? 'timestamp+payload' : 'payload-only'
     });
     return res.status(401).json({ error: 'Invalid webhook signature' });
   }
