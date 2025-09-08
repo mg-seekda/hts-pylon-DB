@@ -40,8 +40,8 @@ const verifyWebhookSignature = (req, res, next) => {
     }
   }
 
-  // Now we have the raw body as a Buffer
-  const rawBody = req.body.toString('utf8');
+  // Get the raw body from our custom middleware
+  const rawBody = req.rawBody || req.body.toString('utf8');
   const payload = rawBody;
   
   console.log('🔍 Debug signature verification:', {
@@ -122,8 +122,8 @@ const verifyWebhookSignature = (req, res, next) => {
 // Note: event_id and occurred_at are generated server-side
 router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
   try {
-    // Parse the JSON from the raw body
-    const body = JSON.parse(req.body.toString('utf8'));
+    // Use the parsed body from our custom middleware
+    const body = req.body;
     
     console.log('📥 Webhook received:', {
       type: body.type,

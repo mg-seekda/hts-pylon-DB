@@ -30,7 +30,22 @@ app.use(cors({
 }));
 
 // Webhook routes need raw body access before JSON parsing
-app.use('/webhooks', express.raw({ type: 'application/json' }), require('./routes/webhooks'));
+app.use('/webhooks', (req, res, next) => {
+  if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      req.rawBody = data;
+      req.body = JSON.parse(data);
+      next();
+    });
+  } else {
+    next();
+  }
+}, require('./routes/webhooks'));
 
 // Body parsing for other routes
 app.use(express.json());
