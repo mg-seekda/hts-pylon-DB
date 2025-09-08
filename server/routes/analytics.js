@@ -26,7 +26,7 @@ async function refreshDailyFlowInBackground(cacheKey) {
 
 async function refreshHourlyHeatmapInBackground(cacheKey) {
   try {
-    console.log('Background refresh: Hourly heatmap data');
+    // Background refresh: Hourly heatmap data
     const hourlyResponse = await pylonService.getHourlyTicketCreationData();
     const hourlyHeatmapData = hourlyResponse.data || [];
     
@@ -39,7 +39,7 @@ async function refreshHourlyHeatmapInBackground(cacheKey) {
     };
 
     await cache.setWithMetadata(cacheKey, result, 3600, 3600);
-    console.log('Background refresh completed: Hourly heatmap data');
+    // Background refresh completed: Hourly heatmap data
   } catch (error) {
     console.error('Background refresh failed: Hourly heatmap data', error);
   }

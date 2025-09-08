@@ -515,7 +515,7 @@ class PylonService {
         }
       }
       
-      console.log('Generated heatmap data points:', result.length);
+      // Heatmap data generated
       console.log('Sample data points:', result.slice(0, 5));
 
       return { data: result };

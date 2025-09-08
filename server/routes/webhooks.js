@@ -16,13 +16,7 @@ const verifyWebhookSignature = (req, res, next) => {
   const timestamp = req.headers['x-pylon-timestamp'];
   const webhookSecret = process.env.PYLON_WEBHOOK_SECRET;
 
-  console.log('🔐 Webhook authentication attempt:', {
-    hasSignature: !!signature,
-    hasTimestamp: !!timestamp,
-    hasSecret: !!webhookSecret,
-    timestamp: timestamp,
-    signature: signature ? `${signature.substring(0, 8)}...` : 'none'
-  });
+  // Webhook authentication logging removed for production
 
   if (!signature || !webhookSecret) {
     console.log('❌ Missing webhook authentication');
@@ -42,73 +36,18 @@ const verifyWebhookSignature = (req, res, next) => {
 
   // Get the raw body from our custom middleware
   const rawBody = req.rawBody || req.body.toString('utf8');
-  const payload = rawBody;
   
-  console.log('🔍 Debug signature verification:', {
-    payload: payload,
-    payloadLength: payload.length,
-    webhookSecret: webhookSecret,
-    receivedSignature: signature
-  });
-
-  // According to Pylon docs, they use raw payload bytes for signature verification
-  // Now we have the exact raw bytes that Pylon used
-  
-  // According to Pylon docs, we should use the raw payload bytes directly
-  // Let's test the exact format they specify: HMAC-SHA256 of raw payload bytes
+  // Verify signature using Pylon's format: HMAC-SHA256 of raw payload bytes
   const expectedSignature = crypto
     .createHmac('sha256', webhookSecret)
     .update(rawBody)
     .digest('hex');
 
-  console.log('🧪 Testing Pylon signature format:', {
-    data: rawBody.substring(0, 100) + '...',
-    expected: `${expectedSignature.substring(0, 8)}...`,
-    received: `${signature.substring(0, 8)}...`,
-    matches: expectedSignature === signature
-  });
-
-  if (expectedSignature === signature) {
-    console.log('✅ Signature verified using Pylon format');
-    next();
-    return;
+  if (expectedSignature !== signature) {
+    console.log('❌ Invalid webhook signature');
+    return res.status(401).json({ error: 'Invalid webhook signature' });
   }
 
-  // If the standard format doesn't work, try a few variations
-  const formats = [
-    { name: 'payload-raw-bytes', data: rawBody },
-    { name: 'payload-base64', data: Buffer.from(rawBody).toString('base64') },
-    { name: 'payload-with-secret-prefix', data: `sha256=${webhookSecret}${rawBody}` }
-  ];
-
-  let validSignature = null;
-  for (const format of formats) {
-    const testSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(format.data)
-      .digest('hex');
-    
-    console.log(`🧪 Testing ${format.name}:`, {
-      data: format.data.substring(0, 100) + '...',
-      signature: `${testSignature.substring(0, 8)}...`,
-      matches: testSignature === signature
-    });
-    
-    if (testSignature === signature) {
-      validSignature = format.name;
-      break;
-    }
-  }
-
-  if (!validSignature) {
-    console.log('❌ No matching signature format found - BYPASSING AUTHENTICATION FOR NOW');
-    // TODO: Fix signature verification once we find the correct format
-    // return res.status(401).json({ error: 'Invalid webhook signature' });
-  } else {
-    console.log(`✅ Signature verified using format: ${validSignature}`);
-  }
-
-  console.log('✅ Webhook authenticated successfully (bypassed)');
   next();
 };
 
@@ -125,28 +64,19 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
     // Use the parsed body from our custom middleware
     const body = req.body;
     
-    console.log('📥 Webhook received:', {
-      type: body.type,
-      ticket_id: body.ticket_id,
-      status: body.status,
-      timestamp: new Date().toISOString()
-    });
+    // Webhook received - processing event
 
     const { type, ticket_id, status } = body;
 
     // Validate required fields
     if (!type || !ticket_id || !status) {
-      console.log('❌ Missing required fields:', { type, ticket_id, status });
       return res.status(400).json({ 
         error: 'Missing required fields: type, ticket_id, status' 
       });
     }
 
-    console.log('✅ Webhook validation passed');
-
     // Only process status change and creation events
     if (!['ticket.status_changed', 'ticket.created'].includes(type)) {
-      console.log('ℹ️ Event type not relevant for lifecycle tracking:', type);
       return res.status(200).json({ message: 'Event type not relevant for lifecycle tracking' });
     }
 
@@ -156,8 +86,6 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
     // Use current server time as occurred_at
     const occurredAt = new Date();
 
-    console.log('🆔 Generated event details:', { eventId, occurredAt: occurredAt.toISOString() });
-
     // Check for duplicate events (using our generated event_id)
     const existingEvent = await databaseService.query(
       'SELECT id FROM ticket_status_events WHERE event_id = $1',
@@ -165,7 +93,6 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
     );
 
     if (existingEvent.rows.length > 0) {
-      console.log('⚠️ Event already processed:', eventId);
       return res.status(200).json({ message: 'Event already processed' });
     }
 
@@ -175,14 +102,11 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
       VALUES ($1, $2, $3, $4, $5)
     `, [eventId, ticket_id, status, occurredAt.toISOString(), JSON.stringify(body)]);
 
-    console.log('💾 Event stored in database:', eventId);
-
     // Enqueue segment processing (async)
     processTicketSegments(ticket_id).catch(error => {
       console.error(`Error processing segments for ticket ${ticket_id}:`, error);
     });
 
-    console.log('✅ Webhook processed successfully');
     res.status(200).json({ message: 'Event processed successfully' });
 
   } catch (error) {
@@ -247,7 +171,7 @@ async function processTicketSegments(ticketId) {
       }
     }
 
-    console.log(`✅ Processed segments for ticket ${ticketId}`);
+    // Segments processed successfully
 
   } catch (error) {
     console.error(`Error processing segments for ticket ${ticketId}:`, error);
@@ -257,7 +181,6 @@ async function processTicketSegments(ticketId) {
 
 // Health check endpoint
 router.get('/health', (req, res) => {
-  console.log('🏥 Health check requested');
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
