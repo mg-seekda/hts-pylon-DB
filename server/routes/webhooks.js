@@ -49,10 +49,15 @@ const verifyWebhookSignature = (req, res, next) => {
   // Try different signature formats that Pylon might use
   const formats = [
     { name: 'payload-only', data: payload },
-    { name: 'payload-raw', data: req.body },
+    { name: 'payload-raw', data: JSON.stringify(req.body) },
     { name: 'payload-stringified-raw', data: JSON.stringify(req.body, null, 0) },
     { name: 'payload-with-timestamp', data: `${Date.now()}${payload}` },
-    { name: 'payload-with-content-type', data: `application/json${payload}` }
+    { name: 'payload-with-content-type', data: `application/json${payload}` },
+    { name: 'payload-sha256', data: crypto.createHash('sha256').update(payload).digest('hex') },
+    { name: 'payload-base64', data: Buffer.from(payload).toString('base64') },
+    { name: 'payload-url-encoded', data: encodeURIComponent(payload) },
+    { name: 'payload-with-secret', data: `${webhookSecret}${payload}` },
+    { name: 'payload-with-secret-prefix', data: `sha256=${webhookSecret}${payload}` }
   ];
 
   let validSignature = null;
