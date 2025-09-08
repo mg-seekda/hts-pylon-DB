@@ -4,6 +4,19 @@ const router = express.Router();
 const databaseService = require('../services/database');
 const BusinessHoursCalculator = require('../utils/businessHours');
 
+// Middleware to capture raw body for webhook signature verification
+const captureRawBody = (req, res, next) => {
+  let data = '';
+  req.setEncoding('utf8');
+  req.on('data', chunk => {
+    data += chunk;
+  });
+  req.on('end', () => {
+    req.rawBody = data;
+    next();
+  });
+};
+
 // Initialize business hours calculator
 const businessHours = new BusinessHoursCalculator();
 
@@ -46,18 +59,15 @@ const verifyWebhookSignature = (req, res, next) => {
     receivedSignature: signature
   });
 
+  // According to Pylon docs, they use raw payload bytes for signature verification
+  // Try the raw body first, then fallback to stringified versions
+  const rawBody = req.rawBody || JSON.stringify(req.body);
+  
   // Try different signature formats that Pylon might use
   const formats = [
-    { name: 'payload-only', data: payload },
-    { name: 'payload-raw', data: JSON.stringify(req.body) },
-    { name: 'payload-stringified-raw', data: JSON.stringify(req.body, null, 0) },
-    { name: 'payload-with-timestamp', data: `${Date.now()}${payload}` },
-    { name: 'payload-with-content-type', data: `application/json${payload}` },
-    { name: 'payload-sha256', data: crypto.createHash('sha256').update(payload).digest('hex') },
-    { name: 'payload-base64', data: Buffer.from(payload).toString('base64') },
-    { name: 'payload-url-encoded', data: encodeURIComponent(payload) },
-    { name: 'payload-with-secret', data: `${webhookSecret}${payload}` },
-    { name: 'payload-with-secret-prefix', data: `sha256=${webhookSecret}${payload}` }
+    { name: 'payload-raw-bytes', data: rawBody },
+    { name: 'payload-json-stringified', data: payload },
+    { name: 'payload-no-spaces', data: JSON.stringify(req.body, null, 0) }
   ];
 
   let validSignature = null;
@@ -98,7 +108,7 @@ const verifyWebhookSignature = (req, res, next) => {
 //   "status": "open|pending|in_progress|closed|..."
 // }
 // Note: event_id and occurred_at are generated server-side
-router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
+router.post('/pylon/tickets', captureRawBody, verifyWebhookSignature, async (req, res) => {
   try {
     console.log('📥 Webhook received:', {
       type: req.body.type,
