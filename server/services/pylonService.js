@@ -252,6 +252,7 @@ class PylonService {
     const cancelledFilter = {
       search: true,
       limit: 500,
+      include: ['custom_fields'],
       filter: {
         operator: 'and',
         subfilters: [
@@ -261,7 +262,7 @@ class PylonService {
             value: 'cancelled'
           },
           {
-            field: 'created_at',
+            field: 'closed_at',
             operator: 'time_range',
             values: [startTime, endTime]
           }
@@ -295,7 +296,8 @@ class PylonService {
         ).length;
 
         const cancelledCount = cancelledTickets.filter(ticket => 
-          dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr
+          ticket.custom_fields?.closed_at?.value && 
+          dayjs(ticket.custom_fields.closed_at.value).format('YYYY-MM-DD') === dateStr
         ).length;
         
         dailyData.push({

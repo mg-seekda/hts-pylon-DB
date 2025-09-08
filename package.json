@@ -11,10 +11,21 @@
     "start": "cd server && npm start",
     "install:all": "npm install && cd server && npm install && cd ../client && npm install"
   },
-  "keywords": ["hts", "dashboard", "pylon", "support"],
+  "keywords": [
+    "hts",
+    "dashboard",
+    "pylon",
+    "support"
+  ],
   "author": "HTS Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "dayjs": "^1.11.18",
+    "dotenv": "^17.2.2",
+    "pg": "^8.16.3"
   }
 }

@@ -7,6 +7,8 @@ const fs = require('fs');
 require('dotenv').config();
 
 const pylonService = require('./services/pylonService');
+const database = require('./services/database');
+const dailyIngestion = require('./services/dailyIngestion');
 const authMiddleware = require('./middleware/auth');
 const cacheMiddleware = require('./middleware/cache');
 
@@ -43,6 +45,9 @@ if (process.env.REDIS_ENABLED === 'true') {
 app.use('/api/tickets', require('./routes/tickets'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/history', require('./routes/history'));
+app.use('/api/ticket-lifecycle', require('./routes/ticketLifecycle'));
+app.use('/webhooks', require('./routes/webhooks'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -87,5 +92,25 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  // Server started successfully
+  console.log(`🚀 Server running on port ${PORT}`);
+  
+  // Start daily ingestion scheduler
+  if (process.env.NODE_ENV === 'production') {
+    dailyIngestion.scheduleDailyIngestion();
+  } else {
+    console.log('📝 Daily ingestion disabled in development mode');
+  }
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  await database.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  await database.close();
+  process.exit(0);
 });
