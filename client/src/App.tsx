@@ -1,12 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Header from './components/Header';
-import Breadcrumb from './components/Breadcrumb';
+import Sidebar from './components/Sidebar';
 import KPISection from './components/KPISection';
 import MainContent from './components/MainContent';
 import HistoryPage from './pages/HistoryPage';
-import Footer from './components/Footer';
 
 import { DataProvider } from './context/DataContext';
 
@@ -16,22 +14,13 @@ const Dashboard: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-4"
+      className="ml-64 p-6"
     >
-      <Header />
-      
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
-      >
-        <Breadcrumb />
-      </motion.div>
-      
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="mb-8"
       >
         <KPISection />
       </motion.div>
@@ -39,8 +28,7 @@ const Dashboard: React.FC = () => {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.5 }}
-        className="mt-6"
+        transition={{ delay: 0.2, duration: 0.5 }}
       >
         <MainContent />
       </motion.div>
@@ -52,14 +40,12 @@ const App: React.FC = () => {
   return (
     <DataProvider>
       <Router>
-        <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
-          <div className="flex-1">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/history" element={<HistoryPage />} />
-            </Routes>
-          </div>
-          <Footer />
+        <div className="min-h-screen bg-gray-900 text-gray-100">
+          <Sidebar />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/history" element={<HistoryPage />} />
+          </Routes>
         </div>
       </Router>
     </DataProvider>

@@ -1,7 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Header from '../components/Header';
-import Breadcrumb from '../components/Breadcrumb';
 import { getEnabledWidgets } from '../components/history/historyWidgets';
 
 const HistoryPage: React.FC = () => {
@@ -12,26 +10,8 @@ const HistoryPage: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="container mx-auto px-4 py-4"
+        className="ml-64 p-6"
       >
-        {/* Navigation Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="mb-8"
-        >
-          <Header />
-        </motion.div>
-
-        {/* Breadcrumb Navigation */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <Breadcrumb />
-        </motion.div>
 
         {/* Widgets Grid */}
         <motion.div
