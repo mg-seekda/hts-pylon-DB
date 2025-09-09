@@ -504,7 +504,7 @@ const TicketLifecycleWidget: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[1050px] relative"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[800px] relative flex flex-col"
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -666,8 +666,9 @@ const TicketLifecycleWidget: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[1050px] relative"
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[800px] relative flex flex-col"
     >
+      {/* Header - Sticky to top */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
@@ -686,63 +687,65 @@ const TicketLifecycleWidget: React.FC = () => {
         </p>
       </div>
 
-      {/* Compact filtering controls */}
-      <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
-        <div className="flex items-center space-x-3">
-          {/* Time period dropdown - moved to front */}
-          <select
-            value={selectedPreset}
-            onChange={(e) => handlePresetChange(e.target.value)}
-            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="current-week">Current Week</option>
-            <option value="current-month">Current Month</option>
-            <option value="last-week">Last Week</option>
-            <option value="last-month">Last Month</option>
-            <option value="custom">Custom Range</option>
-          </select>
+      {/* Middle section - Vertically centered content */}
+      <div className="flex-1 flex flex-col justify-center">
+        {/* Compact filtering controls */}
+        <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
+          <div className="flex items-center space-x-3">
+            {/* Time period dropdown - moved to front */}
+            <select
+              value={selectedPreset}
+              onChange={(e) => handlePresetChange(e.target.value)}
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="current-week">Current Week</option>
+              <option value="current-month">Current Month</option>
+              <option value="last-week">Last Week</option>
+              <option value="last-month">Last Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
 
-          {/* Date inputs */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="text-gray-400 text-xs">to</span>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+            {/* Date inputs */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <span className="text-gray-400 text-xs">to</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            
+            {/* Bucket selector */}
+            <div className="flex bg-gray-600 rounded p-0.5">
+              <button
+                onClick={() => handleBucketChange('day')}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  grouping === 'day' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Day
+              </button>
+              <button
+                onClick={() => handleBucketChange('week')}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  grouping === 'week' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Week
+              </button>
+            </div>
           </div>
-          
-          {/* Bucket selector */}
-          <div className="flex bg-gray-600 rounded p-0.5">
-            <button
-              onClick={() => handleBucketChange('day')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
-                grouping === 'day' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Day
-            </button>
-            <button
-              onClick={() => handleBucketChange('week')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
-                grouping === 'week' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Week
-            </button>
-          </div>
-        </div>
 
           {/* Time Mode - moved to right side and made smaller */}
           <div className="flex items-center space-x-2">
@@ -769,67 +772,68 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
             </div>
           </div>
-      </div>
-
-      {/* Legend */}
-      {availableStatuses.length > 0 && (
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
-            {availableStatuses.map((status, index) => (
-              <button
-                key={status}
-                onClick={() => handleStatusToggle(status)}
-                className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm transition-colors ${
-                  !selectedStatuses.includes(status)
-                    ? 'bg-gray-700 text-gray-500 opacity-50'
-                    : 'bg-gray-700 text-white hover:bg-gray-600'
-                }`}
-              >
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: statusColors[status] || '#6B7280' }}
-                />
-                <span>{status}</span>
-              </button>
-            ))}
-          </div>
         </div>
-      )}
 
-      {/* Chart */}
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis 
-              dataKey="date" 
-              tickFormatter={formatDate}
-              stroke="#9CA3AF"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#9CA3AF"
-              fontSize={12}
-              tickFormatter={(value) => formatDuration(value)}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            {selectedStatuses.map(status => (
-              <Bar
-                key={status}
-                dataKey={status}
-                stackId="status"
-                fill={statusColors[status] || '#6B7280'}
-                hide={!selectedStatuses.includes(status)}
-                name={status}
+        {/* Legend */}
+        {availableStatuses.length > 0 && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {availableStatuses.map((status, index) => (
+                <button
+                  key={status}
+                  onClick={() => handleStatusToggle(status)}
+                  className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm transition-colors ${
+                    !selectedStatuses.includes(status)
+                      ? 'bg-gray-700 text-gray-500 opacity-50'
+                      : 'bg-gray-700 text-white hover:bg-gray-600'
+                  }`}
+                >
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: statusColors[status] || '#6B7280' }}
+                  />
+                  <span>{status}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Chart */}
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={formatDate}
+                stroke="#9CA3AF"
+                fontSize={12}
               />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+              <YAxis 
+                stroke="#9CA3AF"
+                fontSize={12}
+                tickFormatter={(value) => formatDuration(value)}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {selectedStatuses.map(status => (
+                <Bar
+                  key={status}
+                  dataKey={status}
+                  stackId="status"
+                  fill={statusColors[status] || '#6B7280'}
+                  hide={!selectedStatuses.includes(status)}
+                  name={status}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="mt-4 pt-4 border-t border-gray-700">
+      {/* Summary Stats - Sticky to bottom */}
+      <div className="mt-auto pt-4 border-t border-gray-700">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <div className="text-gray-400">Total Samples</div>
