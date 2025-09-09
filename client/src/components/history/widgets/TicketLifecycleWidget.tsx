@@ -88,15 +88,16 @@ const TicketLifecycleWidget: React.FC = () => {
 
   // Color palette for different statuses
   const statusColors: { [key: string]: string } = {
-    'new': '#A78BFA',
-    'open': '#3B82F6',
-    'in_progress': '#F59E0B',
-    'pending': '#8B5CF6',
-    'waiting_customer': '#EF4444',
-    'on_hold': '#6B7280',
-    'closed': '#10B981',
-    'cancelled': '#F97316',
-    'resolved': '#059669'
+    'New': '#A78BFA',
+    'Open': '#3B82F6',
+    'In Progress': '#F59E0B',
+    'Pending': '#8B5CF6',
+    'Waiting on Customer': '#EF4444',
+    'On Hold': '#6B7280',
+    'Closed': '#10B981',
+    'Cancelled': '#F97316',
+    'Resolved': '#059669',
+    'Waiting on You': '#F59E0B'
   };
 
   const fetchData = useCallback(async () => {
