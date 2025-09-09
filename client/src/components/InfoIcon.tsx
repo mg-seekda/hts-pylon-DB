@@ -9,6 +9,8 @@ interface InfoIconProps {
   features?: string[];
   position?: 'top-right' | 'bottom-right';
   className?: string;
+  onModalOpen?: () => void;
+  onModalClose?: () => void;
 }
 
 const InfoIcon: React.FC<InfoIconProps> = ({ 
@@ -16,7 +18,9 @@ const InfoIcon: React.FC<InfoIconProps> = ({
   description, 
   features = [], 
   position = 'top-right',
-  className = ''
+  className = '',
+  onModalOpen,
+  onModalClose
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -33,6 +37,7 @@ const InfoIcon: React.FC<InfoIconProps> = ({
         onClick={(e) => {
           e.stopPropagation();
           setIsModalOpen(true);
+          onModalOpen?.();
         }}
         className={`
           ${positionClasses[position]}
@@ -43,13 +48,17 @@ const InfoIcon: React.FC<InfoIconProps> = ({
         `}
         title={`Info about ${title}`}
         aria-label={`Show information about ${title}`}
+        data-info-icon="true"
       >
         <Info className="w-3 h-3" />
       </motion.button>
 
       <InfoModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          onModalClose?.();
+        }}
         title={title}
         description={description}
         features={features}

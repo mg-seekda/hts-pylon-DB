@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pylonService = require('../services/pylonService');
 const { cache } = require('../middleware/cache');
+const BusinessHoursCalculator = require('../utils/businessHours');
 const dayjs = require('dayjs');
 
 // Get global KPIs
@@ -60,10 +61,11 @@ router.get('/kpis', async (req, res) => {
       externalIssuesTickets = { data: [], total: 0 };
     }
 
-    // Calculate average resolution time for closed tickets in last 30 days
+    // Calculate average resolution time for closed tickets in last 30 days (using business hours)
     let avgResolutionTime = 0;
     if (closedTicketsLast30Days.data && closedTicketsLast30Days.data.length > 0) {
       // Processing closed tickets for resolution time calculation
+      const businessHoursCalculator = new BusinessHoursCalculator();
       
       const resolutionTimes = closedTicketsLast30Days.data
         .filter(ticket => {
@@ -75,11 +77,14 @@ router.get('/kpis', async (req, res) => {
         .map(ticket => {
           const created = new Date(ticket.created_at);
           const closed = new Date(ticket.custom_fields?.closed_at?.value || ticket.closed_at);
-          const hours = (closed - created) / (1000 * 60 * 60);
-          // Calculating resolution time in hours
-          return hours;
+          
+          // Calculate business hours instead of wall hours
+          const businessSeconds = businessHoursCalculator.calculateBusinessHours(created, closed);
+          const businessHours = businessSeconds / 3600; // Convert to hours
+          
+          return businessHours;
         })
-        .filter(time => time > 0 && time < 8760); // Filter out invalid times (0 or >1 year)
+        .filter(time => time > 0 && time < 2000); // Filter out invalid times (0 or >2000 business hours)
       
       if (resolutionTimes.length > 0) {
         avgResolutionTime = resolutionTimes.reduce((sum, time) => sum + time, 0) / resolutionTimes.length;
