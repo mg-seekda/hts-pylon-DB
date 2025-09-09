@@ -56,12 +56,16 @@ WORKDIR /app
 # Copy built application
 COPY --from=builder --chown=nodejs:nodejs /app/server ./server
 COPY --from=builder --chown=nodejs:nodejs /app/client/build ./client/build
+COPY --from=builder --chown=nodejs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
 
 # Install only production dependencies
 RUN npm ci --only=production --silent && \
     npm cache clean --force && \
     rm -rf /tmp/*
+
+# Make shell scripts executable
+RUN chmod +x /app/scripts/*.sh
 
 # Create logs directory
 RUN mkdir -p /app/logs && chown nodejs:nodejs /app/logs

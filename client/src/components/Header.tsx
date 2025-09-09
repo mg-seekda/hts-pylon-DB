@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { RefreshCw, Clock, ExternalLink, ChevronDown } from 'lucide-react';
+import { RefreshCw, Clock, ExternalLink, ChevronDown, BarChart3 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import dayjs from 'dayjs';
@@ -9,6 +10,8 @@ const Header: React.FC = () => {
   const { state, refreshAll } = useData();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleRefresh = async () => {
     await refreshAll();
@@ -51,10 +54,13 @@ const Header: React.FC = () => {
           />
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">
-              HTS Dashboard
+              {location.pathname === '/history' ? 'History Dashboard' : 'HTS Dashboard'}
             </h1>
             <p className="text-gray-400">
-              Hotel Technology Support - Pylon Integration
+              {location.pathname === '/history' 
+                ? 'Historical analysis and trends for ticket data'
+                : 'Hotel Technology Support - Pylon Integration'
+              }
             </p>
           </div>
         </div>
@@ -66,6 +72,21 @@ const Header: React.FC = () => {
               Last updated: {dayjs(state.lastUpdated).format('HH:mm:ss')}
             </div>
           )}
+          
+          {/* History Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/history')}
+            className={`btn flex items-center space-x-2 ${
+              location.pathname === '/history' 
+                ? 'btn-primary' 
+                : 'btn-secondary'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>History</span>
+          </motion.button>
           
           {/* Pylon Dropdown */}
           <div className="relative" ref={dropdownRef}>

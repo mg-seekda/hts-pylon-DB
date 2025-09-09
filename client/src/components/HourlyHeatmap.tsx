@@ -13,11 +13,7 @@ const HourlyHeatmap: React.FC = () => {
   const data = analytics?.hourlyHeatmap?.data || [];
 
   // Debug logging
-  console.log('HourlyHeatmap - analytics:', analytics);
-  console.log('HourlyHeatmap - hourlyHeatmap:', analytics?.hourlyHeatmap);
-  console.log('HourlyHeatmap - heatmap data:', data);
-  console.log('HourlyHeatmap - data length:', data.length);
-  console.log('HourlyHeatmap - loading state:', loading.hourlyHeatmap);
+  // HourlyHeatmap component loaded
   const [hoveredCell, setHoveredCell] = useState<{ day: number; hour: number; count: number } | null>(null);
 
   // Days of the week (Monday to Sunday)

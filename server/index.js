@@ -7,6 +7,9 @@ const fs = require('fs');
 require('dotenv').config();
 
 const pylonService = require('./services/pylonService');
+const database = require('./services/database');
+const dailyIngestion = require('./services/dailyIngestion');
+const assigneeSyncService = require('./services/assigneeSyncService');
 const authMiddleware = require('./middleware/auth');
 const cacheMiddleware = require('./middleware/cache');
 
@@ -27,7 +30,25 @@ app.use(cors({
   credentials: true
 }));
 
-// Body parsing
+// Webhook routes need raw body access before JSON parsing
+app.use('/webhooks', (req, res, next) => {
+  if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      req.rawBody = data;
+      req.body = JSON.parse(data);
+      next();
+    });
+  } else {
+    next();
+  }
+}, require('./routes/webhooks'));
+
+// Body parsing for other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -43,6 +64,8 @@ if (process.env.REDIS_ENABLED === 'true') {
 app.use('/api/tickets', require('./routes/tickets'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/history', require('./routes/history'));
+app.use('/api/ticket-lifecycle', require('./routes/ticketLifecycle'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -86,6 +109,43 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  // Server started successfully
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Initialize database connection
+    await database.init();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      
+      // Start daily ingestion scheduler
+      if (process.env.NODE_ENV === 'production') {
+        dailyIngestion.scheduleDailyIngestion();
+      } else {
+        console.log('📝 Daily ingestion disabled in development mode');
+      }
+      
+      // Start assignee sync service
+      assigneeSyncService.startPeriodicSync();
+      console.log('🔄 Assignee sync service started (today: 5min, historical: 1hr)');
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  await database.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  await database.close();
+  process.exit(0);
 });

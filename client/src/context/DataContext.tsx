@@ -332,16 +332,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
-      console.log('Refreshing hourly heatmap data...');
+      // Refreshing hourly heatmap data
       const response = await apiService.getHourlyHeatmap();
-      console.log('Hourly heatmap response received:', response);
       
       // Extract the hourlyHeatmap data and cache metadata from the response
       const hourlyHeatmap = response.hourlyHeatmap;
       const cacheMetadata = response.cacheMetadata;
-      
-      console.log('Hourly heatmap data extracted:', hourlyHeatmap);
-      console.log('Cache metadata:', cacheMetadata);
       
       // Update only the hourly heatmap part of analytics
       dispatch({ type: 'UPDATE_HOURLY_HEATMAP', payload: hourlyHeatmap });

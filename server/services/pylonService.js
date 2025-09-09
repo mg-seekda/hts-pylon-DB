@@ -1,5 +1,6 @@
 const axios = require('axios');
 const dayjs = require('dayjs');
+const database = require('./database');
 
 class PylonService {
   constructor() {
@@ -54,6 +55,11 @@ class PylonService {
   // Get all users
   async getUsers() {
     return await this.apiCall('/users');
+  }
+
+  // Get a single issue by ID
+  async getIssue(issueId) {
+    return await this.apiCall(`/issues/${issueId}`);
   }
 
 
@@ -213,90 +219,114 @@ class PylonService {
   }
 
   // Get daily flow data (created vs closed vs cancelled for last 14 days)
+  // Now uses webhook data from ticket_status_events for consistency
   async getDailyFlowData() {
     const dailyData = [];
     const startDate = dayjs().subtract(13, 'day');
     const endDate = dayjs();
     
-    // Use RFC3339 format as required by Pylon API
-    const startTime = startDate.startOf('day').toISOString();
-    const endTime = endDate.endOf('day').toISOString();
-    
-    // Make 3 API calls: created, closed, and cancelled tickets
-    const createdFilter = {
-      limit: 500, // Reduced from 1000 to make it faster
-      start_time: startTime,
-      end_time: endTime
-    };
-    
-    const closedFilter = {
-      search: true,
-      limit: 500, // Reduced from 1000 to make it faster
-      filter: {
-        operator: 'and',
-        subfilters: [
-          {
-            field: 'state',
-            operator: 'equals',
-            value: 'closed'
-          },
-          {
-            field: 'closed_at',
-            operator: 'time_range',
-            values: [startTime, endTime]
-          }
-        ]
-      }
-    };
-
-    const cancelledFilter = {
-      search: true,
-      limit: 500,
-      filter: {
-        operator: 'and',
-        subfilters: [
-          {
-            field: 'state',
-            operator: 'equals',
-            value: 'cancelled'
-          },
-          {
-            field: 'created_at',
-            operator: 'time_range',
-            values: [startTime, endTime]
-          }
-        ]
-      }
-    };
-    
     try {
-      const [createdResponse, closedResponse, cancelledResponse] = await Promise.all([
-        this.getIssues(createdFilter),
-        this.getIssues(closedFilter),
-        this.getIssues(cancelledFilter)
-      ]);
+      // Get created tickets from Pylon API
+      const createdFilter = {
+        limit: 1000,
+        start_time: startDate.startOf('day').toISOString(),
+        end_time: endDate.endOf('day').toISOString()
+      };
       
+      const createdResponse = await this.apiCall('/issues', 'GET', null, createdFilter);
       const createdTickets = createdResponse.data || [];
-      const closedTickets = closedResponse.data || [];
-      const cancelledTickets = cancelledResponse.data || [];
+
+      // Get closed tickets using search endpoint with proper filter structure
+      const closedFilter = {
+        limit: 1000,
+        filter: {
+          operator: 'and',
+          subfilters: [
+            {
+              field: 'closed_at',
+              operator: 'time_is_after',
+              value: startDate.startOf('day').toISOString()
+            },
+            {
+              field: 'closed_at',
+              operator: 'time_is_before',
+              value: endDate.endOf('day').toISOString()
+            },
+            {
+              field: 'state',
+              operator: 'equals',
+              value: 'closed'
+            }
+          ]
+        }
+      };
       
+      const closedResponse = await this.apiCall('/issues/search', 'POST', closedFilter);
+      const closedTickets = closedResponse.data || [];
+
+      // Get cancelled tickets using search endpoint with proper filter structure
+      const cancelledFilter = {
+        limit: 1000,
+        filter: {
+          operator: 'and',
+          subfilters: [
+            {
+              field: 'closed_at',
+              operator: 'time_is_after',
+              value: startDate.startOf('day').toISOString()
+            },
+            {
+              field: 'closed_at',
+              operator: 'time_is_before',
+              value: endDate.endOf('day').toISOString()
+            },
+            {
+              field: 'state',
+              operator: 'equals',
+              value: 'cancelled'
+            }
+          ]
+        }
+      };
+      
+      const cancelledResponse = await this.apiCall('/issues/search', 'POST', cancelledFilter);
+      const cancelledTickets = cancelledResponse.data || [];
+
       // Group tickets by date
       for (let i = 13; i >= 0; i--) {
         const date = dayjs().subtract(i, 'day');
         const dateStr = date.format('YYYY-MM-DD');
         
-        const createdCount = createdTickets.filter(ticket => 
-          dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr
-        ).length;
-        
-        const closedCount = closedTickets.filter(ticket => 
-          ticket.custom_fields?.closed_at?.value && 
-          dayjs(ticket.custom_fields.closed_at.value).format('YYYY-MM-DD') === dateStr
-        ).length;
+        let createdCount = 0;
+        let closedCount = 0;
+        let cancelledCount = 0;
 
-        const cancelledCount = cancelledTickets.filter(ticket => 
-          dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr
-        ).length;
+        // Count created tickets
+        createdTickets.forEach(ticket => {
+          if (ticket.created_at && dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr) {
+            createdCount++;
+          }
+        });
+
+        // Count closed tickets (already filtered by closed_at date range)
+        closedTickets.forEach(ticket => {
+          if (ticket.state === 'closed' && ticket.custom_fields?.closed_at?.value) {
+            const closedAt = dayjs(ticket.custom_fields.closed_at.value);
+            if (closedAt.format('YYYY-MM-DD') === dateStr) {
+              closedCount++;
+            }
+          }
+        });
+
+        // Count cancelled tickets (already filtered by closed_at date range)
+        cancelledTickets.forEach(ticket => {
+          if (ticket.state === 'cancelled' && ticket.custom_fields?.closed_at?.value) {
+            const closedAt = dayjs(ticket.custom_fields.closed_at.value);
+            if (closedAt.format('YYYY-MM-DD') === dateStr) {
+              cancelledCount++;
+            }
+          }
+        });
         
         dailyData.push({
           date: dateStr,
@@ -307,7 +337,7 @@ class PylonService {
       }
     } catch (error) {
       console.error('Error fetching daily flow data:', error);
-      // Return empty data for all days if API fails
+      // Return empty data for all days if query fails
       for (let i = 13; i >= 0; i--) {
         const date = dayjs().subtract(i, 'day');
         dailyData.push({
@@ -318,7 +348,7 @@ class PylonService {
         });
       }
     }
-    
+
     return dailyData;
   }
 
@@ -451,7 +481,7 @@ class PylonService {
       
       // Use the same format as daily flow data - direct time parameters
       const filter = {
-        limit: 2000, // Increased limit for better statistical significance
+        limit: 1000, // Increased limit for better statistical significance
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString()
       };
@@ -513,7 +543,7 @@ class PylonService {
         }
       }
       
-      console.log('Generated heatmap data points:', result.length);
+      // Heatmap data generated
       console.log('Sample data points:', result.slice(0, 5));
 
       return { data: result };

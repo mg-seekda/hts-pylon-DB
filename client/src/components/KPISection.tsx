@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Ticket, Plus, Clock, AlertTriangle, RefreshCw, CheckCircle, Timer } from 'lucide-react';
 import { useData } from '../context/DataContext';
@@ -9,9 +9,13 @@ import Tooltip from './Tooltip';
 const KPISection: React.FC = () => {
   const { state, refreshKPIs } = useData();
   const { kpis, loading } = state;
+  const [openModalId, setOpenModalId] = useState<string | null>(null);
 
   const handleCardClick = (viewKey: keyof typeof PYLON_VIEWS) => {
-    openPylon(PYLON_VIEWS[viewKey]);
+    // Only open Pylon if no modal is open
+    if (!openModalId) {
+      openPylon(PYLON_VIEWS[viewKey]);
+    }
   };
 
   const kpiCards = [
@@ -155,10 +159,11 @@ const KPISection: React.FC = () => {
       pylonView: null, // No link for this card
       info: {
         title: 'Average Resolution Time (last 30 days)',
-        description: 'The average time taken to resolve tickets over the last 30 days. Measured in hours and helps track efficiency trends.',
+        description: 'The average time taken to resolve tickets over the last 30 days. Measured in business hours (Mo-Fr 09:00-17:00 Europe/Vienna) and helps track efficiency trends.',
         features: [
           'Calculated from last 30 days of data',
-          'Shows average resolution time in hours',
+          'Shows average resolution time in business hours',
+          'Excludes weekends and off-hours',
           'Helps measure performance trends',
           'No Pylon link (calculated metric)'
         ]
@@ -188,7 +193,6 @@ const KPISection: React.FC = () => {
             key={kpi.title}
             content={kpi.pylonView ? 'Open in Pylon' : ''} 
             position="top"
-            className={kpi.pylonView ? '' : 'pointer-events-none'}
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -197,7 +201,12 @@ const KPISection: React.FC = () => {
               className={`border ${kpi.borderColor} ${kpi.bgColor} p-4 relative shadow-lg rounded-lg h-28 flex flex-col justify-between ${
                 kpi.pylonView ? 'cursor-pointer hover:shadow-xl transition-all duration-200' : ''
               }`}
-              onClick={kpi.pylonView ? () => handleCardClick(kpi.pylonView!) : undefined}
+              onClick={kpi.pylonView ? (e) => {
+                // Only handle card click if not clicking on InfoIcon
+                if (!(e.target as HTMLElement).closest('[data-info-icon]')) {
+                  handleCardClick(kpi.pylonView!);
+                }
+              } : undefined}
               onKeyDown={kpi.pylonView ? (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -220,6 +229,8 @@ const KPISection: React.FC = () => {
               description={kpi.info.description}
               features={kpi.info.features}
               position="top-right"
+              onModalOpen={() => setOpenModalId(kpi.title)}
+              onModalClose={() => setOpenModalId(null)}
             />
             
             <div className="flex-1 flex flex-col justify-center">

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { KPIs, AssignmentTable, AnalyticsData } from '../context/DataContext';
+import { KPIs, AssignmentTable } from '../context/DataContext';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -112,6 +112,33 @@ export const apiService = {
   async getUser(userId: string) {
     const response = await apiClient.get(`/users/${userId}`);
     return response.data;
+  },
+
+  // History endpoints
+  async getClosedByAssignee(params: { from: string; to: string; bucket: 'day' | 'week' }) {
+    const response = await apiClient.get('/history/closed-by-assignee', { params });
+    return response.data;
+  },
+
+  async backfillHistory(params: { from: string; to: string }) {
+    const response = await apiClient.post('/history/backfill', params);
+    return response.data;
+  },
+
+  async getDatePresets() {
+    const response = await apiClient.get('/history/date-presets');
+    return response.data;
+  },
+
+  async ingestDaily() {
+    const response = await apiClient.post('/history/ingest-daily');
+    return response.data;
+  },
+
+  // Generic GET method for flexibility
+  async get(url: string, config?: any) {
+    const response = await apiClient.get(url, config);
+    return response;
   },
 };
 
