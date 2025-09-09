@@ -76,20 +76,6 @@ async function migrateTicketStatusEvents() {
         // Extract assignee information
         const assigneeId = ticket.assignee?.id || null;
         const assigneeName = assigneeId ? assigneeMap[assigneeId] || 'Unknown' : null;
-        
-        // Debug logging for first few tickets
-        if (processedCount < 3) {
-          console.log(`   Debug ticket ${event.ticket_id}:`);
-          console.log(`     - ticket.assignee:`, ticket.assignee);
-          console.log(`     - assigneeId: ${assigneeId}`);
-          console.log(`     - assigneeName: ${assigneeName}`);
-          console.log(`     - assignee in map: ${assigneeId ? (assigneeId in assigneeMap) : 'N/A'}`);
-        }
-        
-        // Progress indicator
-        if (processedCount % 10 === 0 && processedCount > 0) {
-          console.log(`   📊 Progress: ${processedCount}/${eventsWithoutAssignee.rows.length} events processed`);
-        }
 
         // Extract closed_at information
         let closedAtUtc = null;
@@ -102,6 +88,23 @@ async function migrateTicketStatusEvents() {
             // Fallback to occurred_at_utc if no closed_at
             closedAtUtc = event.occurred_at_utc;
           }
+        }
+        
+        // Debug logging for first few tickets
+        if (processedCount < 3) {
+          console.log(`   Debug ticket ${event.ticket_id}:`);
+          console.log(`     - ticket.assignee:`, ticket.assignee);
+          console.log(`     - assigneeId: ${assigneeId}`);
+          console.log(`     - assigneeName: ${assigneeName}`);
+          console.log(`     - assignee in map: ${assigneeId ? (assigneeId in assigneeMap) : 'N/A'}`);
+          console.log(`     - ticket.custom_fields:`, ticket.custom_fields);
+          console.log(`     - closed_at value:`, ticket.custom_fields?.closed_at?.value);
+          console.log(`     - closedAtUtc: ${closedAtUtc}`);
+        }
+        
+        // Progress indicator
+        if (processedCount % 10 === 0 && processedCount > 0) {
+          console.log(`   📊 Progress: ${processedCount}/${eventsWithoutAssignee.rows.length} events processed`);
         }
 
         // Update the event record
