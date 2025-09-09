@@ -2,8 +2,10 @@ const database = require('../server/services/database');
 const pylonService = require('../server/services/pylonService');
 const dayjs = require('dayjs');
 const timezone = require('dayjs/plugin/timezone');
+const utc = require('dayjs/plugin/utc');
 
 dayjs.extend(timezone);
+dayjs.extend(utc);
 
 async function migrateClosedAtTimestamps() {
   try {
