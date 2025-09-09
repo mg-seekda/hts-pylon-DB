@@ -100,42 +100,17 @@ const TicketLifecycleWidget: React.FC = () => {
     );
   };
 
-  // Initialize with default values - fetch actual data range
+  // Initialize with current week as default
   useEffect(() => {
-    const initializeWithKnownData = async () => {
-      try {
-        const response = await fetch('/api/ticket-lifecycle/date-range');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.hasData) {
-            setFromDate(data.fromFormatted);
-            setToDate(data.toFormatted);
-            setSelectedPreset('knownData');
-          } else {
-            // Fallback to current week if no data available
-            const currentWeek = getCurrentWeekRange();
-            setFromDate(currentWeek.from);
-            setToDate(currentWeek.to);
-            setSelectedPreset('current-week');
-          }
-        } else {
-          // Fallback to current week if API fails
-          const currentWeek = getCurrentWeekRange();
-          setFromDate(currentWeek.from);
-          setToDate(currentWeek.to);
-          setSelectedPreset('current-week');
-        }
-      } catch (error) {
-        console.error('Error fetching known data range:', error);
-        // Fallback to current week if error
-        const currentWeek = getCurrentWeekRange();
-        setFromDate(currentWeek.from);
-        setToDate(currentWeek.to);
-        setSelectedPreset('current-week');
-      }
+    const initializeWithCurrentWeek = () => {
+      // Always default to current week
+      const currentWeek = getCurrentWeekRange();
+      setFromDate(currentWeek.from);
+      setToDate(currentWeek.to);
+      setSelectedPreset('current-week');
     };
 
-    initializeWithKnownData();
+    initializeWithCurrentWeek();
   }, []);
 
   // Color palette for different statuses
