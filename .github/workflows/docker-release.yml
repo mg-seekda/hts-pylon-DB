@@ -40,31 +40,11 @@ on:
       - '.gitignore'
 
 jobs:
-  # Check if PR was merged (not just closed)
-  check-pr-merged:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    outputs:
-      should_build: ${{ steps.check-merged.outputs.should_build }}
-    steps:
-      - name: Check if PR was merged
-        id: check-merged
-        run: |
-          # Check if the PR was merged (not just closed)
-          if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
-            echo "should_build=true" >> $GITHUB_OUTPUT
-            echo "✅ PR was merged - will trigger build with 'latest' tag"
-          else
-            echo "should_build=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ PR was closed but not merged - skipping build"
-          fi
-
   # Build and push Docker image
   build-and-push:
-    needs: check-pr-merged
     if: |
       github.event_name == 'workflow_dispatch' || 
-      (github.event_name == 'pull_request' && needs.check-pr-merged.outputs.should_build == 'true')
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     
     steps:
@@ -127,8 +107,8 @@ jobs:
 
   # Comment on PR with build results
   pr-comment:
-    if: github.event_name == 'pull_request' && needs.check-pr-merged.outputs.should_build == 'true'
-    needs: [check-pr-merged, build-and-push]
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Comment on PR
