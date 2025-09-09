@@ -323,10 +323,11 @@ const TicketLifecycleWidget: React.FC = () => {
                   fontSize: '12px'
                 }}
                 labelFormatter={(value) => `Date: ${formatDate(value)}`}
-                formatter={(value, name) => [
-                  formatDuration(value as number),
-                  name // Status names are already properly formatted from the API
-                ]}
+                formatter={(value, name, props) => {
+                  console.log('Tooltip formatter - value:', value, 'name:', name, 'props:', props);
+                  console.log('Tooltip payload:', props.payload);
+                  return [formatDuration(value as number), name];
+                }}
               />
               <Legend />
               {selectedStatuses.map(status => (
