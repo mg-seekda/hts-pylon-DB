@@ -102,10 +102,11 @@ const TicketLifecycleWidget: React.FC = () => {
   const fetchData = useCallback(async () => {
     // Don't fetch if dates are not set
     if (!fromDate || !toDate) {
-      console.log('Skipping fetch - dates not set yet');
+      console.log('Skipping fetch - dates not set yet', { fromDate, toDate });
       return;
     }
 
+    console.log('Fetching ticket lifecycle data...', { fromDate, toDate, grouping, hoursMode, selectedStatuses });
     setLoading(true);
     setError(null);
 
@@ -121,13 +122,16 @@ const TicketLifecycleWidget: React.FC = () => {
         params.append('status', selectedStatuses.join(','));
       }
 
-      const response = await fetch(`/api/ticket-lifecycle/data?${params}`);
+      const url = `/api/ticket-lifecycle/data?${params}`;
+      console.log('API URL:', url);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result: TicketLifecycleResponse = await response.json();
+      console.log('Ticket lifecycle data received:', result);
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -249,6 +253,8 @@ const TicketLifecycleWidget: React.FC = () => {
       );
     }
 
+    console.log('Rendering chart, data state:', { data, hasData: !!data, dataLength: data?.data?.length });
+    
     if (!data || data.data.length === 0) {
       return (
         <div className="flex items-center justify-center h-64">
@@ -256,6 +262,7 @@ const TicketLifecycleWidget: React.FC = () => {
             <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <div className="text-lg mb-2">No data yet</div>
             <div className="text-sm">Lifecycle tracking started on deployment date</div>
+            <div className="text-xs mt-2">Debug: data={JSON.stringify(data)}</div>
           </div>
         </div>
       );
