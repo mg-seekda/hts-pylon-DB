@@ -7,8 +7,24 @@ const path = require('path');
 class Logger {
   constructor() {
     this.logDir = '/app/logs';
-    this.ensureLogDirectory();
-    this.setupStreams();
+    this.appStream = null;
+    this.errorStream = null;
+    this.debugStream = null;
+    this.initialized = false;
+    
+    // Initialize streams lazily to avoid startup failures
+    this.initializeStreams();
+  }
+
+  initializeStreams() {
+    try {
+      this.ensureLogDirectory();
+      this.setupStreams();
+      this.initialized = true;
+    } catch (error) {
+      console.error('Failed to initialize file logging, falling back to console only:', error.message);
+      this.initialized = false;
+    }
   }
 
   ensureLogDirectory() {
@@ -36,16 +52,23 @@ class Logger {
   log(level, message, ...args) {
     const formattedMessage = this.formatMessage(level, message, ...args);
     
-    // Write to appropriate file
-    if (level === 'ERROR') {
-      this.errorStream.write(formattedMessage);
-    } else if (level === 'DEBUG') {
-      this.debugStream.write(formattedMessage);
-    } else {
-      this.appStream.write(formattedMessage);
+    // Write to file if streams are available
+    if (this.initialized) {
+      try {
+        if (level === 'ERROR' && this.errorStream) {
+          this.errorStream.write(formattedMessage);
+        } else if (level === 'DEBUG' && this.debugStream) {
+          this.debugStream.write(formattedMessage);
+        } else if (this.appStream) {
+          this.appStream.write(formattedMessage);
+        }
+      } catch (error) {
+        // If file writing fails, just continue with console logging
+        console.error('File logging failed:', error.message);
+      }
     }
     
-    // Also write to console for Docker logs
+    // Always write to console for Docker logs
     if (level === 'ERROR') {
       console.error(formattedMessage.trim());
     } else {
@@ -71,9 +94,15 @@ class Logger {
 
   // Graceful shutdown
   close() {
-    this.appStream.end();
-    this.errorStream.end();
-    this.debugStream.end();
+    if (this.initialized) {
+      try {
+        if (this.appStream) this.appStream.end();
+        if (this.errorStream) this.errorStream.end();
+        if (this.debugStream) this.debugStream.end();
+      } catch (error) {
+        console.error('Error closing log streams:', error.message);
+      }
+    }
   }
 }
 
