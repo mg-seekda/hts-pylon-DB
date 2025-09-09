@@ -85,13 +85,23 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       assigneeSet.add(item.assignee_name);
     });
 
+    // Ensure all assignees have values for all dates (set to 0 if missing)
+    const allAssignees = Array.from(assigneeSet);
+    Object.values(groupedData).forEach(dataPoint => {
+      allAssignees.forEach(assignee => {
+        if (dataPoint[assignee] === undefined) {
+          dataPoint[assignee] = 0;
+        }
+      });
+    });
+
     // Convert to array and sort by date
     const chartDataArray = Object.values(groupedData).sort((a, b) => 
       new Date(a.bucket_start).getTime() - new Date(b.bucket_start).getTime()
     );
 
     setChartData(chartDataArray);
-    setAssignees(Array.from(assigneeSet));
+    setAssignees(allAssignees);
   };
 
   const toggleAssignee = (assigneeName: string) => {
@@ -113,7 +123,11 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      const total = payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0);
+      // Calculate total from all payload entries, ensuring we handle undefined values
+      const total = payload.reduce((sum: number, entry: any) => {
+        const value = entry.value;
+        return sum + (typeof value === 'number' ? value : 0);
+      }, 0);
       
       return (
         <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
@@ -123,11 +137,13 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
           <p className="text-blue-300 text-sm mb-2">
             Total: {total} tickets
           </p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.value || 0}
-            </p>
-          ))}
+          {payload
+            .filter((entry: any) => entry.value > 0) // Only show assignees with tickets
+            .map((entry: any, index: number) => (
+              <p key={index} className="text-sm" style={{ color: entry.color }}>
+                {entry.name}: {entry.value}
+              </p>
+            ))}
         </div>
       );
     }

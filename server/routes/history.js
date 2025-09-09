@@ -4,6 +4,7 @@ const database = require('../services/database');
 const pylonService = require('../services/pylonService');
 const TimezoneUtils = require('../utils/timezone');
 const cacheMiddleware = require('../middleware/cache');
+const dayjs = require('dayjs');
 
 // GET /api/history/closed-by-assignee
 router.get('/closed-by-assignee', async (req, res) => {
@@ -166,7 +167,14 @@ router.post('/backfill', async (req, res) => {
         for (const [assigneeId, count] of Object.entries(assigneeCounts)) {
           const assigneeName = assignees[assigneeId];
           
-          // Upsert closed_by_assignee
+          // Check if this date is recent (within last 7 days) - if so, skip to avoid overwriting webhook data
+          const daysDiff = dayjs().diff(currentDate, 'day');
+          if (daysDiff <= 7) {
+            console.log(`   Skipping ${currentDate.format('YYYY-MM-DD')} for assignee ${assigneeName} - too recent, webhook data takes precedence`);
+            continue;
+          }
+          
+          // Upsert closed_by_assignee (only for historical data)
           await database.query(`
             INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
             VALUES ($1, $2, $3, $4, $5)

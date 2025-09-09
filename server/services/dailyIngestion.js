@@ -132,7 +132,17 @@ class DailyIngestionService {
         await this.aggregationService.runWeeklyAggregation(year, week);
         console.log(`✅ Weekly lifecycle aggregation completed for ${year}-W${week.toString().padStart(2, '0')}`);
       } catch (error) {
-        console.error(`❌ Weekly lifecycle aggregation failed for ${year}-W${week.toString().padStart(2, '0')}:`, error);
+        // Get year and week for error message, with fallback if calculation fails
+        let yearStr = 'unknown';
+        let weekStr = 'unknown';
+        try {
+          const previousWeek = yesterday.subtract(1, 'week');
+          yearStr = previousWeek.isoYear().toString();
+          weekStr = previousWeek.isoWeek().toString().padStart(2, '0');
+        } catch (e) {
+          // If we can't calculate year/week, use fallback
+        }
+        console.error(`❌ Weekly lifecycle aggregation failed for ${yearStr}-W${weekStr}:`, error);
         // Don't throw here, continue with the rest of the process
       }
 
