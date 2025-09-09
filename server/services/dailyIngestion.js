@@ -148,7 +148,7 @@ class DailyIngestionService {
       }
 
       this.lastRun = new Date();
-      console.log(`✅ Daily ingestion completed: ${tickets.length} tickets processed, ${Object.keys(assigneeCounts).length} assignees`);
+      console.log(`✅ Daily ingestion completed: ${tickets.length} tickets processed`);
 
     } catch (error) {
       console.error('❌ Daily ingestion failed:', error);
