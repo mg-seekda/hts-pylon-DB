@@ -318,4 +318,40 @@ async function clearCacheForRange(from, to) {
   }
 }
 
+// POST /api/ticket-lifecycle/clear-cache
+router.post('/clear-cache', async (req, res) => {
+  try {
+    const { from, to } = req.body;
+    
+    if (from && to) {
+      // Clear cache for specific date range
+      await clearCacheForRange(from, to);
+      res.json({ 
+        message: `Cache cleared for range ${from} to ${to}`,
+        from,
+        to
+      });
+    } else {
+      // Clear all ticket lifecycle cache
+      const patterns = [
+        'ticket-lifecycle:*'
+      ];
+      
+      for (const pattern of patterns) {
+        await cache.del(pattern);
+      }
+      
+      res.json({ 
+        message: 'All ticket lifecycle cache cleared'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
 module.exports = router;
