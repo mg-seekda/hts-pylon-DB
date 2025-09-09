@@ -1,6 +1,7 @@
 const axios = require('axios');
 const dayjs = require('dayjs');
 const database = require('./database');
+const { logError } = require('../utils/errorUtils');
 
 class PylonService {
   constructor() {
@@ -22,7 +23,7 @@ class PylonService {
         'Authorization': `Bearer ${this.apiToken}`,
         'Content-Type': 'application/json'
       },
-      timeout: 10000
+      timeout: 30000 // Increased from 10s to 30s
     });
   }
 
@@ -41,7 +42,7 @@ class PylonService {
       });
       return response.data;
     } catch (error) {
-      console.error(`Pylon API Error (${endpoint}):`, error.response?.data || error.message);
+      logError(`Pylon API Error (${endpoint})`, error);
       throw error;
     }
   }
@@ -336,7 +337,7 @@ class PylonService {
         });
       }
     } catch (error) {
-      console.error('Error fetching daily flow data:', error);
+      logError('Error fetching daily flow data', error);
       // Return empty data for all days if query fails
       for (let i = 13; i >= 0; i--) {
         const date = dayjs().subtract(i, 'day');
@@ -419,7 +420,7 @@ class PylonService {
 
       return oldestTickets;
     } catch (error) {
-      console.error('Error fetching oldest open tickets:', error);
+      logError('Error fetching oldest open tickets', error);
       return [];
     }
   }
@@ -469,7 +470,7 @@ class PylonService {
 
       return topAccounts;
     } catch (error) {
-      console.error('Error fetching top accounts with open tickets:', error);
+      logError('Error fetching top accounts with open tickets', error);
       return [];
     }
   }
@@ -545,7 +546,7 @@ class PylonService {
 
       return { data: result };
     } catch (error) {
-      console.error('Error fetching hourly ticket creation data:', error);
+      logError('Error fetching hourly ticket creation data', error);
       throw error;
     }
   }

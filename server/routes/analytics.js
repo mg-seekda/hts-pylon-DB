@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pylonService = require('../services/pylonService');
 const { cache } = require('../middleware/cache');
+const { logError } = require('../utils/errorUtils');
 
 // Background refresh functions for stale-while-revalidate
 async function refreshDailyFlowInBackground(cacheKey) {
@@ -18,7 +19,7 @@ async function refreshDailyFlowInBackground(cacheKey) {
 
     await cache.setWithMetadata(cacheKey, result, 60, 60);
   } catch (error) {
-    console.error('Background refresh failed: Daily flow data', error);
+    logError('Background refresh failed: Daily flow data', error);
   }
 }
 
@@ -39,7 +40,7 @@ async function refreshHourlyHeatmapInBackground(cacheKey) {
     await cache.setWithMetadata(cacheKey, result, 3600, 3600);
     // Background refresh completed: Hourly heatmap data
   } catch (error) {
-    console.error('Background refresh failed: Hourly heatmap data', error);
+    logError('Background refresh failed: Hourly heatmap data', error);
   }
 }
 
@@ -49,14 +50,14 @@ router.get('/daily-flow', async (req, res) => {
     const cacheKey = 'analytics:daily-flow';
     const cached = await cache.getWithMetadata(cacheKey);
     
-    // Always return cached data immediately if available
-    if (cached && !cached.metadata.isExpired) {
+    // Always return cached data immediately if available (stale-while-revalidate)
+    if (cached) {
       const response = {
         ...cached.data,
         cacheMetadata: {
           cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
           isStale: cached.metadata.isStale,
-          servingCached: cached.metadata.isStale
+          servingCached: true
         }
       };
       
@@ -94,7 +95,7 @@ router.get('/daily-flow', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching daily flow data:', error);
+    logError('Error fetching daily flow data', error);
     
     // Try to serve stale cache if available
     const cached = await cache.getWithMetadata('analytics:daily-flow');
@@ -122,14 +123,14 @@ router.get('/hourly-heatmap', async (req, res) => {
     const cacheKey = 'analytics:hourly-heatmap';
     const cached = await cache.getWithMetadata(cacheKey);
     
-    // Always return cached data immediately if available
-    if (cached && !cached.metadata.isExpired) {
+    // Always return cached data immediately if available (stale-while-revalidate)
+    if (cached) {
       const response = {
         ...cached.data,
         cacheMetadata: {
           cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
           isStale: cached.metadata.isStale,
-          servingCached: cached.metadata.isStale
+          servingCached: true
         }
       };
       
@@ -168,7 +169,7 @@ router.get('/hourly-heatmap', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching hourly heatmap data:', error);
+    logError('Error fetching hourly heatmap data', error);
     
     // Try to serve stale cache if available
     const cached = await cache.getWithMetadata('analytics:hourly-heatmap');

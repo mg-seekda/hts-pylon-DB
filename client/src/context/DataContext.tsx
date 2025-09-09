@@ -294,7 +294,10 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
 
   const refreshDailyFlow = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
+    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
+    if (!state.analytics?.dailyFlow) {
+      dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
+    }
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
       const response = await apiService.getDailyFlow();
@@ -321,10 +324,13 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch daily flow data';
       dispatch({ type: 'SET_ERROR', payload: `Daily Flow: ${errorMessage}` });
     }
-  }, []);
+  }, [state.analytics?.dailyFlow]);
 
   const refreshHourlyHeatmap = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
+    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
+    if (!state.analytics?.hourlyHeatmap) {
+      dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
+    }
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
       // Refreshing hourly heatmap data
@@ -352,7 +358,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch hourly heatmap data';
       dispatch({ type: 'SET_ERROR', payload: `Hourly Heatmap: ${errorMessage}` });
     }
-  }, []);
+  }, [state.analytics?.hourlyHeatmap]);
 
   const refreshAll = useCallback(async () => {
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
@@ -366,13 +372,19 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
   // Initial data fetch
   useEffect(() => {
-    refreshAll();
+    // Fetch KPIs and assignment table with loading states (these don't use stale-while-revalidate)
+    fetchKPIs();
+    fetchAssignmentTable();
+    
+    // Fetch analytics data without loading states (stale-while-revalidate pattern)
+    refreshDailyFlow();
+    refreshHourlyHeatmap();
     
     // Set up auto-refresh every 30 minutes to avoid rate limiting
     const interval = setInterval(refreshAll, 30 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [refreshAll]);
+  }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap, refreshAll]);
 
   const value: DataContextType = {
     state,
