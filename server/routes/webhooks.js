@@ -201,8 +201,8 @@ async function processTicketSegments(ticketId) {
 // Update assignee counts when ticket status changes
 async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeName, closedAtUtc) {
   try {
-    // Only process closed and cancelled tickets
-    if (!['closed', 'cancelled'].includes(newStatus)) {
+    // Only process closed tickets (cancelled tickets are handled separately in daily flow chart)
+    if (newStatus !== 'closed') {
       return;
     }
 
@@ -231,8 +231,8 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
     const aggregationDate = closedAtUtc || new Date();
     const bucketDate = dayjs(aggregationDate).tz('Europe/Vienna').format('YYYY-MM-DD');
 
-    // If previous status was also closed/cancelled, decrement the old count
-    if (previousStatus && ['closed', 'cancelled'].includes(previousStatus)) {
+    // If previous status was also closed, decrement the old count
+    if (previousStatus === 'closed') {
       const previousBucketDate = previousClosedAtUtc ? 
         dayjs(previousClosedAtUtc).tz('Europe/Vienna').format('YYYY-MM-DD') :
         dayjs().tz('Europe/Vienna').format('YYYY-MM-DD');
@@ -249,20 +249,22 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
       ]);
     }
 
-    // Increment the new count
-    await databaseService.query(`
-      INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
-      VALUES ($1, $2, $3, $4, 1)
-      ON CONFLICT (bucket_start, bucket, assignee_id)
-      DO UPDATE SET 
-        assignee_name = EXCLUDED.assignee_name,
-        count = closed_by_assignee.count + 1
-    `, [
-      dayjs(bucketDate).startOf('day').utc().toISOString(),
-      'day',
-      finalAssigneeId,
-      finalAssigneeName
-    ]);
+    // Increment the new count (only for closed tickets)
+    if (newStatus === 'closed') {
+      await databaseService.query(`
+        INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
+        VALUES ($1, $2, $3, $4, 1)
+        ON CONFLICT (bucket_start, bucket, assignee_id)
+        DO UPDATE SET 
+          assignee_name = EXCLUDED.assignee_name,
+          count = closed_by_assignee.count + 1
+      `, [
+        dayjs(bucketDate).startOf('day').utc().toISOString(),
+        'day',
+        finalAssigneeId,
+        finalAssigneeName
+      ]);
+    }
 
     // Update assignees table
     await databaseService.query(`
