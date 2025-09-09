@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Clock, RefreshCw, Calendar, BarChart3, ChevronDown } from 'lucide-react';
+import { Clock, RefreshCw, Calendar, BarChart3, ChevronDown, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import InfoIcon from '../../InfoIcon';
@@ -238,6 +238,82 @@ const TicketLifecycleWidget: React.FC = () => {
     setGrouping(newBucket);
   };
 
+  // Helper functions for time period options
+  const getCurrentWeekRange = () => {
+    const today = dayjs();
+    const weekStart = today.startOf('week').add(1, 'day'); // Monday
+    const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
+    
+    return {
+      from: weekStart.format('YYYY-MM-DD'),
+      to: weekEnd.format('YYYY-MM-DD')
+    };
+  };
+
+  const getCurrentMonthRange = () => {
+    const today = dayjs();
+    const firstDay = today.startOf('month');
+    
+    return {
+      from: firstDay.format('YYYY-MM-DD'),
+      to: today.format('YYYY-MM-DD')
+    };
+  };
+
+  const getLastWeekRange = () => {
+    const today = dayjs();
+    const lastWeekEnd = today.subtract(7, 'day');
+    const lastWeekStart = lastWeekEnd.startOf('week').add(1, 'day');
+    
+    return {
+      from: lastWeekStart.format('YYYY-MM-DD'),
+      to: lastWeekEnd.format('YYYY-MM-DD')
+    };
+  };
+
+  const getLastMonthRange = () => {
+    const today = dayjs();
+    const lastMonthEnd = today.subtract(1, 'month').endOf('month');
+    const lastMonthStart = lastMonthEnd.startOf('month');
+    
+    return {
+      from: lastMonthStart.format('YYYY-MM-DD'),
+      to: lastMonthEnd.format('YYYY-MM-DD')
+    };
+  };
+
+  // Handle preset selection
+  const handlePresetChange = (preset: string) => {
+    setSelectedPreset(preset);
+    switch (preset) {
+      case 'current-week':
+        const currentWeek = getCurrentWeekRange();
+        setFromDate(currentWeek.from);
+        setToDate(currentWeek.to);
+        break;
+      case 'current-month':
+        const currentMonth = getCurrentMonthRange();
+        setFromDate(currentMonth.from);
+        setToDate(currentMonth.to);
+        break;
+      case 'last-week':
+        const lastWeek = getLastWeekRange();
+        setFromDate(lastWeek.from);
+        setToDate(lastWeek.to);
+        break;
+      case 'last-month':
+        const lastMonth = getLastMonthRange();
+        setFromDate(lastMonth.from);
+        setToDate(lastMonth.to);
+        break;
+      case 'custom':
+        // Don't change date range for custom, let user select manually
+        break;
+      default:
+        break;
+    }
+  };
+
   // Render content based on state
   const renderContent = () => {
     if (loading && !data) {
@@ -374,71 +450,92 @@ const TicketLifecycleWidget: React.FC = () => {
     );
   };
 
-  return (
-    <div className="card">
-      <div className="card-header">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">Ticket Lifecycle</h3>
-            <InfoIcon 
-              title="Ticket Lifecycle"
-              description="Shows average time spent in each ticket status. Toggle between Wall Hours (24/7) and Business Hours (Mon-Fri 9-17 Vienna time)."
-            />
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center space-x-2 text-gray-400">
+            <RefreshCw className="w-5 h-5 animate-spin" />
+            <span>Loading ticket lifecycle data...</span>
           </div>
-          <div className="flex items-center gap-2">
-            <CacheStatus />
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="flex items-center space-x-2 text-red-400">
+            <AlertCircle className="w-5 h-5" />
+            <span>{error}</span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (!data || data.data.length === 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+      >
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="btn btn-ghost btn-sm"
+              className="flex items-center space-x-2 px-2 py-1 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+              title="Refresh data"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">Refresh</span>
             </button>
           </div>
+          <p className="text-gray-400 text-sm">
+            Average time spent in each ticket status ({grouping === 'week' ? 'weekly' : 'daily'} view)
+          </p>
         </div>
-      </div>
 
-      <div className="card-body">
-        {/* Date Range and Controls */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          {/* Date Range */}
-          <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-400">From:</label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => {
-                setFromDate(e.target.value);
-                setIsCustomRange(true);
-                setSelectedPreset('');
-              }}
-              className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-400">To:</label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => {
-                setToDate(e.target.value);
-                setIsCustomRange(true);
-                setSelectedPreset('');
-              }}
-              className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Grouping */}
-          <div className="flex items-center space-x-2">
-            <div className="flex bg-gray-700 rounded-lg p-1">
+        {/* Compact filtering controls */}
+        <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
+          <div className="flex items-center space-x-3">
+            {/* Date inputs */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <span className="text-gray-400 text-xs">to</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            
+            {/* Bucket selector */}
+            <div className="flex bg-gray-600 rounded p-0.5">
               <button
                 onClick={() => handleBucketChange('day')}
-                className={`px-3 py-1 text-sm rounded transition-colors ${
-                  grouping === 'day'
-                    ? 'bg-blue-600 text-white'
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  grouping === 'day' 
+                    ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -446,25 +543,23 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
               <button
                 onClick={() => handleBucketChange('week')}
-                className={`px-3 py-1 text-sm rounded transition-colors ${
-                  grouping === 'week'
-                    ? 'bg-blue-600 text-white'
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  grouping === 'week' 
+                    ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
                 Week
               </button>
             </div>
-          </div>
 
-          {/* Time Mode */}
-          <div className="flex items-center space-x-2">
-            <div className="flex bg-gray-700 rounded-lg p-1">
+            {/* Time Mode */}
+            <div className="flex bg-gray-600 rounded p-0.5">
               <button
                 onClick={() => setHoursMode('business')}
-                className={`px-3 py-1 text-sm rounded transition-colors ${
-                  hoursMode === 'business'
-                    ? 'bg-blue-600 text-white'
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  hoursMode === 'business' 
+                    ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -472,9 +567,9 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
               <button
                 onClick={() => setHoursMode('wall')}
-                className={`px-3 py-1 text-sm rounded transition-colors ${
-                  hoursMode === 'wall'
-                    ? 'bg-blue-600 text-white'
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  hoursMode === 'wall' 
+                    ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -482,29 +577,300 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Status Filter */}
-        <div className="flex flex-wrap items-center gap-2 mb-6">
-          {availableStatuses.map(status => (
+          {/* Quick buttons */}
+          <div className="flex items-center space-x-2">
             <button
-              key={status}
-              onClick={() => handleStatusToggle(status)}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
-                selectedStatuses.includes(status)
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/ticket-lifecycle/date-range');
+                  if (response.ok) {
+                    const data = await response.json();
+                    if (data.hasData) {
+                      setFromDate(data.fromFormatted);
+                      setToDate(data.toFormatted);
+                      setSelectedPreset('knownData');
+                      setIsCustomRange(false);
+                    } else {
+                      console.log('No ticket lifecycle data available yet');
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error fetching known data range:', error);
+                }
+              }}
+              className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition-colors"
+            >
+              Known Data
+            </button>
+            <button
+              onClick={() => {
+                const today = dayjs();
+                const weekAgo = today.subtract(7, 'day');
+                setFromDate(weekAgo.format('YYYY-MM-DD'));
+                setToDate(today.format('YYYY-MM-DD'));
+                setSelectedPreset('');
+                setIsCustomRange(true);
+              }}
+              className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+            >
+              Last 7 Days
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="text-gray-400 mb-4">
+              <BarChart3 className="w-16 h-16 mx-auto mb-4" />
+            </div>
+            <h4 className="text-lg font-semibold text-white mb-2">No Data Available</h4>
+            <p className="text-gray-400 mb-4">
+              No ticket lifecycle data found for the selected period
+            </p>
+            <div className="text-sm text-gray-500 space-y-1">
+              <p>Selected period: {fromDate} to {toDate}</p>
+              <p>View: {grouping === 'week' ? 'Weekly' : 'Daily'} aggregation</p>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={() => {
+                  const today = dayjs();
+                  const weekStart = today.startOf('week').add(1, 'day');
+                  const weekEnd = today.endOf('week').subtract(1, 'day');
+                  setFromDate(weekStart.format('YYYY-MM-DD'));
+                  setToDate(weekEnd.format('YYYY-MM-DD'));
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Current Week
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+    >
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center space-x-2 px-2 py-1 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+            title="Refresh data"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="text-sm">Refresh</span>
+          </button>
+        </div>
+        <p className="text-gray-400 text-sm">
+          Average time spent in each ticket status ({grouping === 'week' ? 'weekly' : 'daily'} view)
+        </p>
+      </div>
+
+      {/* Compact filtering controls */}
+      <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
+        <div className="flex items-center space-x-3">
+          {/* Date inputs */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <span className="text-gray-400 text-xs">to</span>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          
+          {/* Bucket selector */}
+          <div className="flex bg-gray-600 rounded p-0.5">
+            <button
+              onClick={() => handleBucketChange('day')}
+              className={`px-2 py-1 text-xs rounded transition-colors ${
+                grouping === 'day' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-300 hover:text-white'
               }`}
             >
-              {status}
+              Day
             </button>
-          ))}
+            <button
+              onClick={() => handleBucketChange('week')}
+              className={`px-2 py-1 text-xs rounded transition-colors ${
+                grouping === 'week' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Week
+            </button>
+          </div>
+
+          {/* Time Mode */}
+          <div className="flex bg-gray-600 rounded p-0.5">
+            <button
+              onClick={() => setHoursMode('business')}
+              className={`px-2 py-1 text-xs rounded transition-colors ${
+                hoursMode === 'business' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Business Hours
+            </button>
+            <button
+              onClick={() => setHoursMode('wall')}
+              className={`px-2 py-1 text-xs rounded transition-colors ${
+                hoursMode === 'wall' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              Wall Hours
+            </button>
+          </div>
         </div>
 
-        {/* Dynamic Content */}
-        {renderContent()}
+        {/* Time period dropdown */}
+        <div className="flex items-center space-x-2">
+          <select
+            value={selectedPreset}
+            onChange={(e) => handlePresetChange(e.target.value)}
+            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="current-week">Current Week</option>
+            <option value="current-month">Current Month</option>
+            <option value="last-week">Last Week</option>
+            <option value="last-month">Last Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
       </div>
-    </div>
+
+      {/* Legend */}
+      {availableStatuses.length > 0 && (
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2">
+            {availableStatuses.map((status, index) => (
+              <button
+                key={status}
+                onClick={() => handleStatusToggle(status)}
+                className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm transition-colors ${
+                  !selectedStatuses.includes(status)
+                    ? 'bg-gray-700 text-gray-500 opacity-50'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: statusColors[status] || '#6B7280' }}
+                />
+                <span>{status}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Chart */}
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis 
+              dataKey="date" 
+              tickFormatter={formatDate}
+              stroke="#9CA3AF"
+              fontSize={12}
+            />
+            <YAxis 
+              stroke="#9CA3AF"
+              fontSize={12}
+              tickFormatter={(value) => formatDuration(value)}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#111827', 
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#F9FAFB',
+                fontSize: '12px',
+                padding: '8px 12px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              }}
+              labelStyle={{
+                color: '#F9FAFB',
+                fontSize: '12px',
+                fontWeight: '500'
+              }}
+              itemStyle={{
+                color: '#F9FAFB',
+                fontSize: '12px'
+              }}
+              labelFormatter={(value) => `Date: ${formatDate(value)}`}
+              formatter={(value, name, props) => {
+                console.log('Tooltip formatter - value:', value, 'name:', name, 'props:', props);
+                console.log('Tooltip payload:', props.payload);
+                return [formatDuration(value as number), name];
+              }}
+            />
+            <Legend />
+            {selectedStatuses.map(status => (
+              <Bar
+                key={status}
+                dataKey={status}
+                stackId="status"
+                fill={statusColors[status] || '#6B7280'}
+                hide={!selectedStatuses.includes(status)}
+                name={status}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="mt-4 pt-4 border-t border-gray-700">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <div className="text-gray-400">Total Samples</div>
+            <div className="text-white font-semibold">
+              {data.totalSamples.toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <div className="text-gray-400">Statuses</div>
+            <div className="text-white font-semibold">{selectedStatuses.length}</div>
+          </div>
+          <div>
+            <div className="text-gray-400">Period</div>
+            <div className="text-white font-semibold">
+              {chartData.length} {grouping === 'week' ? 'weeks' : 'days'}
+            </div>
+          </div>
+          <div>
+            <div className="text-gray-400">Avg per {grouping === 'week' ? 'week' : 'day'}</div>
+            <div className="text-white font-semibold">
+              {chartData.length > 0 ? Math.round(data.totalSamples / chartData.length) : 0}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
