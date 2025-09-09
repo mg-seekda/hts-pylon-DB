@@ -135,6 +135,8 @@ const TicketLifecycleWidget: React.FC = () => {
 
       const result: TicketLifecycleResponse = await response.json();
       console.log('Ticket lifecycle data received:', result);
+      console.log('Result.data:', result.data);
+      console.log('Result.data length:', result.data ? result.data.length : 'null');
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
