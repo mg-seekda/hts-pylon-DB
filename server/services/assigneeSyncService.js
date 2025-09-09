@@ -70,7 +70,7 @@ class AssigneeSyncService {
       const today = TimezoneUtils.toVienna();
       await this.syncDateRange(today, today);
 
-      // Sync last 30 days to catch any missed updates
+      // Sync last 30 days in 5-day batches to catch any missed updates
       const thirtyDaysAgo = today.subtract(30, 'day');
       await this.syncDateRange(thirtyDaysAgo, today.subtract(1, 'day'));
 
@@ -103,68 +103,104 @@ class AssigneeSyncService {
 
     console.log(`📋 Found ${Object.keys(assigneeMap).length} users for assignee mapping`);
 
-    // Process each day in the range
+    // Process in 5-day batches to avoid hitting the 1000 limit
+    const batchSize = 5;
+    let currentBatchStart = fromDate;
+    
+    while (currentBatchStart.isSame(toDate, 'day') || currentBatchStart.isBefore(toDate, 'day')) {
+      const currentBatchEnd = dayjs.min(
+        currentBatchStart.add(batchSize - 1, 'day'),
+        toDate
+      );
+      
+      console.log(`   📦 Processing batch: ${currentBatchStart.format('YYYY-MM-DD')} to ${currentBatchEnd.format('YYYY-MM-DD')}`);
+      
+      await this.syncBatch(currentBatchStart, currentBatchEnd, assigneeMap);
+      
+      currentBatchStart = currentBatchEnd.add(1, 'day');
+    }
+  }
+
+  /**
+   * Sync a single batch of days (max 5 days)
+   */
+  async syncBatch(fromDate, toDate, assigneeMap) {
+    const dayStart = TimezoneUtils.getStartOfDayUTC(fromDate);
+    const dayEnd = TimezoneUtils.getEndOfDayUTC(toDate);
+
+    const filter = {
+      search: true,
+      limit: 1000,
+      include: ['custom_fields'],
+      filter: {
+        operator: 'and',
+        subfilters: [
+          {
+            field: 'state',
+            operator: 'equals',
+            value: 'closed'
+          },
+          {
+            field: 'closed_at',
+            operator: 'time_range',
+            values: [dayStart.toISOString(), dayEnd.toISOString()]
+          }
+        ]
+      }
+    };
+
+    const response = await pylonService.getIssues(filter);
+    const tickets = response.data || [];
+
+    if (tickets.length === 0) {
+      console.log(`     📅 No closed tickets found in batch`);
+      return;
+    }
+
+    console.log(`     📊 Found ${tickets.length} closed tickets in batch`);
+
+    // Group tickets by date and assignee
+    const ticketsByDate = {};
+    tickets.forEach(ticket => {
+      if (ticket.custom_fields?.closed_at?.value) {
+        const closedAt = dayjs(ticket.custom_fields.closed_at.value).tz('Europe/Vienna');
+        const dateStr = closedAt.format('YYYY-MM-DD');
+        
+        if (!ticketsByDate[dateStr]) {
+          ticketsByDate[dateStr] = {};
+        }
+
+        const assigneeId = ticket.assignee?.id || 'unassigned';
+        const assigneeName = assigneeId === 'unassigned' ? 'Unassigned' : assigneeMap[assigneeId] || 'Unknown';
+        
+        ticketsByDate[dateStr][assigneeId] = (ticketsByDate[dateStr][assigneeId] || 0) + 1;
+      }
+    });
+
+    // Process each day that has tickets
     let currentDate = fromDate;
     while (currentDate.isSame(toDate, 'day') || currentDate.isBefore(toDate, 'day')) {
-      await this.syncSingleDay(currentDate, assigneeMap);
+      const dateStr = currentDate.format('YYYY-MM-DD');
+      const dayTickets = ticketsByDate[dateStr] || {};
+      
+      if (Object.keys(dayTickets).length > 0) {
+        await this.updateDayData(currentDate, dayTickets, assigneeMap);
+      } else {
+        console.log(`     📅 ${dateStr}: No closed tickets found`);
+      }
+      
       currentDate = currentDate.add(1, 'day');
     }
   }
 
   /**
-   * Sync closed by assignee data for a single day
+   * Update day data in the database
    */
-  async syncSingleDay(date, assigneeMap) {
+  async updateDayData(date, assigneeCounts, assigneeMap) {
     const dayStart = TimezoneUtils.getStartOfDayUTC(date);
-    const dayEnd = TimezoneUtils.getEndOfDayUTC(date);
     const dateStr = date.format('YYYY-MM-DD');
 
     try {
-      // Query Pylon for closed tickets on this day
-      const filter = {
-        search: true,
-        limit: 1000,
-        include: ['custom_fields'],
-        filter: {
-          operator: 'and',
-          subfilters: [
-            {
-              field: 'state',
-              operator: 'equals',
-              value: 'closed'
-            },
-            {
-              field: 'closed_at',
-              operator: 'time_range',
-              values: [dayStart.toISOString(), dayEnd.toISOString()]
-            }
-          ]
-        }
-      };
-
-      const response = await pylonService.getIssues(filter);
-      const tickets = response.data || [];
-
-      if (tickets.length === 0) {
-        console.log(`   📅 ${dateStr}: No closed tickets found`);
-        return;
-      }
-
-      // Group tickets by assignee
-      const assigneeCounts = {};
-      tickets.forEach(ticket => {
-        if (ticket.assignee?.id) {
-          const assigneeId = ticket.assignee.id;
-          const assigneeName = assigneeMap[assigneeId] || 'Unknown';
-          assigneeCounts[assigneeId] = (assigneeCounts[assigneeId] || 0) + 1;
-        } else {
-          // Handle unassigned tickets
-          const assigneeId = 'unassigned';
-          const assigneeName = 'Unassigned';
-          assigneeCounts[assigneeId] = (assigneeCounts[assigneeId] || 0) + 1;
-        }
-      });
-
       // Get current database counts for this day
       const currentCounts = await this.getCurrentCountsForDay(date);
 
@@ -220,13 +256,13 @@ class AssigneeSyncService {
       }
 
       if (!hasChanges) {
-        console.log(`   ✅ ${dateStr}: No changes needed (${tickets.length} tickets)`);
+        console.log(`   ✅ ${dateStr}: No changes needed`);
       } else {
-        console.log(`   ✅ ${dateStr}: Updated (${tickets.length} tickets)`);
+        console.log(`   ✅ ${dateStr}: Updated`);
       }
 
     } catch (error) {
-      console.error(`❌ Error syncing ${dateStr}:`, error);
+      console.error(`❌ Error updating ${dateStr}:`, error);
     }
   }
 

@@ -43,6 +43,12 @@ closed_by_assignee table
 Closed by Assignee Widget
 ```
 
+## API Efficiency
+- **1 API call** for users (assignee mapping)
+- **7 API calls** for closed tickets (30 days in 5-day batches)
+- **Total: 8 API calls every 5 minutes** (optimized from 32 calls)
+- **Batch size: 5 days** to stay well under the 1000 ticket limit
+
 ## API Endpoints
 - `POST /api/history/sync-assignees` - Manual sync (today + last 30 days)
 - `POST /api/history/sync-assignees-range` - Sync specific date range
