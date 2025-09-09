@@ -17,31 +17,8 @@ async function migrateTicketStatusEvents() {
     }
     console.log('✅ Database connected successfully\n');
 
-    // Step 1: Add new columns to existing table (if they don't exist)
-    console.log('1. Adding new columns to ticket_status_events table...');
-    await database.query(`
-      ALTER TABLE ticket_status_events 
-      ADD COLUMN IF NOT EXISTS assignee_id text,
-      ADD COLUMN IF NOT EXISTS assignee_name text,
-      ADD COLUMN IF NOT EXISTS closed_at_utc timestamptz
-    `);
-    console.log('   ✅ Columns added successfully');
-
-    // Step 2: Create indexes for new columns
-    console.log('\n2. Creating indexes for new columns...');
-    await database.query(`
-      CREATE INDEX IF NOT EXISTS idx_tse_assignee_id ON ticket_status_events (assignee_id)
-    `);
-    await database.query(`
-      CREATE INDEX IF NOT EXISTS idx_tse_status_assignee ON ticket_status_events (status, assignee_id)
-    `);
-    await database.query(`
-      CREATE INDEX IF NOT EXISTS idx_tse_closed_at ON ticket_status_events (closed_at_utc)
-    `);
-    console.log('   ✅ Indexes created successfully');
-
-    // Step 3: Get all events that need assignee information
-    console.log('\n3. Fetching events without assignee information...');
+    // Step 1: Get all events that need assignee information
+    console.log('1. Fetching events without assignee information...');
     const eventsWithoutAssignee = await database.query(`
       SELECT id, ticket_id, status, raw, occurred_at_utc
       FROM ticket_status_events 
@@ -56,8 +33,8 @@ async function migrateTicketStatusEvents() {
       return;
     }
 
-    // Step 4: Fetch assignee information from Pylon API
-    console.log('\n4. Fetching assignee information from Pylon API...');
+    // Step 2: Fetch assignee information from Pylon API
+    console.log('\n2. Fetching assignee information from Pylon API...');
     const usersResponse = await pylonService.getUsers();
     const users = usersResponse.data || [];
     
@@ -71,8 +48,8 @@ async function migrateTicketStatusEvents() {
     
     console.log(`   Found ${Object.keys(assigneeMap).length} users for assignee mapping`);
 
-    // Step 5: Process each event
-    console.log('\n5. Processing events...');
+    // Step 3: Process each event
+    console.log(`\n3. Processing ${eventsWithoutAssignee.rows.length} events...`);
     let processedCount = 0;
     let errorCount = 0;
 

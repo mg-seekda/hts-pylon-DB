@@ -57,6 +57,11 @@ class PylonService {
     return await this.apiCall('/users');
   }
 
+  // Get a single issue by ID
+  async getIssue(issueId) {
+    return await this.apiCall(`/issues/${issueId}`);
+  }
+
 
 
   // Build filter for open tickets (all statuses except closed and cancelled)

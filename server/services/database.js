@@ -43,6 +43,34 @@ class DatabaseService {
     }
   }
 
+  async initWithoutMigrations() {
+    try {
+      this.pool = new Pool({
+        user: process.env.POSTGRES_USER,
+        password: process.env.POSTGRES_PASSWORD,
+        database: process.env.POSTGRES_DB,
+        host: process.env.POSTGRES_HOST || 'localhost',
+        port: process.env.POSTGRES_PORT || 5432,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+      });
+
+      // Test connection
+      const client = await this.pool.connect();
+      await client.query('SELECT NOW()');
+      client.release();
+      
+      this.isConnected = true;
+      console.log('✅ PostgreSQL connected successfully');
+      
+      // Skip migrations - they will be handled manually
+    } catch (error) {
+      console.error('❌ PostgreSQL connection failed:', error.message);
+      this.isConnected = false;
+    }
+  }
+
   async runMigrations() {
     if (!this.isConnected) return;
 
@@ -84,6 +112,14 @@ class DatabaseService {
           received_at_utc timestamptz NOT NULL DEFAULT now(),
           raw jsonb NOT NULL
         );
+      `);
+
+      // Add new columns to existing ticket_status_events table (for tables created before these columns were added)
+      await client.query(`
+        ALTER TABLE ticket_status_events 
+        ADD COLUMN IF NOT EXISTS assignee_id text,
+        ADD COLUMN IF NOT EXISTS assignee_name text,
+        ADD COLUMN IF NOT EXISTS closed_at_utc timestamptz
       `);
 
       // Create ticket_status_segments table
