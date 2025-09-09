@@ -127,7 +127,7 @@ async function startServer() {
       
       // Start assignee sync service
       assigneeSyncService.startPeriodicSync();
-      console.log('🔄 Assignee sync service started (today: 1min, historical: 1hr)');
+      console.log('🔄 Assignee sync service started (today: 5min, historical: 1hr)');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

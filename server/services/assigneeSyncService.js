@@ -21,7 +21,7 @@ class AssigneeSyncService {
 
   /**
    * Start the periodic sync service
-   * - Today: every 1 minute
+   * - Today: every 5 minutes
    * - Historical (last 30 days): every 1 hour
    */
   startPeriodicSync() {
@@ -31,7 +31,7 @@ class AssigneeSyncService {
     }
 
     console.log('🔄 Starting assignee sync service');
-    console.log('   📅 Today sync: every 1 minute');
+    console.log('   📅 Today sync: every 5 minutes');
     console.log('   📚 Historical sync: every 1 hour');
     
     // Run immediately on start
@@ -42,12 +42,12 @@ class AssigneeSyncService {
       console.error('Initial historical sync failed:', error);
     });
 
-    // Today sync every 1 minute
+    // Today sync every 5 minutes
     this.todaySyncInterval = setInterval(() => {
       this.syncToday().catch(error => {
         console.error('Today sync failed:', error);
       });
-    }, 1 * 60 * 1000); // 1 minute
+    }, 5 * 60 * 1000); // 5 minutes
 
     // Historical sync every 1 hour
     this.historicalSyncInterval = setInterval(() => {
@@ -339,7 +339,7 @@ class AssigneeSyncService {
       lastSync: this.lastSync,
       todaySyncActive: !!this.todaySyncInterval,
       historicalSyncActive: !!this.historicalSyncInterval,
-      todayInterval: '1 minute',
+      todayInterval: '5 minutes',
       historicalInterval: '1 hour'
     };
   }
