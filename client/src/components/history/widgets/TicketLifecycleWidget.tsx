@@ -151,8 +151,10 @@ const TicketLifecycleWidget: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (fromDate && toDate) {
+      fetchData();
+    }
+  }, [fetchData, fromDate, toDate]);
 
   useEffect(() => {
     fetchStatuses();
