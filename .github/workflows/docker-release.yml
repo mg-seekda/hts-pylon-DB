@@ -105,7 +105,7 @@ jobs:
             echo "📤 Push to registry: ${{ github.event.inputs.push_to_registry }}"
           fi
 
-  # Comment on PR with build results
+  # Comment on PR with build results (only for merged PRs, not manual runs)
   pr-comment:
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     needs: build-and-push
