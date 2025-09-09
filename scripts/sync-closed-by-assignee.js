@@ -61,13 +61,18 @@ async function syncClosedByAssignee() {
         const searchFilter = {
           limit: 1000,
           filter: {
-            field: 'closed_at',
-            operator: 'time_range',
-            value: {
-              start: dayStart.toISOString(),
-              end: dayEnd.toISOString()
-            },
+            operator: 'and',
             subfilters: [
+              {
+                field: 'closed_at',
+                operator: 'time_is_after',
+                value: dayStart.toISOString()
+              },
+              {
+                field: 'closed_at',
+                operator: 'time_is_before',
+                value: dayEnd.toISOString()
+              },
               {
                 field: 'state',
                 operator: 'equals',

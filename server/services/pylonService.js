@@ -236,17 +236,22 @@ class PylonService {
       const createdResponse = await this.apiCall('/issues', 'GET', null, createdFilter);
       const createdTickets = createdResponse.data || [];
 
-      // Get closed tickets from Pylon API using search endpoint
+      // Get closed tickets using search endpoint with proper filter structure
       const closedFilter = {
         limit: 2000,
         filter: {
-          field: 'closed_at',
-          operator: 'time_range',
-          value: {
-            start: startDate.startOf('day').toISOString(),
-            end: endDate.endOf('day').toISOString()
-          },
+          operator: 'and',
           subfilters: [
+            {
+              field: 'closed_at',
+              operator: 'time_is_after',
+              value: startDate.startOf('day').toISOString()
+            },
+            {
+              field: 'closed_at',
+              operator: 'time_is_before',
+              value: endDate.endOf('day').toISOString()
+            },
             {
               field: 'state',
               operator: 'equals',
@@ -259,17 +264,22 @@ class PylonService {
       const closedResponse = await this.apiCall('/issues/search', 'POST', closedFilter);
       const closedTickets = closedResponse.data || [];
 
-      // Get cancelled tickets from Pylon API using search endpoint
+      // Get cancelled tickets using search endpoint with proper filter structure
       const cancelledFilter = {
         limit: 2000,
         filter: {
-          field: 'closed_at',
-          operator: 'time_range',
-          value: {
-            start: startDate.startOf('day').toISOString(),
-            end: endDate.endOf('day').toISOString()
-          },
+          operator: 'and',
           subfilters: [
+            {
+              field: 'closed_at',
+              operator: 'time_is_after',
+              value: startDate.startOf('day').toISOString()
+            },
+            {
+              field: 'closed_at',
+              operator: 'time_is_before',
+              value: endDate.endOf('day').toISOString()
+            },
             {
               field: 'state',
               operator: 'equals',
@@ -298,7 +308,7 @@ class PylonService {
           }
         });
 
-        // Count closed tickets
+        // Count closed tickets (already filtered by closed_at date range)
         closedTickets.forEach(ticket => {
           if (ticket.state === 'closed' && ticket.custom_fields?.closed_at?.value) {
             const closedAt = dayjs(ticket.custom_fields.closed_at.value);
@@ -308,7 +318,7 @@ class PylonService {
           }
         });
 
-        // Count cancelled tickets
+        // Count cancelled tickets (already filtered by closed_at date range)
         cancelledTickets.forEach(ticket => {
           if (ticket.state === 'cancelled' && ticket.custom_fields?.closed_at?.value) {
             const closedAt = dayjs(ticket.custom_fields.closed_at.value);
