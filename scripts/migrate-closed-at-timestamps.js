@@ -20,14 +20,31 @@ async function migrateClosedAtTimestamps() {
     // Step 1: Get all closed/cancelled events without closed_at_utc
     console.log('1. Fetching closed/cancelled events without closed_at_utc...');
     const eventsWithoutClosedAt = await database.query(`
-      SELECT id, ticket_id, status, occurred_at_utc
+      SELECT id, ticket_id, status, occurred_at_utc, closed_at_utc
       FROM ticket_status_events 
       WHERE (status = 'closed' OR status = 'cancelled') 
-        AND closed_at_utc IS NULL
+        AND (closed_at_utc IS NULL OR closed_at_utc = '')
       ORDER BY occurred_at_utc DESC
     `);
 
     console.log(`   Found ${eventsWithoutClosedAt.rows.length} events to update`);
+
+    // Debug: Let's also check what closed/cancelled events we have in total
+    const allClosedCancelled = await database.query(`
+      SELECT id, ticket_id, status, occurred_at_utc, closed_at_utc
+      FROM ticket_status_events 
+      WHERE (status = 'closed' OR status = 'cancelled')
+      ORDER BY occurred_at_utc DESC
+      LIMIT 5
+    `);
+    
+    console.log(`   Debug: Total closed/cancelled events: ${allClosedCancelled.rows.length}`);
+    if (allClosedCancelled.rows.length > 0) {
+      console.log(`   Debug: Sample closed/cancelled events:`);
+      allClosedCancelled.rows.forEach((row, index) => {
+        console.log(`     ${index + 1}. Ticket ${row.ticket_id} (${row.status}) - closed_at_utc: ${row.closed_at_utc || 'NULL/EMPTY'}`);
+      });
+    }
 
     if (eventsWithoutClosedAt.rows.length === 0) {
       console.log('   ✅ No events need updating');
