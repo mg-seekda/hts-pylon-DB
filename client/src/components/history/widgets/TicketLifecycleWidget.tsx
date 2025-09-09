@@ -46,7 +46,7 @@ const TicketLifecycleWidget: React.FC = () => {
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [grouping, setGrouping] = useState<'day' | 'week'>('day');
-  const [selectedPreset, setSelectedPreset] = useState<string>('');
+  const [selectedPreset, setSelectedPreset] = useState<string>('current-week');
   const [isCustomRange, setIsCustomRange] = useState<boolean>(false);
   
   // Refs to access current values without causing re-renders
@@ -118,7 +118,7 @@ const TicketLifecycleWidget: React.FC = () => {
             const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
             setFromDate(weekStart.format('YYYY-MM-DD'));
             setToDate(weekEnd.format('YYYY-MM-DD'));
-            setSelectedPreset('');
+            setSelectedPreset('current-week');
           }
         } else {
           // Fallback to current week if API fails
@@ -127,7 +127,7 @@ const TicketLifecycleWidget: React.FC = () => {
           const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
           setFromDate(weekStart.format('YYYY-MM-DD'));
           setToDate(weekEnd.format('YYYY-MM-DD'));
-          setSelectedPreset('');
+          setSelectedPreset('current-week');
         }
       } catch (error) {
         console.error('Error fetching known data range:', error);
@@ -137,7 +137,7 @@ const TicketLifecycleWidget: React.FC = () => {
         const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
         setFromDate(weekStart.format('YYYY-MM-DD'));
         setToDate(weekEnd.format('YYYY-MM-DD'));
-        setSelectedPreset('');
+        setSelectedPreset('current-week');
       }
     };
 
