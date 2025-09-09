@@ -206,6 +206,8 @@ const TicketLifecycleWidget: React.FC = () => {
     const result = Object.values(groupedData);
     console.log('Chart data transformation:', result);
     console.log('Original data:', data.data);
+    console.log('First item structure:', data.data[0]);
+    console.log('Grouped data keys:', Object.keys(groupedData));
     return result;
   }, [data]);
 
@@ -341,21 +343,29 @@ const TicketLifecycleWidget: React.FC = () => {
         </div>
 
         {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Total Samples</div>
-            <div className="text-2xl font-bold text-white">{data.totalSamples.toLocaleString()}</div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Time Period</div>
-            <div className="text-lg font-semibold text-white">
-              {dayjs(data.from).format('MMM DD')} - {dayjs(data.to).format('MMM DD')}
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <div className="text-gray-400">Total Samples</div>
+              <div className="text-white font-semibold">
+                {data.totalSamples.toLocaleString()}
+              </div>
             </div>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Grouping</div>
-            <div className="text-lg font-semibold text-white capitalize">
-              {data.grouping}
+            <div>
+              <div className="text-gray-400">Statuses</div>
+              <div className="text-white font-semibold">{selectedStatuses.length}</div>
+            </div>
+            <div>
+              <div className="text-gray-400">Period</div>
+              <div className="text-white font-semibold">
+                {chartData.length} {grouping === 'week' ? 'weeks' : 'days'}
+              </div>
+            </div>
+            <div>
+              <div className="text-gray-400">Avg per {grouping === 'week' ? 'week' : 'day'}</div>
+              <div className="text-white font-semibold">
+                {chartData.length > 0 ? Math.round(data.totalSamples / chartData.length) : 0}
+              </div>
             </div>
           </div>
         </div>
