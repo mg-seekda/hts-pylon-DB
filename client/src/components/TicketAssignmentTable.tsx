@@ -5,11 +5,12 @@ import { useData } from '../context/DataContext';
 import { openPylon, resolveAssignmentLink } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
 import Tooltip from './Tooltip';
+import CacheStatus from './CacheStatus';
 
 
 const TicketAssignmentTable: React.FC = () => {
   const { state, refreshAssignmentTable } = useData();
-  const { assignmentTable, loading } = state;
+  const { assignmentTable, loading, cacheStatus } = state;
   
 
   
@@ -177,6 +178,10 @@ const TicketAssignmentTable: React.FC = () => {
             <p className="text-sm text-gray-300 mt-1">
               Total: {assignmentTable.totalTickets} tickets
             </p>
+            <CacheStatus 
+              metadata={cacheStatus.assignmentTable} 
+              className="mt-1" 
+            />
           </div>
           <button
             onClick={refreshAssignmentTable}

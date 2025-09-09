@@ -11,6 +11,7 @@ export interface KPIs {
   avgResolutionTime: number; // in hours
   newTickets: number;
   externalIssues: number;
+  cacheMetadata?: CacheMetadata;
 }
 
 export interface User {
@@ -29,6 +30,7 @@ export interface AssignmentTable {
   unassigned: User;
   statuses: string[];
   totalTickets: number;
+  cacheMetadata?: CacheMetadata;
 }
 
 export interface Ticket {
@@ -117,6 +119,8 @@ interface DataState {
   error: string | null;
   lastUpdated: string | null;
   cacheStatus: {
+    kpis?: CacheMetadata;
+    assignmentTable?: CacheMetadata;
     dailyFlow?: CacheMetadata;
     hourlyHeatmap?: CacheMetadata;
   };
@@ -124,8 +128,8 @@ interface DataState {
 
 type DataAction =
   | { type: 'SET_LOADING'; payload: { key: keyof DataState['loading']; value: boolean } }
-  | { type: 'SET_KPIS'; payload: KPIs }
-  | { type: 'SET_ASSIGNMENT_TABLE'; payload: AssignmentTable }
+  | { type: 'SET_KPIS'; payload: { kpis: KPIs; cacheMetadata?: CacheMetadata } }
+  | { type: 'SET_ASSIGNMENT_TABLE'; payload: { assignmentTable: AssignmentTable; cacheMetadata?: CacheMetadata } }
   | { type: 'SET_ANALYTICS'; payload: AnalyticsData }
   | { type: 'UPDATE_DAILY_FLOW'; payload: any }
   | { type: 'UPDATE_HOURLY_HEATMAP'; payload: any }
@@ -162,16 +166,24 @@ const dataReducer = (state: DataState, action: DataAction): DataState => {
     case 'SET_KPIS':
       return {
         ...state,
-        kpis: action.payload,
+        kpis: action.payload.kpis,
         loading: { ...state.loading, kpis: false },
         error: null,
+        cacheStatus: action.payload.cacheMetadata ? {
+          ...state.cacheStatus,
+          kpis: action.payload.cacheMetadata
+        } : state.cacheStatus,
       };
     case 'SET_ASSIGNMENT_TABLE':
       return {
         ...state,
-        assignmentTable: action.payload,
+        assignmentTable: action.payload.assignmentTable,
         loading: { ...state.loading, assignmentTable: false },
         error: null,
+        cacheStatus: action.payload.cacheMetadata ? {
+          ...state.cacheStatus,
+          assignmentTable: action.payload.cacheMetadata
+        } : state.cacheStatus,
       };
 
     case 'SET_ANALYTICS':
@@ -260,37 +272,57 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
 
   const fetchKPIs = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: true } });
+    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
+    if (!state.kpis) {
+      dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: true } });
+    }
     try {
-      const kpis = await apiService.getKPIs();
-      dispatch({ type: 'SET_KPIS', payload: kpis });
+      const response = await apiService.getKPIs();
+      const { cacheMetadata, ...kpis } = response;
+      dispatch({ type: 'SET_KPIS', payload: { kpis, cacheMetadata } });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch KPIs' });
     }
-  }, []);
+  }, [state.kpis]);
 
   const fetchAssignmentTable = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: true } });
+    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
+    if (!state.assignmentTable) {
+      dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: true } });
+    }
     try {
-      const assignmentTable = await apiService.getAssignmentTable();
-      dispatch({ type: 'SET_ASSIGNMENT_TABLE', payload: assignmentTable });
+      const response = await apiService.getAssignmentTable();
+      const { cacheMetadata, ...assignmentTable } = response;
+      dispatch({ type: 'SET_ASSIGNMENT_TABLE', payload: { assignmentTable, cacheMetadata } });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch assignment table' });
     }
-  }, []);
+  }, [state.assignmentTable]);
 
 
 
 
   const refreshKPIs = useCallback(async () => {
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
-    await fetchKPIs();
-  }, [fetchKPIs]);
+    try {
+      const response = await apiService.getKPIs();
+      const { cacheMetadata, ...kpis } = response;
+      dispatch({ type: 'SET_KPIS', payload: { kpis, cacheMetadata } });
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to refresh KPIs' });
+    }
+  }, []);
 
   const refreshAssignmentTable = useCallback(async () => {
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
-    await fetchAssignmentTable();
-  }, [fetchAssignmentTable]);
+    try {
+      const response = await apiService.getAssignmentTable();
+      const { cacheMetadata, ...assignmentTable } = response;
+      dispatch({ type: 'SET_ASSIGNMENT_TABLE', payload: { assignmentTable, cacheMetadata } });
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to refresh assignment table' });
+    }
+  }, []);
 
 
   const refreshDailyFlow = useCallback(async () => {
