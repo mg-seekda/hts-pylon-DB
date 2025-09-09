@@ -2,6 +2,7 @@ const database = require('./database');
 const pylonService = require('./pylonService');
 const TimezoneUtils = require('../utils/timezone');
 const TicketLifecycleAggregationService = require('./ticketLifecycleAggregation');
+const logger = require('../utils/logger');
 
 class DailyIngestionService {
   constructor() {
@@ -16,12 +17,12 @@ class DailyIngestionService {
     try {
       await this.loadLastRunFromDatabase();
       if (this.lastRun) {
-        console.log(`📅 Daily ingestion service initialized. Last run: ${this.lastRun.toISOString()}`);
+        logger.info(`📅 Daily ingestion service initialized. Last run: ${this.lastRun.toISOString()}`);
       } else {
-        console.log('📅 Daily ingestion service initialized. No previous runs found.');
+        logger.info('📅 Daily ingestion service initialized. No previous runs found.');
       }
     } catch (error) {
-      console.error('Error initializing daily ingestion service:', error);
+      logger.error('Error initializing daily ingestion service:', error);
       // Don't throw - allow service to continue without last run date
       this.lastRun = null;
     }
@@ -45,9 +46,9 @@ class DailyIngestionService {
     } catch (error) {
       // Table might not exist yet, this is expected on first run
       if (error.message && error.message.includes('relation "ingestion_metadata" does not exist')) {
-        console.log('📅 ingestion_metadata table does not exist yet, will be created on first run');
+        logger.info('📅 ingestion_metadata table does not exist yet, will be created on first run');
       } else {
-        console.error('Error loading last run from database:', error.message || error);
+        logger.error('Error loading last run from database:', error.message || error);
       }
       // Continue without last run date if database query fails
       this.lastRun = null;
@@ -67,9 +68,9 @@ class DailyIngestionService {
         DO UPDATE SET last_run = EXCLUDED.last_run, created_at = NOW()
       `;
       await database.query(query, [this.lastRun.toISOString()]);
-      console.log(`📅 Last run date saved to database: ${this.lastRun.toISOString()}`);
+      logger.info(`📅 Last run date saved to database: ${this.lastRun.toISOString()}`);
     } catch (error) {
-      console.error('Error saving last run to database:', error.message || error);
+      logger.error('Error saving last run to database:', error.message || error);
       // Continue even if database save fails
     }
   }
@@ -93,9 +94,9 @@ class DailyIngestionService {
         ON ingestion_metadata(last_run DESC);
       `;
       await database.query(query);
-      console.log('📅 ingestion_metadata table ensured');
+      logger.info('📅 ingestion_metadata table ensured');
     } catch (error) {
-      console.error('Error creating ingestion_metadata table:', error.message || error);
+      logger.error('Error creating ingestion_metadata table:', error.message || error);
       // Don't throw - allow service to continue without persistence
     }
   }
