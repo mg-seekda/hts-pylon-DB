@@ -258,7 +258,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[800px] relative flex flex-col"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[650px] relative flex flex-col"
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2 text-gray-400">
@@ -275,7 +275,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[800px] relative flex flex-col"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[650px] relative flex flex-col"
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2 text-red-400">
@@ -292,7 +292,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[800px] relative flex flex-col"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[650px] relative flex flex-col"
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -412,7 +412,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[800px] relative flex flex-col"
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[650px] relative flex flex-col"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -430,9 +430,10 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
             <span className="text-sm">Refresh</span>
           </button>
         </div>
-        <p className="text-gray-400 text-sm">
+        <p className="text-gray-400 text-sm mb-3">
           Tickets closed by assignee over time ({bucket === 'week' ? 'weekly' : 'daily'} view)
         </p>
+        <div className="border-t border-gray-600"></div>
       </div>
 
       {/* Middle section - Vertically centered content */}
