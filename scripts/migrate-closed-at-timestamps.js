@@ -23,7 +23,7 @@ async function migrateClosedAtTimestamps() {
       SELECT id, ticket_id, status, occurred_at_utc, closed_at_utc
       FROM ticket_status_events 
       WHERE (LOWER(status) = 'closed' OR LOWER(status) = 'cancelled') 
-        AND (closed_at_utc IS NULL OR closed_at_utc = '' OR closed_at_utc = 'null')
+        AND (closed_at_utc IS NULL OR closed_at_utc::text = '' OR closed_at_utc::text = 'null')
       ORDER BY occurred_at_utc DESC
     `);
 
