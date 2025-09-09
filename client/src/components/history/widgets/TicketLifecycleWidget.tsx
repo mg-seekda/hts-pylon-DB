@@ -198,11 +198,15 @@ const TicketLifecycleWidget: React.FC = () => {
       if (!groupedData[key]) {
         groupedData[key] = { date: key };
       }
-      groupedData[key][item.status] = item.avgDurationSeconds;
-      groupedData[key][`${item.status}_count`] = item.countSegments;
+      // Convert to number to ensure proper chart rendering
+      groupedData[key][item.status] = Number(item.avgDurationSeconds);
+      groupedData[key][`${item.status}_count`] = Number(item.countSegments);
     });
 
-    return Object.values(groupedData);
+    const result = Object.values(groupedData);
+    console.log('Chart data transformation:', result);
+    console.log('Original data:', data.data);
+    return result;
   }, [data]);
 
   const handleStatusToggle = (status: string) => {
@@ -278,6 +282,9 @@ const TicketLifecycleWidget: React.FC = () => {
       );
     }
 
+    console.log('Rendering chart with data:', chartData);
+    console.log('Selected statuses for chart:', selectedStatuses);
+    
     return (
       <>
         {/* Chart */}
@@ -316,7 +323,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 labelFormatter={(value) => `Date: ${formatDate(value)}`}
                 formatter={(value, name) => [
                   formatDuration(value as number),
-                  name
+                  name // Status names are already properly formatted from the API
                 ]}
               />
               <Legend />
@@ -382,194 +389,69 @@ const TicketLifecycleWidget: React.FC = () => {
       </div>
 
       <div className="card-body">
-        {/* Date Range and Grouping Controls - Always Visible */}
-        <div className="bg-gray-800 rounded-lg p-4 mb-6 border border-gray-700">
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Preset Selector */}
-            <div className="relative">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setIsPresetOpen(!isPresetOpen)}
-                className="btn btn-secondary flex items-center space-x-2"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>{selectedPreset === 'knownData' ? 'Known Data' : selectedPreset ? presets[selectedPreset as keyof typeof presets]?.label : 'Select Preset'}</span>
-                <ChevronDown className="w-4 h-4" />
-              </motion.button>
+        {/* Date Range and Controls */}
+        <div className="flex flex-wrap items-center gap-4 mb-6">
+          {/* Date Range */}
+          <div className="flex items-center space-x-2">
+            <label className="text-sm text-gray-400">From:</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setIsCustomRange(true);
+                setSelectedPreset('');
+              }}
+              className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-              {isPresetOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 mt-2 w-48 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-50"
-                >
-                  <div className="py-2">
-                    <button
-                      onClick={async () => {
-                        try {
-                          const response = await fetch('/api/ticket-lifecycle/date-range');
-                          if (response.ok) {
-                            const data = await response.json();
-                            if (data.hasData) {
-                              setFromDate(data.fromFormatted);
-                              setToDate(data.toFormatted);
-                              setSelectedPreset('knownData');
-                              setIsCustomRange(false);
-                              setIsPresetOpen(false);
-                            } else {
-                              console.log('No ticket lifecycle data available yet');
-                              setIsPresetOpen(false);
-                            }
-                          }
-                        } catch (error) {
-                          console.error('Error fetching known data range:', error);
-                          setIsPresetOpen(false);
-                        }
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 transition-colors"
-                    >
-                      Known Data
-                    </button>
-                    {Object.entries(presets).map(([key, preset]) => (
-                      <button
-                        key={key}
-                        onClick={() => handlePresetSelect(key)}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 transition-colors"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => {
-                        setIsCustomRange(true);
-                        setIsPresetOpen(false);
-                        setSelectedPreset('');
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-600 transition-colors border-t border-gray-600"
-                    >
-                      Custom Range
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
+          <div className="flex items-center space-x-2">
+            <label className="text-sm text-gray-400">To:</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setIsCustomRange(true);
+                setSelectedPreset('');
+              }}
+              className="px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-            {/* Custom Date Range */}
-            <div className="flex items-center space-x-2">
-              <label className="text-sm text-gray-400">From:</label>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  setFromDate(e.target.value);
-                  setIsCustomRange(true);
-                  setSelectedPreset('');
-                }}
-                className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <label className="text-sm text-gray-400">To:</label>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  setToDate(e.target.value);
-                  setIsCustomRange(true);
-                  setSelectedPreset('');
-                }}
-                className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Bucket Selector */}
-            <div className="flex items-center space-x-2">
-              <label className="text-sm text-gray-400">Group by:</label>
-              <div className="flex bg-gray-700 rounded-lg p-1">
-                <button
-                  onClick={() => handleBucketChange('day')}
-                  className={`px-3 py-1 text-sm rounded transition-colors ${
-                    grouping === 'day'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  Day
-                </button>
-                <button
-                  onClick={() => handleBucketChange('week')}
-                  className={`px-3 py-1 text-sm rounded transition-colors ${
-                    grouping === 'week'
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  Week
-                </button>
-              </div>
-            </div>
-
-            {/* Quick buttons */}
-            <div className="flex items-center space-x-2">
+          {/* Grouping */}
+          <div className="flex items-center space-x-2">
+            <div className="flex bg-gray-700 rounded-lg p-1">
               <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/ticket-lifecycle/date-range');
-                    if (response.ok) {
-                      const data = await response.json();
-                      if (data.hasData) {
-                        setFromDate(data.fromFormatted);
-                        setToDate(data.toFormatted);
-                        setSelectedPreset('knownData');
-                        setIsCustomRange(false);
-                      } else {
-                        // Show message if no data available
-                        console.log('No ticket lifecycle data available yet');
-                      }
-                    }
-                  } catch (error) {
-                    console.error('Error fetching known data range:', error);
-                  }
-                }}
-                className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition-colors"
+                onClick={() => handleBucketChange('day')}
+                className={`px-3 py-1 text-sm rounded transition-colors ${
+                  grouping === 'day'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:text-white'
+                }`}
               >
-                Known Data
+                Day
               </button>
               <button
-                onClick={() => {
-                  const today = dayjs();
-                  const weekAgo = today.subtract(7, 'day');
-                  setFromDate(weekAgo.format('YYYY-MM-DD'));
-                  setToDate(today.format('YYYY-MM-DD'));
-                  setSelectedPreset('');
-                  setIsCustomRange(true);
-                }}
-                className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+                onClick={() => handleBucketChange('week')}
+                className={`px-3 py-1 text-sm rounded transition-colors ${
+                  grouping === 'week'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:text-white'
+                }`}
               >
-                Last 7 Days
+                Week
               </button>
-            </div>
-
-            {/* Timezone Indicator */}
-            <div className="text-xs text-gray-500 ml-auto">
-              Europe/Vienna
             </div>
           </div>
-        </div>
 
-        {/* Widget-specific Controls - Always Visible */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          {/* Hours Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-300">Time Mode:</span>
+          {/* Time Mode */}
+          <div className="flex items-center space-x-2">
             <div className="flex bg-gray-700 rounded-lg p-1">
               <button
                 onClick={() => setHoursMode('business')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1 text-sm rounded transition-colors ${
                   hoursMode === 'business'
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-300 hover:text-white'
@@ -579,7 +461,7 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
               <button
                 onClick={() => setHoursMode('wall')}
-                className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                className={`px-3 py-1 text-sm rounded transition-colors ${
                   hoursMode === 'wall'
                     ? 'bg-blue-600 text-white'
                     : 'text-gray-300 hover:text-white'
@@ -589,27 +471,23 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-300">Status:</span>
-            <div className="flex flex-wrap gap-1">
-              {availableStatuses.map(status => (
-                <button
-                  key={status}
-                  onClick={() => handleStatusToggle(status)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    selectedStatuses.includes(status)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Status Filter */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {availableStatuses.map(status => (
+            <button
+              key={status}
+              onClick={() => handleStatusToggle(status)}
+              className={`px-3 py-1 text-sm rounded transition-colors ${
+                selectedStatuses.includes(status)
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+              }`}
+            >
+              {status}
+            </button>
+          ))}
         </div>
 
         {/* Dynamic Content */}
