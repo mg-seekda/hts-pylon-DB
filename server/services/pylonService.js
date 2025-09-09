@@ -226,7 +226,7 @@ class PylonService {
     const endDate = dayjs();
     
     try {
-      // Get created tickets from Pylon API (like before)
+      // Get created tickets from Pylon API
       const createdFilter = {
         limit: 2000,
         start_time: startDate.startOf('day').toISOString(),
@@ -236,40 +236,35 @@ class PylonService {
       const createdResponse = await this.apiCall('/issues', 'GET', null, createdFilter);
       const createdTickets = createdResponse.data || [];
 
-      // Get closed/cancelled events from database (last occurrence per ticket)
-      const events = await database.query(`
-        SELECT 
-          ticket_id,
-          status,
-          occurred_at_utc,
-          closed_at_utc,
-          ROW_NUMBER() OVER (PARTITION BY ticket_id, status ORDER BY occurred_at_utc DESC) as rn
-        FROM ticket_status_events 
-        WHERE occurred_at_utc >= $1 
-          AND occurred_at_utc <= $2
-          AND (LOWER(status) = 'closed' OR LOWER(status) = 'cancelled')
-        ORDER BY ticket_id, status, occurred_at_utc DESC
-      `, [startDate.startOf('day').utc().toISOString(), endDate.endOf('day').utc().toISOString()]);
-
-      // Get only the latest event per ticket per status
-      const latestEvents = events.rows.filter(event => event.rn === 1);
+      // Get closed tickets from Pylon API
+      const closedFilter = {
+        limit: 2000,
+        start_time: startDate.startOf('day').toISOString(),
+        end_time: endDate.endOf('day').toISOString(),
+        include: ['custom_fields'],
+        filter: {
+          field: 'closed_at',
+          operator: 'is_not_null'
+        }
+      };
       
-      // Group closed/cancelled events by ticket
-      const ticketStates = {};
-      latestEvents.forEach(event => {
-        if (!ticketStates[event.ticket_id]) {
-          ticketStates[event.ticket_id] = {
-            closed: null,
-            cancelled: null
-          };
+      const closedResponse = await this.apiCall('/issues', 'GET', null, closedFilter);
+      const closedTickets = closedResponse.data || [];
+
+      // Get cancelled tickets from Pylon API
+      const cancelledFilter = {
+        limit: 2000,
+        start_time: startDate.startOf('day').toISOString(),
+        end_time: endDate.endOf('day').toISOString(),
+        include: ['custom_fields'],
+        filter: {
+          field: 'closed_at',
+          operator: 'is_not_null'
         }
-        
-        if (event.status.toLowerCase() === 'closed') {
-          ticketStates[event.ticket_id].closed = event.closed_at_utc || event.occurred_at_utc;
-        } else if (event.status.toLowerCase() === 'cancelled') {
-          ticketStates[event.ticket_id].cancelled = event.closed_at_utc || event.occurred_at_utc;
-        }
-      });
+      };
+      
+      const cancelledResponse = await this.apiCall('/issues', 'GET', null, cancelledFilter);
+      const cancelledTickets = cancelledResponse.data || [];
 
       // Group tickets by date
       for (let i = 13; i >= 0; i--) {
@@ -280,23 +275,30 @@ class PylonService {
         let closedCount = 0;
         let cancelledCount = 0;
 
-        // Count created tickets from Pylon API
+        // Count created tickets
         createdTickets.forEach(ticket => {
           if (ticket.created_at && dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr) {
             createdCount++;
           }
         });
 
-        // Count closed/cancelled tickets from database
-        Object.values(ticketStates).forEach(ticket => {
-          // Count closed tickets
-          if (ticket.closed && dayjs(ticket.closed).format('YYYY-MM-DD') === dateStr) {
-            closedCount++;
+        // Count closed tickets
+        closedTickets.forEach(ticket => {
+          if (ticket.state === 'closed' && ticket.custom_fields?.closed_at?.value) {
+            const closedAt = dayjs(ticket.custom_fields.closed_at.value);
+            if (closedAt.format('YYYY-MM-DD') === dateStr) {
+              closedCount++;
+            }
           }
-          
-          // Count cancelled tickets
-          if (ticket.cancelled && dayjs(ticket.cancelled).format('YYYY-MM-DD') === dateStr) {
-            cancelledCount++;
+        });
+
+        // Count cancelled tickets
+        cancelledTickets.forEach(ticket => {
+          if (ticket.state === 'cancelled' && ticket.custom_fields?.closed_at?.value) {
+            const closedAt = dayjs(ticket.custom_fields.closed_at.value);
+            if (closedAt.format('YYYY-MM-DD') === dateStr) {
+              cancelledCount++;
+            }
           }
         });
         
