@@ -78,6 +78,8 @@ class DatabaseService {
       const client = await this.pool.connect();
       
       // Create closed_by_assignee table
+      // NOTE: This table is ONLY updated by AssigneeSyncService for data consistency
+      // All other services (webhooks, daily ingestion, backfill) are disabled for this table
       await client.query(`
         CREATE TABLE IF NOT EXISTS closed_by_assignee (
           bucket_start timestamptz NOT NULL,

@@ -121,10 +121,10 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
       console.error(`Error processing segments for ticket ${ticket_id}:`, error);
     });
 
-    // Update assignee counts (async) - handles both assigned and unassigned tickets
-    updateAssigneeCounts(ticket_id, status, assignee_id, assignee_name, closedAtUtc).catch(error => {
-      console.error(`Error updating assignee counts for ticket ${ticket_id}:`, error);
-    });
+    // DISABLED: Assignee counting now handled by periodic Pylon API sync for data consistency
+    // updateAssigneeCounts(ticket_id, status, assignee_id, assignee_name, closedAtUtc).catch(error => {
+    //   console.error(`Error updating assignee counts for ticket ${ticket_id}:`, error);
+    // });
 
     res.status(200).json({ message: 'Event processed successfully' });
 
@@ -231,40 +231,40 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
     const aggregationDate = closedAtUtc || new Date();
     const bucketDate = dayjs(aggregationDate).tz('Europe/Vienna').format('YYYY-MM-DD');
 
-    // If previous status was also closed, decrement the old count
-    if (previousStatus && previousStatus.toLowerCase() === 'closed') {
-      const previousBucketDate = previousClosedAtUtc ? 
-        dayjs(previousClosedAtUtc).tz('Europe/Vienna').format('YYYY-MM-DD') :
-        dayjs().tz('Europe/Vienna').format('YYYY-MM-DD');
+    // DISABLED: Assignee counting now handled by periodic Pylon API sync for data consistency
+    // if (previousStatus && previousStatus.toLowerCase() === 'closed') {
+    //   const previousBucketDate = previousClosedAtUtc ? 
+    //     dayjs(previousClosedAtUtc).tz('Europe/Vienna').format('YYYY-MM-DD') :
+    //     dayjs().tz('Europe/Vienna').format('YYYY-MM-DD');
 
-      await databaseService.query(`
-        UPDATE closed_by_assignee 
-        SET count = GREATEST(0, count - 1)
-        WHERE bucket_start = $1::timestamptz 
-          AND bucket = 'day' 
-          AND assignee_id = $2
-      `, [
-        dayjs(previousBucketDate).startOf('day').utc().toISOString(),
-        previousAssigneeId
-      ]);
-    }
+    //   await databaseService.query(`
+    //     UPDATE closed_by_assignee 
+    //     SET count = GREATEST(0, count - 1)
+    //     WHERE bucket_start = $1::timestamptz 
+    //       AND bucket = 'day' 
+    //       AND assignee_id = $2
+    //   `, [
+    //     dayjs(previousBucketDate).startOf('day').utc().toISOString(),
+    //     previousAssigneeId
+    //   ]);
+    // }
 
-    // Increment the new count (only for closed tickets)
-    if (newStatus.toLowerCase() === 'closed') {
-      await databaseService.query(`
-        INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
-        VALUES ($1, $2, $3, $4, 1)
-        ON CONFLICT (bucket_start, bucket, assignee_id)
-        DO UPDATE SET 
-          assignee_name = EXCLUDED.assignee_name,
-          count = closed_by_assignee.count + 1
-      `, [
-        dayjs(bucketDate).startOf('day').utc().toISOString(),
-        'day',
-        finalAssigneeId,
-        finalAssigneeName
-      ]);
-    }
+    // DISABLED: Assignee counting now handled by periodic Pylon API sync for data consistency
+    // if (newStatus.toLowerCase() === 'closed') {
+    //   await databaseService.query(`
+    //     INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
+    //     VALUES ($1, $2, $3, $4, 1)
+    //     ON CONFLICT (bucket_start, bucket, assignee_id)
+    //     DO UPDATE SET 
+    //       assignee_name = EXCLUDED.assignee_name,
+    //       count = closed_by_assignee.count + 1
+    //   `, [
+    //     dayjs(bucketDate).startOf('day').utc().toISOString(),
+    //     'day',
+    //     finalAssigneeId,
+    //     finalAssigneeName
+    //   ]);
+    // }
 
     // Update assignees table
     await databaseService.query(`

@@ -5,6 +5,7 @@ const pylonService = require('../services/pylonService');
 const TimezoneUtils = require('../utils/timezone');
 const cacheMiddleware = require('../middleware/cache');
 const dayjs = require('dayjs');
+const assigneeSyncService = require('../services/assigneeSyncService');
 
 // GET /api/history/closed-by-assignee
 router.get('/closed-by-assignee', async (req, res) => {
@@ -167,10 +168,10 @@ router.post('/backfill', async (req, res) => {
         for (const [assigneeId, count] of Object.entries(assigneeCounts)) {
           const assigneeName = assignees[assigneeId];
           
-          // Check if this date is recent (within last 7 days) - if so, skip to avoid overwriting webhook data
+          // Check if this date is recent (within last 7 days) - if so, skip to avoid overwriting periodic sync data
           const daysDiff = dayjs().diff(currentDate, 'day');
           if (daysDiff <= 7) {
-            console.log(`   Skipping ${currentDate.format('YYYY-MM-DD')} for assignee ${assigneeName} - too recent, webhook data takes precedence`);
+            console.log(`   Skipping ${currentDate.format('YYYY-MM-DD')} for assignee ${assigneeName} - too recent, periodic sync data takes precedence`);
             continue;
           }
           
@@ -258,6 +259,70 @@ router.post('/ingest-daily', async (req, res) => {
     console.error('Error running daily ingestion:', error);
     res.status(500).json({ 
       error: 'Daily ingestion failed',
+      message: error.message 
+    });
+  }
+});
+
+// POST /api/history/sync-assignees
+router.post('/sync-assignees', async (req, res) => {
+  try {
+    await assigneeSyncService.syncClosedByAssignee();
+    
+    res.json({
+      success: true,
+      message: 'Assignee sync completed successfully'
+    });
+  } catch (error) {
+    console.error('Error running assignee sync:', error);
+    res.status(500).json({ 
+      error: 'Assignee sync failed',
+      message: error.message 
+    });
+  }
+});
+
+// POST /api/history/sync-assignees-range
+router.post('/sync-assignees-range', async (req, res) => {
+  try {
+    const { from, to } = req.body;
+
+    if (!from || !to) {
+      return res.status(400).json({ 
+        error: 'Missing required parameters: from and to dates' 
+      });
+    }
+
+    // Validate dates
+    const { from: validFrom, to: validTo } = TimezoneUtils.validateDateRange(from, to, true);
+    
+    const fromDate = TimezoneUtils.toVienna(validFrom);
+    const toDate = TimezoneUtils.toVienna(validTo);
+    
+    await assigneeSyncService.syncDateRange(fromDate, toDate);
+    
+    res.json({
+      success: true,
+      message: `Assignee sync completed for ${fromDate.format('YYYY-MM-DD')} to ${toDate.format('YYYY-MM-DD')}`
+    });
+  } catch (error) {
+    console.error('Error running assignee sync range:', error);
+    res.status(500).json({ 
+      error: 'Assignee sync range failed',
+      message: error.message 
+    });
+  }
+});
+
+// GET /api/history/sync-status
+router.get('/sync-status', async (req, res) => {
+  try {
+    const status = assigneeSyncService.getStatus();
+    res.json(status);
+  } catch (error) {
+    console.error('Error getting sync status:', error);
+    res.status(500).json({ 
+      error: 'Failed to get sync status',
       message: error.message 
     });
   }

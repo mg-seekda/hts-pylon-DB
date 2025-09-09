@@ -9,6 +9,7 @@ require('dotenv').config();
 const pylonService = require('./services/pylonService');
 const database = require('./services/database');
 const dailyIngestion = require('./services/dailyIngestion');
+const assigneeSyncService = require('./services/assigneeSyncService');
 const authMiddleware = require('./middleware/auth');
 const cacheMiddleware = require('./middleware/cache');
 
@@ -123,6 +124,10 @@ async function startServer() {
       } else {
         console.log('📝 Daily ingestion disabled in development mode');
       }
+      
+      // Start assignee sync service (every 5 minutes)
+      assigneeSyncService.startPeriodicSync();
+      console.log('🔄 Assignee sync service started (every 5 minutes)');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

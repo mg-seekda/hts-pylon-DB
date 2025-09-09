@@ -69,7 +69,8 @@ class DailyIngestionService {
 
       console.log(`Found ${tickets.length} closed tickets for ${yesterday.format('YYYY-MM-DD')}`);
 
-      // DISABLED: Assignee counting now handled by webhooks for real-time updates
+      // DISABLED: Assignee counting now handled by periodic Pylon API sync for data consistency
+      // This ensures only one source of truth for closed_by_assignee data
       // Process tickets and group by assignee
       // const assigneeCounts = {};
       // const assignees = {};
