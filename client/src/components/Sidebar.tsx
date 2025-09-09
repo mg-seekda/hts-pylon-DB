@@ -71,9 +71,9 @@ const Sidebar: React.FC = () => {
           <img 
             src="/Seekda_Aspire_Logo_23_1_no_outline-2.svg" 
             alt="Seekda Aspire Logo" 
-            className="w-16 h-auto mx-auto mb-3"
+            className="w-24 h-auto mx-auto mb-3"
           />
-          <h1 className="text-xl font-bold text-white">HTS Dashboard</h1>
+          <h1 className="text-lg font-semibold text-white">HTS Dashboard</h1>
         </div>
       </div>
 
