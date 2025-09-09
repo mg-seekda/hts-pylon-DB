@@ -605,6 +605,10 @@ const TicketLifecycleWidget: React.FC = () => {
           </div>
         </div>
         
+        <div className="mb-6">
+          {/* Empty space to match the legend height in the main widget */}
+        </div>
+        
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="text-gray-400 mb-4">
@@ -765,7 +769,7 @@ const TicketLifecycleWidget: React.FC = () => {
 
       {/* Legend */}
       {availableStatuses.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             {availableStatuses.map((status, index) => (
               <button
