@@ -7,9 +7,14 @@ import {
   RefreshCw, 
   ExternalLink,
   Home,
-  Calendar
+  Calendar,
+  Users,
+  User,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import { PYLON_VIEWS } from '../utils/pylonUtils';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -62,14 +67,13 @@ const Sidebar: React.FC = () => {
     >
       {/* Logo and Title */}
       <div className="p-6 border-b border-gray-700">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-            <BarChart3 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">HTS Dashboard</h1>
-            <p className="text-sm text-gray-400">Analytics & Insights</p>
-          </div>
+        <div className="text-center">
+          <img 
+            src="/Seekda_Aspire_Logo_23_1_no_outline-2.svg" 
+            alt="Seekda Aspire Logo" 
+            className="w-16 h-auto mx-auto mb-3"
+          />
+          <h1 className="text-xl font-bold text-white">HTS Dashboard</h1>
         </div>
       </div>
 
@@ -126,22 +130,49 @@ const Sidebar: React.FC = () => {
         <div className="space-y-2">
           <div className="text-xs text-gray-500 mb-2">Quick Links</div>
           <a
-            href="https://app.pylon.com"
+            href="https://app.usepylon.com"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
           >
             <ExternalLink className="w-4 h-4" />
-            <span className="text-sm">Open Pylon</span>
+            <span className="text-sm">Pylon App</span>
           </a>
           <a
-            href="https://app.pylon.com/issues"
+            href={PYLON_VIEWS.ALL}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
           >
-            <Calendar className="w-4 h-4" />
-            <span className="text-sm">View Issues</span>
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">All Issues</span>
+          </a>
+          <a
+            href={PYLON_VIEWS.MY}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+          >
+            <User className="w-4 h-4" />
+            <span className="text-sm">My Issues</span>
+          </a>
+          <a
+            href={PYLON_VIEWS.UNASSIGNED}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+          >
+            <Users className="w-4 h-4" />
+            <span className="text-sm">Unassigned</span>
+          </a>
+          <a
+            href={PYLON_VIEWS.CLOSED_BY_ASSIGNEE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-sm">Closed by Assignee</span>
           </a>
         </div>
       </div>
