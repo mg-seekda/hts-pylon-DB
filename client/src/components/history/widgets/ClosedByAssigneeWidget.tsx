@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw } from 'lucide-react';
+import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw, Users } from 'lucide-react';
 import { HistoryWidgetProps } from '../historyWidgets';
 import { apiService } from '../../../services/apiService';
 import InfoIcon from '../../InfoIcon';
@@ -416,7 +416,10 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
+          <div className="flex items-center space-x-2">
+            <Users className="w-5 h-5 text-blue-400" />
+            <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
+          </div>
           <button
             onClick={fetchData}
             disabled={loading}
