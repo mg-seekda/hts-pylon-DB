@@ -1,8 +1,12 @@
 const express = require('express');
 const crypto = require('crypto');
+const dayjs = require('dayjs');
+const timezone = require('dayjs/plugin/timezone');
 const router = express.Router();
 const databaseService = require('../services/database');
 const BusinessHoursCalculator = require('../utils/businessHours');
+
+dayjs.extend(timezone);
 
 // We need to capture the raw body before Express parses it
 // This requires setting up the route differently in the main server file
@@ -66,7 +70,7 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
     
     // Webhook received - processing event
 
-    const { type, ticket_id, status } = body;
+    const { type, ticket_id, status, assignee_id, assignee_name, closed_at } = body;
 
     // Validate required fields
     if (!type || !ticket_id || !status) {
@@ -96,15 +100,30 @@ router.post('/pylon/tickets', verifyWebhookSignature, async (req, res) => {
       return res.status(200).json({ message: 'Event already processed' });
     }
 
+    // Process closed_at timestamp
+    let closedAtUtc = null;
+    if (closed_at && (status === 'closed' || status === 'cancelled')) {
+      try {
+        closedAtUtc = new Date(closed_at).toISOString();
+      } catch (error) {
+        console.warn(`Invalid closed_at timestamp for ticket ${ticket_id}: ${closed_at}`);
+      }
+    }
+
     // Store the event
     await databaseService.query(`
-      INSERT INTO ticket_status_events (event_id, ticket_id, status, occurred_at_utc, raw)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [eventId, ticket_id, status, occurredAt.toISOString(), JSON.stringify(body)]);
+      INSERT INTO ticket_status_events (event_id, ticket_id, status, assignee_id, assignee_name, closed_at_utc, occurred_at_utc, raw)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [eventId, ticket_id, status, assignee_id || null, assignee_name || null, closedAtUtc, occurredAt.toISOString(), JSON.stringify(body)]);
 
     // Enqueue segment processing (async)
     processTicketSegments(ticket_id).catch(error => {
       console.error(`Error processing segments for ticket ${ticket_id}:`, error);
+    });
+
+    // Update assignee counts (async) - handles both assigned and unassigned tickets
+    updateAssigneeCounts(ticket_id, status, assignee_id, assignee_name, closedAtUtc).catch(error => {
+      console.error(`Error updating assignee counts for ticket ${ticket_id}:`, error);
     });
 
     res.status(200).json({ message: 'Event processed successfully' });
@@ -176,6 +195,90 @@ async function processTicketSegments(ticketId) {
   } catch (error) {
     console.error(`Error processing segments for ticket ${ticketId}:`, error);
     throw error;
+  }
+}
+
+// Update assignee counts when ticket status changes
+async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeName, closedAtUtc) {
+  try {
+    // Only process closed and cancelled tickets
+    if (!['closed', 'cancelled'].includes(newStatus)) {
+      return;
+    }
+
+    // Handle unassigned tickets
+    const finalAssigneeId = assigneeId || 'unassigned';
+    const finalAssigneeName = assigneeName || 'Unassigned';
+
+    console.log(`Processing ticket ${ticketId}: ${finalAssigneeName} (${newStatus})`);
+
+    // Get the previous status for this ticket
+    const previousEvent = await databaseService.query(`
+      SELECT status, assignee_id, assignee_name, closed_at_utc
+      FROM ticket_status_events 
+      WHERE ticket_id = $1 
+        AND id != (SELECT id FROM ticket_status_events WHERE ticket_id = $1 ORDER BY occurred_at_utc DESC LIMIT 1)
+      ORDER BY occurred_at_utc DESC 
+      LIMIT 1
+    `, [ticketId]);
+
+    const previousStatus = previousEvent.rows[0]?.status;
+    const previousAssigneeId = previousEvent.rows[0]?.assignee_id || 'unassigned';
+    const previousAssigneeName = previousEvent.rows[0]?.assignee_name || 'Unassigned';
+    const previousClosedAtUtc = previousEvent.rows[0]?.closed_at_utc;
+
+    // Determine the date for aggregation (use closed_at_utc if available, otherwise occurred_at_utc)
+    const aggregationDate = closedAtUtc || new Date();
+    const bucketDate = dayjs(aggregationDate).tz('Europe/Vienna').format('YYYY-MM-DD');
+
+    // If previous status was also closed/cancelled, decrement the old count
+    if (previousStatus && ['closed', 'cancelled'].includes(previousStatus)) {
+      const previousBucketDate = previousClosedAtUtc ? 
+        dayjs(previousClosedAtUtc).tz('Europe/Vienna').format('YYYY-MM-DD') :
+        dayjs().tz('Europe/Vienna').format('YYYY-MM-DD');
+
+      await databaseService.query(`
+        UPDATE closed_by_assignee 
+        SET count = GREATEST(0, count - 1)
+        WHERE bucket_start = $1::timestamptz 
+          AND bucket = 'day' 
+          AND assignee_id = $2
+      `, [
+        dayjs(previousBucketDate).startOf('day').utc().toISOString(),
+        previousAssigneeId
+      ]);
+    }
+
+    // Increment the new count
+    await databaseService.query(`
+      INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
+      VALUES ($1, $2, $3, $4, 1)
+      ON CONFLICT (bucket_start, bucket, assignee_id)
+      DO UPDATE SET 
+        assignee_name = EXCLUDED.assignee_name,
+        count = closed_by_assignee.count + 1
+    `, [
+      dayjs(bucketDate).startOf('day').utc().toISOString(),
+      'day',
+      finalAssigneeId,
+      finalAssigneeName
+    ]);
+
+    // Update assignees table
+    await databaseService.query(`
+      INSERT INTO assignees (assignee_id, assignee_name, updated_at)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (assignee_id)
+      DO UPDATE SET 
+        assignee_name = EXCLUDED.assignee_name,
+        updated_at = EXCLUDED.updated_at
+    `, [finalAssigneeId, finalAssigneeName, new Date().toISOString()]);
+
+    console.log(`✅ Updated assignee counts for ticket ${ticketId}: ${finalAssigneeName} (${newStatus})`);
+
+  } catch (error) {
+    console.error(`Error updating assignee counts for ticket ${ticketId}:`, error);
+    // Don't throw - this shouldn't break the webhook processing
   }
 }
 

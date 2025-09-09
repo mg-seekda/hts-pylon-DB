@@ -1,5 +1,6 @@
 const axios = require('axios');
 const dayjs = require('dayjs');
+const database = require('./database');
 
 class PylonService {
   constructor() {
@@ -213,92 +214,73 @@ class PylonService {
   }
 
   // Get daily flow data (created vs closed vs cancelled for last 14 days)
+  // Now uses webhook data from ticket_status_events for consistency
   async getDailyFlowData() {
     const dailyData = [];
     const startDate = dayjs().subtract(13, 'day');
     const endDate = dayjs();
     
-    // Use RFC3339 format as required by Pylon API
-    const startTime = startDate.startOf('day').toISOString();
-    const endTime = endDate.endOf('day').toISOString();
-    
-    // Make 3 API calls: created, closed, and cancelled tickets
-    const createdFilter = {
-      limit: 500, // Reduced from 1000 to make it faster
-      start_time: startTime,
-      end_time: endTime
-    };
-    
-    const closedFilter = {
-      search: true,
-      limit: 500, // Reduced from 1000 to make it faster
-      filter: {
-        operator: 'and',
-        subfilters: [
-          {
-            field: 'state',
-            operator: 'equals',
-            value: 'closed'
-          },
-          {
-            field: 'closed_at',
-            operator: 'time_range',
-            values: [startTime, endTime]
-          }
-        ]
-      }
-    };
-
-    const cancelledFilter = {
-      search: true,
-      limit: 500,
-      include: ['custom_fields'],
-      filter: {
-        operator: 'and',
-        subfilters: [
-          {
-            field: 'state',
-            operator: 'equals',
-            value: 'cancelled'
-          },
-          {
-            field: 'closed_at',
-            operator: 'time_range',
-            values: [startTime, endTime]
-          }
-        ]
-      }
-    };
-    
     try {
-      const [createdResponse, closedResponse, cancelledResponse] = await Promise.all([
-        this.getIssues(createdFilter),
-        this.getIssues(closedFilter),
-        this.getIssues(cancelledFilter)
-      ]);
-      
-      const createdTickets = createdResponse.data || [];
-      const closedTickets = closedResponse.data || [];
-      const cancelledTickets = cancelledResponse.data || [];
-      
+      // Get all events from the last 14 days
+      const events = await database.query(`
+        SELECT 
+          ticket_id,
+          status,
+          occurred_at_utc,
+          closed_at_utc
+        FROM ticket_status_events 
+        WHERE occurred_at_utc >= $1 
+          AND occurred_at_utc <= $2
+        ORDER BY occurred_at_utc ASC
+      `, [startDate.startOf('day').utc().toISOString(), endDate.endOf('day').utc().toISOString()]);
+
+      // Group events by ticket to determine current state
+      const ticketStates = {};
+      events.rows.forEach(event => {
+        if (!ticketStates[event.ticket_id]) {
+          ticketStates[event.ticket_id] = {
+            created: null,
+            closed: null,
+            cancelled: null
+          };
+        }
+        
+        // Track the latest event for each status type
+        if (event.status === 'new' || event.status === 'open') {
+          ticketStates[event.ticket_id].created = event.occurred_at_utc;
+        } else if (event.status === 'closed') {
+          ticketStates[event.ticket_id].closed = event.closed_at_utc || event.occurred_at_utc;
+        } else if (event.status === 'cancelled') {
+          ticketStates[event.ticket_id].cancelled = event.closed_at_utc || event.occurred_at_utc;
+        }
+      });
+
       // Group tickets by date
       for (let i = 13; i >= 0; i--) {
         const date = dayjs().subtract(i, 'day');
         const dateStr = date.format('YYYY-MM-DD');
         
-        const createdCount = createdTickets.filter(ticket => 
-          dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr
-        ).length;
-        
-        const closedCount = closedTickets.filter(ticket => 
-          ticket.custom_fields?.closed_at?.value && 
-          dayjs(ticket.custom_fields.closed_at.value).format('YYYY-MM-DD') === dateStr
-        ).length;
+        let createdCount = 0;
+        let closedCount = 0;
+        let cancelledCount = 0;
 
-        const cancelledCount = cancelledTickets.filter(ticket => 
-          ticket.custom_fields?.closed_at?.value && 
-          dayjs(ticket.custom_fields.closed_at.value).format('YYYY-MM-DD') === dateStr
-        ).length;
+        // Count tickets for this date
+        Object.values(ticketStates).forEach(ticket => {
+          // Count created tickets
+          if (ticket.created && dayjs(ticket.created).format('YYYY-MM-DD') === dateStr) {
+            createdCount++;
+          }
+          
+          // Count closed tickets
+          if (ticket.closed && dayjs(ticket.closed).format('YYYY-MM-DD') === dateStr) {
+            closedCount++;
+          }
+          
+          // Count cancelled tickets
+          if (ticket.cancelled && dayjs(ticket.cancelled).format('YYYY-MM-DD') === dateStr) {
+            cancelledCount++;
+          }
+        });
         
         dailyData.push({
           date: dateStr,
@@ -308,8 +290,8 @@ class PylonService {
         });
       }
     } catch (error) {
-      console.error('Error fetching daily flow data:', error);
-      // Return empty data for all days if API fails
+      console.error('Error fetching daily flow data from webhook events:', error);
+      // Return empty data for all days if query fails
       for (let i = 13; i >= 0; i--) {
         const date = dayjs().subtract(i, 'day');
         dailyData.push({

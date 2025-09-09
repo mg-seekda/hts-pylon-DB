@@ -69,45 +69,48 @@ class DailyIngestionService {
 
       console.log(`Found ${tickets.length} closed tickets for ${yesterday.format('YYYY-MM-DD')}`);
 
+      // DISABLED: Assignee counting now handled by webhooks for real-time updates
       // Process tickets and group by assignee
-      const assigneeCounts = {};
-      const assignees = {};
+      // const assigneeCounts = {};
+      // const assignees = {};
 
-      tickets.forEach(ticket => {
-        if (ticket.assignee?.id) {
-          const assigneeId = ticket.assignee.id;
-          // Use the assignee mapping we fetched earlier, fallback to 'Unknown' if not found
-          const assigneeName = assigneeMap[assigneeId] || 'Unknown';
+      // tickets.forEach(ticket => {
+      //   if (ticket.assignee?.id) {
+      //     const assigneeId = ticket.assignee.id;
+      //     // Use the assignee mapping we fetched earlier, fallback to 'Unknown' if not found
+      //     const assigneeName = assigneeMap[assigneeId] || 'Unknown';
           
-          assigneeCounts[assigneeId] = (assigneeCounts[assigneeId] || 0) + 1;
-          assignees[assigneeId] = assigneeName;
-        }
-      });
+      //     assigneeCounts[assigneeId] = (assigneeCounts[assigneeId] || 0) + 1;
+      //     assignees[assigneeId] = assigneeName;
+      //   }
+      // });
 
-      // Upsert data into database
-      for (const [assigneeId, count] of Object.entries(assigneeCounts)) {
-        const assigneeName = assignees[assigneeId];
+      // // Upsert data into database
+      // for (const [assigneeId, count] of Object.entries(assigneeCounts)) {
+      //   const assigneeName = assignees[assigneeId];
         
-        // Upsert closed_by_assignee
-        await database.query(`
-          INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
-          VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT (bucket_start, bucket, assignee_id)
-          DO UPDATE SET 
-            assignee_name = EXCLUDED.assignee_name,
-            count = EXCLUDED.count
-        `, [dayStart.toISOString(), 'day', assigneeId, assigneeName, count]);
+      //   // Upsert closed_by_assignee
+      //   await database.query(`
+      //     INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
+      //     VALUES ($1, $2, $3, $4, $5)
+      //     ON CONFLICT (bucket_start, bucket, assignee_id)
+      //     DO UPDATE SET 
+      //       assignee_name = EXCLUDED.assignee_name,
+      //       count = EXCLUDED.count
+      //   `, [dayStart.toISOString(), 'day', assigneeId, assigneeName, count]);
 
-        // Upsert assignees table
-        await database.query(`
-          INSERT INTO assignees (assignee_id, assignee_name, updated_at)
-          VALUES ($1, $2, $3)
-          ON CONFLICT (assignee_id)
-          DO UPDATE SET 
-            assignee_name = EXCLUDED.assignee_name,
-            updated_at = EXCLUDED.updated_at
-        `, [assigneeId, assigneeName, new Date().toISOString()]);
-      }
+      //   // Upsert assignees table
+      //   await database.query(`
+      //     INSERT INTO assignees (assignee_id, assignee_name, updated_at)
+      //     VALUES ($1, $2, $3)
+      //     ON CONFLICT (assignee_id)
+      //     DO UPDATE SET 
+      //       assignee_name = EXCLUDED.assignee_name,
+      //       updated_at = EXCLUDED.updated_at
+      //   `, [assigneeId, assigneeName, new Date().toISOString()]);
+      // }
+
+      console.log('ℹ️  Assignee counting disabled - now handled by webhooks for real-time updates');
 
       // Run ticket lifecycle aggregations
       console.log('🔄 Running ticket lifecycle aggregations...');

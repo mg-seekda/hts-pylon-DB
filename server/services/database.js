@@ -77,6 +77,9 @@ class DatabaseService {
           event_id text UNIQUE NOT NULL,
           ticket_id text NOT NULL,
           status text NOT NULL,
+          assignee_id text,
+          assignee_name text,
+          closed_at_utc timestamptz,
           occurred_at_utc timestamptz NOT NULL,
           received_at_utc timestamptz NOT NULL DEFAULT now(),
           raw jsonb NOT NULL
@@ -149,6 +152,18 @@ class DatabaseService {
       
       await client.query(`
         CREATE INDEX IF NOT EXISTS idx_tse_event_id ON ticket_status_events (event_id);
+      `);
+      
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_tse_assignee_id ON ticket_status_events (assignee_id);
+      `);
+      
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_tse_status_assignee ON ticket_status_events (status, assignee_id);
+      `);
+      
+      await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_tse_closed_at ON ticket_status_events (closed_at_utc);
       `);
 
       await client.query(`
