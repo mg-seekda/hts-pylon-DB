@@ -18,11 +18,11 @@ async function migrateTicketStatusEvents() {
     console.log('✅ Database connected successfully\n');
 
     // Step 1: Get all events that need assignee information
-    console.log('1. Fetching events without assignee information...');
+    console.log('1. Fetching events without assignee information or with "Unknown" assignees...');
     const eventsWithoutAssignee = await database.query(`
-      SELECT id, ticket_id, status, raw, occurred_at_utc
+      SELECT id, ticket_id, status, raw, occurred_at_utc, assignee_id, assignee_name
       FROM ticket_status_events 
-      WHERE assignee_id IS NULL
+      WHERE assignee_id IS NULL OR assignee_name = 'Unknown'
       ORDER BY occurred_at_utc DESC
     `);
 
@@ -41,12 +41,14 @@ async function migrateTicketStatusEvents() {
     // Create assignee mapping
     const assigneeMap = {};
     users.forEach(user => {
-      if (user.id && user.first_name && user.last_name) {
-        assigneeMap[user.id] = `${user.first_name} ${user.last_name}`;
+      if (user.id && user.name) {
+        assigneeMap[user.id] = user.name;
       }
     });
     
     console.log(`   Found ${Object.keys(assigneeMap).length} users for assignee mapping`);
+    console.log('   Sample users:', users.slice(0, 3).map(u => ({ id: u.id, name: u.name })));
+    console.log('   Sample assignee mapping:', Object.entries(assigneeMap).slice(0, 3));
 
     // Step 3: Process each event
     console.log(`\n3. Processing ${eventsWithoutAssignee.rows.length} events...`);
@@ -55,6 +57,12 @@ async function migrateTicketStatusEvents() {
 
     for (const event of eventsWithoutAssignee.rows) {
       try {
+        // Add delay to avoid rate limiting (1 second between calls)
+        if (processedCount > 0) {
+          console.log(`   ⏳ Waiting 1 second to avoid rate limiting...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
         // Get ticket details from Pylon API
         const ticketResponse = await pylonService.getIssue(event.ticket_id);
         const ticket = ticketResponse.data;
@@ -68,6 +76,20 @@ async function migrateTicketStatusEvents() {
         // Extract assignee information
         const assigneeId = ticket.assignee?.id || null;
         const assigneeName = assigneeId ? assigneeMap[assigneeId] || 'Unknown' : null;
+        
+        // Debug logging for first few tickets
+        if (processedCount < 3) {
+          console.log(`   Debug ticket ${event.ticket_id}:`);
+          console.log(`     - ticket.assignee:`, ticket.assignee);
+          console.log(`     - assigneeId: ${assigneeId}`);
+          console.log(`     - assigneeName: ${assigneeName}`);
+          console.log(`     - assignee in map: ${assigneeId ? (assigneeId in assigneeMap) : 'N/A'}`);
+        }
+        
+        // Progress indicator
+        if (processedCount % 10 === 0 && processedCount > 0) {
+          console.log(`   📊 Progress: ${processedCount}/${eventsWithoutAssignee.rows.length} events processed`);
+        }
 
         // Extract closed_at information
         let closedAtUtc = null;
