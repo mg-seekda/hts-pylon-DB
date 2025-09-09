@@ -258,7 +258,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[750px] relative flex flex-col"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[725px] relative flex flex-col"
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2 text-gray-400">
@@ -275,7 +275,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[750px] relative flex flex-col"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[725px] relative flex flex-col"
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2 text-red-400">
@@ -292,7 +292,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[750px] relative flex flex-col"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[725px] relative flex flex-col"
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -412,7 +412,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[750px] relative flex flex-col"
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[725px] relative flex flex-col"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
