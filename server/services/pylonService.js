@@ -226,34 +226,45 @@ class PylonService {
     const endDate = dayjs();
     
     try {
-      // Get all events from the last 14 days
+      // Get created tickets from Pylon API (like before)
+      const createdFilter = {
+        limit: 2000,
+        start_time: startDate.startOf('day').toISOString(),
+        end_time: endDate.endOf('day').toISOString()
+      };
+      
+      const createdResponse = await this.apiCall('/issues', 'GET', null, createdFilter);
+      const createdTickets = createdResponse.data || [];
+
+      // Get closed/cancelled events from database (last occurrence per ticket)
       const events = await database.query(`
         SELECT 
           ticket_id,
           status,
           occurred_at_utc,
-          closed_at_utc
+          closed_at_utc,
+          ROW_NUMBER() OVER (PARTITION BY ticket_id, status ORDER BY occurred_at_utc DESC) as rn
         FROM ticket_status_events 
         WHERE occurred_at_utc >= $1 
           AND occurred_at_utc <= $2
-        ORDER BY occurred_at_utc ASC
+          AND (status = 'closed' OR status = 'cancelled')
+        ORDER BY ticket_id, status, occurred_at_utc DESC
       `, [startDate.startOf('day').utc().toISOString(), endDate.endOf('day').utc().toISOString()]);
 
-      // Group events by ticket to determine current state
+      // Get only the latest event per ticket per status
+      const latestEvents = events.rows.filter(event => event.rn === 1);
+      
+      // Group closed/cancelled events by ticket
       const ticketStates = {};
-      events.rows.forEach(event => {
+      latestEvents.forEach(event => {
         if (!ticketStates[event.ticket_id]) {
           ticketStates[event.ticket_id] = {
-            created: null,
             closed: null,
             cancelled: null
           };
         }
         
-        // Track the latest event for each status type
-        if (event.status === 'new' || event.status === 'open') {
-          ticketStates[event.ticket_id].created = event.occurred_at_utc;
-        } else if (event.status === 'closed') {
+        if (event.status === 'closed') {
           ticketStates[event.ticket_id].closed = event.closed_at_utc || event.occurred_at_utc;
         } else if (event.status === 'cancelled') {
           ticketStates[event.ticket_id].cancelled = event.closed_at_utc || event.occurred_at_utc;
@@ -269,13 +280,15 @@ class PylonService {
         let closedCount = 0;
         let cancelledCount = 0;
 
-        // Count tickets for this date
-        Object.values(ticketStates).forEach(ticket => {
-          // Count created tickets
-          if (ticket.created && dayjs(ticket.created).format('YYYY-MM-DD') === dateStr) {
+        // Count created tickets from Pylon API
+        createdTickets.forEach(ticket => {
+          if (ticket.created_at && dayjs(ticket.created_at).format('YYYY-MM-DD') === dateStr) {
             createdCount++;
           }
-          
+        });
+
+        // Count closed/cancelled tickets from database
+        Object.values(ticketStates).forEach(ticket => {
           // Count closed tickets
           if (ticket.closed && dayjs(ticket.closed).format('YYYY-MM-DD') === dateStr) {
             closedCount++;
@@ -295,7 +308,7 @@ class PylonService {
         });
       }
     } catch (error) {
-      console.error('Error fetching daily flow data from webhook events:', error);
+      console.error('Error fetching daily flow data:', error);
       // Return empty data for all days if query fails
       for (let i = 13; i >= 0; i--) {
         const date = dayjs().subtract(i, 'day');
@@ -307,7 +320,7 @@ class PylonService {
         });
       }
     }
-    
+
     return dailyData;
   }
 
