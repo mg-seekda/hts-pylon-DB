@@ -170,11 +170,11 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     } finally {
       setLoading(false);
     }
-  }, [dateRange.from, dateRange.to, bucket]);
+  }, []); // Remove dependencies to prevent infinite loops
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [dateRange.from, dateRange.to, bucket]); // Depend on actual values, not the function
 
   const processChartData = (rawData: ClosedByAssigneeData[]) => {
     // Group data by bucket_start

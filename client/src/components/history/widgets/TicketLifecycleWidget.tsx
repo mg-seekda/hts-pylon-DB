@@ -167,7 +167,7 @@ const TicketLifecycleWidget: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [fromDate, toDate, grouping, hoursMode]);
+  }, []); // Remove dependencies to prevent infinite loops
 
   const fetchStatuses = async () => {
     try {
@@ -193,7 +193,7 @@ const TicketLifecycleWidget: React.FC = () => {
     if (fromDate && toDate && selectedStatuses.length > 0) {
       fetchData();
     }
-  }, [selectedStatuses, fetchData, fromDate, toDate]);
+  }, [selectedStatuses, fromDate, toDate, grouping, hoursMode]); // Depend on actual values, not the function
 
   const formatDate = (dateString: string) => {
     if (grouping === 'week') {
