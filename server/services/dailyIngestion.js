@@ -8,6 +8,93 @@ class DailyIngestionService {
     this.isRunning = false;
     this.lastRun = null;
     this.aggregationService = new TicketLifecycleAggregationService();
+    
+    // Initialize last run date from database on startup
+    this.initializeLastRun();
+  }
+
+  // Initialize last run date from database on startup
+  async initializeLastRun() {
+    try {
+      await this.loadLastRunFromDatabase();
+      if (this.lastRun) {
+        console.log(`📅 Daily ingestion service initialized. Last run: ${this.lastRun.toISOString()}`);
+      } else {
+        console.log('📅 Daily ingestion service initialized. No previous runs found.');
+      }
+    } catch (error) {
+      console.error('Error initializing daily ingestion service:', error);
+    }
+  }
+
+  // Load last run date from database
+  async loadLastRunFromDatabase() {
+    try {
+      const query = `
+        SELECT last_run 
+        FROM ingestion_metadata 
+        WHERE service_name = 'daily_ingestion' 
+        ORDER BY last_run DESC 
+        LIMIT 1
+      `;
+      const result = await database.query(query);
+      
+      if (result.rows.length > 0) {
+        this.lastRun = new Date(result.rows[0].last_run);
+      }
+    } catch (error) {
+      // Table might not exist yet, this is expected on first run
+      if (error.message.includes('relation "ingestion_metadata" does not exist')) {
+        console.log('📅 ingestion_metadata table does not exist yet, will be created on first run');
+      } else {
+        console.error('Error loading last run from database:', error);
+      }
+      // Continue without last run date if database query fails
+    }
+  }
+
+  // Save last run date to database
+  async saveLastRunToDatabase() {
+    try {
+      // Create table if it doesn't exist
+      await this.ensureTableExists();
+      
+      const query = `
+        INSERT INTO ingestion_metadata (service_name, last_run, created_at)
+        VALUES ('daily_ingestion', $1, NOW())
+        ON CONFLICT (service_name, last_run::date) 
+        DO UPDATE SET last_run = EXCLUDED.last_run, created_at = NOW()
+      `;
+      await database.query(query, [this.lastRun.toISOString()]);
+    } catch (error) {
+      console.error('Error saving last run to database:', error);
+      // Continue even if database save fails
+    }
+  }
+
+  // Ensure the ingestion_metadata table exists
+  async ensureTableExists() {
+    try {
+      const query = `
+        CREATE TABLE IF NOT EXISTS ingestion_metadata (
+          id SERIAL PRIMARY KEY,
+          service_name VARCHAR(100) NOT NULL,
+          last_run TIMESTAMP WITH TIME ZONE NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          UNIQUE(service_name, last_run::date)
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_ingestion_metadata_service_name 
+        ON ingestion_metadata(service_name);
+        
+        CREATE INDEX IF NOT EXISTS idx_ingestion_metadata_last_run 
+        ON ingestion_metadata(last_run DESC);
+      `;
+      await database.query(query);
+    } catch (error) {
+      console.error('Error creating ingestion_metadata table:', error);
+      throw error;
+    }
   }
 
   async runDailyIngestion() {
@@ -18,6 +105,8 @@ class DailyIngestionService {
     this.isRunning = true;
 
     try {
+      // Load last run from database
+      await this.loadLastRunFromDatabase();
       // Get yesterday in Vienna timezone
       const yesterday = TimezoneUtils.getYesterday();
       const dayStart = TimezoneUtils.getStartOfDayUTC(yesterday);
@@ -138,6 +227,9 @@ class DailyIngestionService {
       }
 
       this.lastRun = new Date();
+      
+      // Save last run date to database
+      await this.saveLastRunToDatabase();
 
     } catch (error) {
       console.error('❌ Daily ingestion failed:', error);
@@ -162,7 +254,12 @@ class DailyIngestionService {
   }
 
   // Get ingestion status
-  getStatus() {
+  async getStatus() {
+    // Load from database if not available in memory
+    if (!this.lastRun) {
+      await this.loadLastRunFromDatabase();
+    }
+    
     return {
       isRunning: this.isRunning,
       lastRun: this.lastRun,

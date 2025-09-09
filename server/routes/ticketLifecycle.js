@@ -3,6 +3,7 @@ const router = express.Router();
 const { cache } = require('../middleware/cache');
 const databaseService = require('../services/database');
 const TicketLifecycleAggregationService = require('../services/ticketLifecycleAggregation');
+const DailyIngestionService = require('../services/dailyIngestion');
 const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
@@ -11,6 +12,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const aggregationService = new TicketLifecycleAggregationService();
+const dailyIngestionService = new DailyIngestionService();
 
 // GET /api/ticket-lifecycle/data
 router.get('/data', async (req, res) => {
@@ -66,7 +68,20 @@ router.get('/data', async (req, res) => {
     // Try to get from cache first
     const cached = await cache.get(cacheKey);
     if (cached) {
-      return res.json(cached);
+      // Add fresh ingestion metadata to cached response
+      const ingestionStatus = await dailyIngestionService.getStatus();
+      const lastIngestionDate = ingestionStatus.lastRun;
+      
+      const response = {
+        ...cached,
+        ingestionMetadata: {
+          lastIngestionDate: lastIngestionDate ? lastIngestionDate.toISOString() : null,
+          nextScheduledRun: ingestionStatus.nextScheduledRun ? ingestionStatus.nextScheduledRun.toISOString() : null,
+          isRunning: ingestionStatus.isRunning
+        }
+      };
+      
+      return res.json(response);
     }
 
     // Get data from aggregation service
@@ -78,11 +93,25 @@ router.get('/data', async (req, res) => {
       status: status ? status.split(',') : null
     });
 
+    // Get last ingestion date
+    const ingestionStatus = await dailyIngestionService.getStatus();
+    const lastIngestionDate = ingestionStatus.lastRun;
+
+    // Add ingestion metadata to response
+    const response = {
+      ...data,
+      ingestionMetadata: {
+        lastIngestionDate: lastIngestionDate ? lastIngestionDate.toISOString() : null,
+        nextScheduledRun: ingestionStatus.nextScheduledRun ? ingestionStatus.nextScheduledRun.toISOString() : null,
+        isRunning: ingestionStatus.isRunning
+      }
+    };
+
     // Cache the result
     const ttl = getCacheTTL(from, to);
-    await cache.set(cacheKey, data, ttl);
+    await cache.set(cacheKey, response, ttl);
 
-    res.json(data);
+    res.json(response);
 
   } catch (error) {
     console.error('Error fetching ticket lifecycle data:', error);

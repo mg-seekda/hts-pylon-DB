@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw, Users } from 'luc
 import { HistoryWidgetProps } from '../historyWidgets';
 import { apiService } from '../../../services/apiService';
 import InfoIcon from '../../InfoIcon';
+import CacheStatus from '../../CacheStatus';
 import TimezoneUtils from '../../../utils/timezone';
 import dayjs from 'dayjs';
 
@@ -18,6 +19,13 @@ interface ClosedByAssigneeData {
 interface ChartDataPoint {
   bucket_start: string;
   [assigneeName: string]: string | number;
+}
+
+interface CacheMetadata {
+  cachedAt: string;
+  isStale: boolean;
+  servingCached: boolean;
+  warning?: string;
 }
 
 const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
@@ -45,6 +53,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
   const [assignees, setAssignees] = useState<string[]>([]);
   const [hiddenAssignees, setHiddenAssignees] = useState<Set<string>>(new Set());
   const [selectedPreset, setSelectedPreset] = useState<string>('current-week');
+  const [cacheMetadata, setCacheMetadata] = useState<CacheMetadata | null>(null);
 
   // Color palette for assignees
   const colors = [
@@ -152,6 +161,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       const fetchedData = response.data || [];
       
       setData(fetchedData);
+      setCacheMetadata(response.cacheMetadata || null);
 
       // Process data for chart
       processChartData(fetchedData);
@@ -295,7 +305,13 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
+            <div>
+              <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
+              <CacheStatus 
+                metadata={cacheMetadata || undefined} 
+                className="mt-1" 
+              />
+            </div>
             <button
               onClick={fetchData}
               disabled={loading}
@@ -415,9 +431,15 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2">
-            <Users className="w-5 h-5 text-blue-400" />
-            <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
+          <div>
+            <div className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-blue-400" />
+              <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
+            </div>
+            <CacheStatus 
+              metadata={cacheMetadata || undefined} 
+              className="mt-1" 
+            />
           </div>
           <button
             onClick={fetchData}

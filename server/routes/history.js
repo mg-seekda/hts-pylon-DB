@@ -4,6 +4,7 @@ const database = require('../services/database');
 const pylonService = require('../services/pylonService');
 const TimezoneUtils = require('../utils/timezone');
 const cacheMiddleware = require('../middleware/cache');
+const { cache } = require('../middleware/cache');
 const dayjs = require('dayjs');
 const assigneeSyncService = require('../services/assigneeSyncService');
 
@@ -31,6 +32,29 @@ router.get('/closed-by-assignee', async (req, res) => {
     // Convert to UTC for database query
     const fromUTC = TimezoneUtils.getStartOfDayUTC(validFrom);
     const toUTC = TimezoneUtils.getEndOfDayUTC(validTo);
+
+    // Create cache key
+    const cacheKey = `closed-by-assignee:${from}:${to}:${bucket}`;
+    const cached = await cache.getWithMetadata(cacheKey);
+    
+    // Always return cached data immediately if available (stale-while-revalidate)
+    if (cached) {
+      const response = {
+        ...cached.data,
+        cacheMetadata: {
+          cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
+          isStale: cached.metadata.isStale,
+          servingCached: true
+        }
+      };
+      
+      // Trigger background refresh if stale
+      if (cached.metadata.isStale) {
+        // Background refresh would go here if needed
+      }
+      
+      return res.json(response);
+    }
 
     // Query the database
     const query = `
@@ -64,7 +88,23 @@ router.get('/closed-by-assignee', async (req, res) => {
       count: parseInt(row.count)
     }));
 
-    res.json({ data });
+    const response = { data };
+    
+    // Cache the result (5 minutes TTL, 5 minutes stale)
+    try {
+      await cache.setWithMetadata(cacheKey, response, 300, 300);
+    } catch (cacheError) {
+      // Cache not available, skipping cache set
+    }
+
+    res.json({
+      ...response,
+      cacheMetadata: {
+        cachedAt: new Date().toISOString(),
+        isStale: false,
+        servingCached: false
+      }
+    });
   } catch (error) {
     console.error('Error fetching closed by assignee data:', error);
     res.status(500).json({ 
