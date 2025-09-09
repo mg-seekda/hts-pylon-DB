@@ -111,6 +111,29 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const total = payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0);
+      
+      return (
+        <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
+          <p className="text-white font-medium mb-2">
+            {formatTooltipLabel(label)}
+          </p>
+          <p className="text-blue-300 text-sm mb-2">
+            Total: {total} tickets
+          </p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {entry.name}: {entry.value || 0}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   const formatXAxisLabel = (tickItem: string) => {
     const date = new Date(tickItem);
     return bucket === 'week'
@@ -405,15 +428,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
               stroke="#9CA3AF"
               fontSize={12}
             />
-            <Tooltip
-              labelFormatter={formatTooltipLabel}
-              contentStyle={{
-                backgroundColor: '#1F2937',
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#F9FAFB'
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Legend />
             {assignees.map((assignee, index) => (
               <Bar

@@ -228,7 +228,7 @@ class PylonService {
     try {
       // Get created tickets from Pylon API
       const createdFilter = {
-        limit: 2000,
+        limit: 1000,
         start_time: startDate.startOf('day').toISOString(),
         end_time: endDate.endOf('day').toISOString()
       };
@@ -238,7 +238,7 @@ class PylonService {
 
       // Get closed tickets using search endpoint with proper filter structure
       const closedFilter = {
-        limit: 2000,
+        limit: 1000,
         filter: {
           operator: 'and',
           subfilters: [
@@ -266,7 +266,7 @@ class PylonService {
 
       // Get cancelled tickets using search endpoint with proper filter structure
       const cancelledFilter = {
-        limit: 2000,
+        limit: 1000,
         filter: {
           operator: 'and',
           subfilters: [
@@ -481,7 +481,7 @@ class PylonService {
       
       // Use the same format as daily flow data - direct time parameters
       const filter = {
-        limit: 2000, // Increased limit for better statistical significance
+        limit: 1000, // Increased limit for better statistical significance
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString()
       };
