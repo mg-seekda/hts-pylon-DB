@@ -259,6 +259,15 @@ class TicketLifecycleAggregationService {
       status = null
     } = params;
 
+    console.log('=== getAggregationData called ===');
+    console.log('from:', from);
+    console.log('to:', to);
+    console.log('grouping:', grouping);
+    console.log('hoursMode:', hoursMode);
+    console.log('status:', status);
+    console.log('status type:', typeof status);
+    console.log('status length:', status ? status.length : 'null');
+
     const startDate = dayjs(from).tz(this.timezone).format('YYYY-MM-DD');
     const endDate = dayjs(to).tz(this.timezone).format('YYYY-MM-DD');
 
@@ -280,6 +289,7 @@ class TicketLifecycleAggregationService {
       queryParams = status && status.length > 0 ? [startDate, endDate, ...status] : [startDate, endDate];
       console.log('Daily query params:', queryParams);
       console.log('Status array:', status);
+      console.log('Final SQL query:', query);
     } else {
       query = `
         SELECT 
