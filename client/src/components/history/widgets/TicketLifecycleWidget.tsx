@@ -182,9 +182,20 @@ const TicketLifecycleWidget: React.FC = () => {
   };
 
   const formatDuration = (seconds: number) => {
+    console.log('formatDuration called with:', seconds, 'type:', typeof seconds);
+    
+    // If less than a minute, show seconds
+    if (seconds < 60) {
+      const result = `${seconds}s`;
+      console.log('formatDuration result (seconds):', result);
+      return result;
+    }
+    
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
+    const result = `${hours}h ${minutes}m`;
+    console.log('formatDuration result (hours/minutes):', result);
+    return result;
   };
 
   // Transform data for chart
@@ -572,7 +583,7 @@ const TicketLifecycleWidget: React.FC = () => {
             <div className="flex bg-gray-600 rounded p-0.5">
               <button
                 onClick={() => setHoursMode('business')}
-                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                className={`px-2 py-1 text-xs rounded transition-colors ${
                   hoursMode === 'business' 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
@@ -582,7 +593,7 @@ const TicketLifecycleWidget: React.FC = () => {
               </button>
               <button
                 onClick={() => setHoursMode('wall')}
-                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                className={`px-2 py-1 text-xs rounded transition-colors ${
                   hoursMode === 'wall' 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
@@ -725,31 +736,31 @@ const TicketLifecycleWidget: React.FC = () => {
           </div>
         </div>
 
-        {/* Time Mode - moved to right side and made smaller */}
-        <div className="flex items-center space-x-2">
-          <div className="flex bg-gray-600 rounded p-0.5">
-            <button
-              onClick={() => setHoursMode('business')}
-              className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
-                hoursMode === 'business' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Business
-            </button>
-            <button
-              onClick={() => setHoursMode('wall')}
-              className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
-                hoursMode === 'wall' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              Wall
-            </button>
+          {/* Time Mode - moved to right side and made smaller */}
+          <div className="flex items-center space-x-2">
+            <div className="flex bg-gray-600 rounded p-0.5">
+              <button
+                onClick={() => setHoursMode('business')}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  hoursMode === 'business' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Business
+              </button>
+              <button
+                onClick={() => setHoursMode('wall')}
+                className={`px-2 py-1 text-xs rounded transition-colors ${
+                  hoursMode === 'wall' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Wall
+              </button>
+            </div>
           </div>
-        </div>
       </div>
 
       {/* Legend */}
