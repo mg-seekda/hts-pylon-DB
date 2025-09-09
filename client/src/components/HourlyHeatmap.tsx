@@ -185,58 +185,60 @@ const HourlyHeatmap: React.FC = () => {
 
             {/* Heatmap Content Container */}
             <div className="flex flex-col justify-between h-full py-3">
-              {/* Heatmap Grid */}
-              <div className="space-y-1.5 overflow-x-auto">
-                {/* Hour labels row */}
-                <div className="flex items-center gap-4 min-w-fit">
-                  <div className="w-6 text-xs text-gray-400 flex-shrink-0"></div> {/* Empty space for day labels */}
-                  <div className="flex gap-0.5 min-w-fit">
-                    {hours.map(hour => (
-                      <div key={hour} className="w-6 h-6 text-xs text-gray-400 text-center flex items-center justify-center flex-shrink-0">
-                        {hour % 2 === 0 ? hour : ''}
-                      </div>
-                    ))}
+              {/* Heatmap Grid - Centered and Full Width */}
+              <div className="flex justify-center">
+                <div className="space-y-1.5">
+                  {/* Hour labels row */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-6 text-xs text-gray-400"></div> {/* Empty space for day labels */}
+                    <div className="flex gap-0.5">
+                      {hours.map(hour => (
+                        <div key={hour} className="w-6 h-6 text-xs text-gray-400 text-center flex items-center justify-center">
+                          {hour % 2 === 0 ? hour : ''}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Day rows */}
-                {days.map((day, dayIndex) => (
-                  <div key={day} className="flex items-center gap-4 min-w-fit">
-                    {/* Day label */}
-                    <div className="w-6 text-xs text-gray-400 text-right pr-6 flex-shrink-0">
-                      {day}
+                  {/* Day rows */}
+                  {days.map((day, dayIndex) => (
+                    <div key={day} className="flex items-center gap-4">
+                      {/* Day label */}
+                      <div className="w-6 text-xs text-gray-400 text-right pr-6">
+                        {day}
+                      </div>
+                      
+                      {/* Hour cells for this day */}
+                      <div className="flex gap-0.5">
+                        {hours.map(hour => {
+                          const count = dataMap.get(`${dayIndex}-${hour}`) || 0;
+                          const isHovered = hoveredCell?.day === dayIndex && hoveredCell?.hour === hour;
+                          
+                          return (
+                            <motion.div
+                              key={`${dayIndex}-${hour}`}
+                              className={`
+                                w-6 h-6 rounded-sm cursor-pointer transition-all duration-200
+                                ${isHovered ? getHoverColor(count) : getColorIntensity(count)}
+                                hover:ring-1 hover:ring-green-400 hover:ring-opacity-50
+                                focus:outline-none focus:ring-1 focus:ring-green-400 focus:ring-opacity-50
+                              `}
+                              whileHover={{ scale: 1.2 }}
+                              whileTap={{ scale: 0.9 }}
+                              onMouseEnter={() => setHoveredCell({ day: dayIndex, hour, count })}
+                              onMouseLeave={() => setHoveredCell(null)}
+                              onFocus={() => setHoveredCell({ day: dayIndex, hour, count })}
+                              onBlur={() => setHoveredCell(null)}
+                              tabIndex={0}
+                              role="button"
+                              aria-label={`${formatDay(dayIndex)} ${getTimeRange(hour)}: Average ${count} tickets created`}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                    
-                    {/* Hour cells for this day */}
-                    <div className="flex gap-0.5 min-w-fit">
-                      {hours.map(hour => {
-                        const count = dataMap.get(`${dayIndex}-${hour}`) || 0;
-                        const isHovered = hoveredCell?.day === dayIndex && hoveredCell?.hour === hour;
-                        
-                        return (
-                          <motion.div
-                            key={`${dayIndex}-${hour}`}
-                            className={`
-                              w-6 h-6 rounded-sm cursor-pointer transition-all duration-200 flex-shrink-0
-                              ${isHovered ? getHoverColor(count) : getColorIntensity(count)}
-                              hover:ring-1 hover:ring-green-400 hover:ring-opacity-50
-                              focus:outline-none focus:ring-1 focus:ring-green-400 focus:ring-opacity-50
-                            `}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
-                            onMouseEnter={() => setHoveredCell({ day: dayIndex, hour, count })}
-                            onMouseLeave={() => setHoveredCell(null)}
-                            onFocus={() => setHoveredCell({ day: dayIndex, hour, count })}
-                            onBlur={() => setHoveredCell(null)}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`${formatDay(dayIndex)} ${getTimeRange(hour)}: Average ${count} tickets created`}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
             {/* Legend */}
