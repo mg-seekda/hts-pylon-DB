@@ -247,7 +247,7 @@ class PylonService {
         FROM ticket_status_events 
         WHERE occurred_at_utc >= $1 
           AND occurred_at_utc <= $2
-          AND (status = 'closed' OR status = 'cancelled')
+          AND (LOWER(status) = 'closed' OR LOWER(status) = 'cancelled')
         ORDER BY ticket_id, status, occurred_at_utc DESC
       `, [startDate.startOf('day').utc().toISOString(), endDate.endOf('day').utc().toISOString()]);
 
@@ -264,9 +264,9 @@ class PylonService {
           };
         }
         
-        if (event.status === 'closed') {
+        if (event.status.toLowerCase() === 'closed') {
           ticketStates[event.ticket_id].closed = event.closed_at_utc || event.occurred_at_utc;
-        } else if (event.status === 'cancelled') {
+        } else if (event.status.toLowerCase() === 'cancelled') {
           ticketStates[event.ticket_id].cancelled = event.closed_at_utc || event.occurred_at_utc;
         }
       });

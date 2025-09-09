@@ -202,7 +202,7 @@ async function processTicketSegments(ticketId) {
 async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeName, closedAtUtc) {
   try {
     // Only process closed tickets (cancelled tickets are handled separately in daily flow chart)
-    if (newStatus !== 'closed') {
+    if (newStatus.toLowerCase() !== 'closed') {
       return;
     }
 
@@ -232,7 +232,7 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
     const bucketDate = dayjs(aggregationDate).tz('Europe/Vienna').format('YYYY-MM-DD');
 
     // If previous status was also closed, decrement the old count
-    if (previousStatus === 'closed') {
+    if (previousStatus && previousStatus.toLowerCase() === 'closed') {
       const previousBucketDate = previousClosedAtUtc ? 
         dayjs(previousClosedAtUtc).tz('Europe/Vienna').format('YYYY-MM-DD') :
         dayjs().tz('Europe/Vienna').format('YYYY-MM-DD');
@@ -250,7 +250,7 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
     }
 
     // Increment the new count (only for closed tickets)
-    if (newStatus === 'closed') {
+    if (newStatus.toLowerCase() === 'closed') {
       await databaseService.query(`
         INSERT INTO closed_by_assignee (bucket_start, bucket, assignee_id, assignee_name, count)
         VALUES ($1, $2, $3, $4, 1)
