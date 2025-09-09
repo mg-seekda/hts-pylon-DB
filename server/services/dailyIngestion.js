@@ -112,16 +112,26 @@ class DailyIngestionService {
       // Run ticket lifecycle aggregations
       console.log('🔄 Running ticket lifecycle aggregations...');
       
-      // Daily aggregation for yesterday
-      await this.aggregationService.runDailyAggregation(yesterday.toDate());
-      console.log('✅ Daily lifecycle aggregation completed');
+      try {
+        // Daily aggregation for yesterday
+        await this.aggregationService.runDailyAggregation(yesterday.toDate());
+        console.log('✅ Daily lifecycle aggregation completed');
+      } catch (error) {
+        console.error('❌ Daily lifecycle aggregation failed:', error);
+        // Don't throw here, continue with the rest of the process
+      }
       
-      // Weekly aggregation for the previous week (run daily to catch any missed weeks)
-      const previousWeek = yesterday.subtract(1, 'week');
-      const year = previousWeek.isoYear();
-      const week = previousWeek.isoWeek();
-      await this.aggregationService.runWeeklyAggregation(year, week);
-      console.log(`✅ Weekly lifecycle aggregation completed for ${year}-W${week.toString().padStart(2, '0')}`);
+      try {
+        // Weekly aggregation for the previous week (run daily to catch any missed weeks)
+        const previousWeek = yesterday.subtract(1, 'week');
+        const year = previousWeek.isoYear();
+        const week = previousWeek.isoWeek();
+        await this.aggregationService.runWeeklyAggregation(year, week);
+        console.log(`✅ Weekly lifecycle aggregation completed for ${year}-W${week.toString().padStart(2, '0')}`);
+      } catch (error) {
+        console.error(`❌ Weekly lifecycle aggregation failed for ${year}-W${week.toString().padStart(2, '0')}:`, error);
+        // Don't throw here, continue with the rest of the process
+      }
 
       this.lastRun = new Date();
       console.log(`✅ Daily ingestion completed: ${tickets.length} tickets processed, ${Object.keys(assigneeCounts).length} assignees`);

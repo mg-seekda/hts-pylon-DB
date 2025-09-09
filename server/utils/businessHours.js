@@ -144,14 +144,21 @@ class BusinessHoursCalculator {
   }
 
   /**
-   * Format seconds as HH:MM
+   * Format seconds as HH:MM or MM:SS for very short durations
    * @param {number} seconds - Seconds to format
    * @returns {string} Formatted time string
    */
   formatDurationShort(seconds) {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
     
+    // If less than 1 hour, show MM:SS format
+    if (hours === 0) {
+      return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Otherwise show HH:MM format
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 

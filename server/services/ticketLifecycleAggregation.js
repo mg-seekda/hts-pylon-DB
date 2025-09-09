@@ -318,7 +318,7 @@ class TicketLifecycleAggregationService {
       if (grouping === 'day') {
         return {
           ...baseData,
-          date: row.date
+          date: dayjs(row.date).format('YYYY-MM-DD')
         };
       } else {
         return {

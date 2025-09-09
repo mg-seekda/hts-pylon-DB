@@ -270,8 +270,8 @@ router.get('/date-range', async (req, res) => {
 
     const dateRange = {
       hasData: true,
-      from: earliestDate,
-      to: latestDate,
+      from: dayjs(earliestDate).format('YYYY-MM-DD'),
+      to: dayjs(latestDate).format('YYYY-MM-DD'),
       fromFormatted: dayjs(earliestDate).format('YYYY-MM-DD'),
       toFormatted: dayjs(latestDate).format('YYYY-MM-DD'),
       totalDays: dayjs(latestDate).diff(dayjs(earliestDate), 'day') + 1
