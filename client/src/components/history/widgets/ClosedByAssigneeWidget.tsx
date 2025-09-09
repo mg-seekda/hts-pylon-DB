@@ -19,11 +19,22 @@ interface ChartDataPoint {
 }
 
 const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
+  // Get current week as default (Monday to current day)
+  const getCurrentWeekRange = () => {
+    const today = new Date();
+    const monday = new Date(today);
+    const dayOfWeek = today.getDay();
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, so 6 days back
+    monday.setDate(today.getDate() - daysToMonday);
+    
+    return {
+      from: monday.toISOString().split('T')[0],
+      to: today.toISOString().split('T')[0]
+    };
+  };
+
   // Widget manages its own date range and bucket
-  const [dateRange, setDateRange] = useState({
-    from: '',
-    to: ''
-  });
+  const [dateRange, setDateRange] = useState(getCurrentWeekRange());
   const [bucket, setBucket] = useState<'day' | 'week'>('day');
   const [data, setData] = useState<ClosedByAssigneeData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -44,19 +55,6 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
   };
 
   // Helper functions for time period options
-  const getCurrentWeekRange = () => {
-    const today = new Date();
-    const monday = new Date(today);
-    const dayOfWeek = today.getDay();
-    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    monday.setDate(today.getDate() - daysToMonday);
-    
-    return {
-      from: monday.toISOString().split('T')[0],
-      to: today.toISOString().split('T')[0]
-    };
-  };
-
   const getCurrentMonthRange = () => {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -117,13 +115,6 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
         break;
     }
   };
-
-  // Initialize with current week on mount
-  useEffect(() => {
-    if (!dateRange.from || !dateRange.to) {
-      setDateRange(getCurrentWeekRange());
-    }
-  }, []);
 
   // Update preset selection when date range changes manually
   useEffect(() => {
