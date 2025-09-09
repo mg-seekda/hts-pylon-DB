@@ -11,7 +11,8 @@ import {
   Users,
   User,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Github
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { PYLON_VIEWS } from '../utils/pylonUtils';
@@ -173,6 +174,19 @@ const Sidebar: React.FC = () => {
           >
             <CheckCircle className="w-4 h-4" />
             <span className="text-sm">Closed by Assignee</span>
+          </a>
+          
+          {/* Divider */}
+          <div className="border-t border-gray-700 my-2"></div>
+          
+          <a
+            href="https://github.com/mg-seekda/hts-pylon-DB"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors duration-200"
+          >
+            <Github className="w-4 h-4" />
+            <span className="text-sm">GitHub</span>
           </a>
         </div>
       </div>
