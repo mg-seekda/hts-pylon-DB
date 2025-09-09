@@ -8,8 +8,7 @@ const HistoryPage: React.FC = () => {
   const enabledWidgets = getEnabledWidgets();
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <motion.div
+    <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -84,7 +83,6 @@ const HistoryPage: React.FC = () => {
           </div>
         </motion.div>
       </motion.div>
-    </div>
   );
 };
 

@@ -6,6 +6,7 @@ import Breadcrumb from './components/Breadcrumb';
 import KPISection from './components/KPISection';
 import MainContent from './components/MainContent';
 import HistoryPage from './pages/HistoryPage';
+import Footer from './components/Footer';
 
 import { DataProvider } from './context/DataContext';
 
@@ -51,11 +52,14 @@ const App: React.FC = () => {
   return (
     <DataProvider>
       <Router>
-        <div className="min-h-screen bg-gray-900 text-gray-100">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/history" element={<HistoryPage />} />
-          </Routes>
+        <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+          <div className="flex-1">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/history" element={<HistoryPage />} />
+            </Routes>
+          </div>
+          <Footer />
         </div>
       </Router>
     </DataProvider>
