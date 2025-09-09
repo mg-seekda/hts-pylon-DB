@@ -433,6 +433,19 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       {/* Compact filtering controls */}
       <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
         <div className="flex items-center space-x-3">
+          {/* Time period dropdown - moved to front */}
+          <select
+            value={selectedPreset}
+            onChange={(e) => handlePresetChange(e.target.value)}
+            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="current-week">Current Week</option>
+            <option value="current-month">Current Month</option>
+            <option value="last-week">Last Week</option>
+            <option value="last-month">Last Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+
           {/* Date inputs */}
           <div className="flex items-center space-x-2">
             <input
@@ -473,21 +486,6 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
               Week
             </button>
           </div>
-        </div>
-
-        {/* Time period dropdown */}
-        <div className="flex items-center space-x-2">
-          <select
-            value={selectedPreset}
-            onChange={(e) => handlePresetChange(e.target.value)}
-            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="current-week">Current Week</option>
-            <option value="current-month">Current Month</option>
-            <option value="last-week">Last Week</option>
-            <option value="last-month">Last Month</option>
-            <option value="custom">Custom Range</option>
-          </select>
         </div>
       </div>
 

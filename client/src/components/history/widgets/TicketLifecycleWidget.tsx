@@ -512,6 +512,19 @@ const TicketLifecycleWidget: React.FC = () => {
         {/* Compact filtering controls */}
         <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
           <div className="flex items-center space-x-3">
+            {/* Time period dropdown - moved to front */}
+            <select
+              value={selectedPreset}
+              onChange={(e) => handlePresetChange(e.target.value)}
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="current-week">Current Week</option>
+              <option value="current-month">Current Month</option>
+              <option value="last-week">Last Week</option>
+              <option value="last-month">Last Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+
             {/* Date inputs */}
             <div className="flex items-center space-x-2">
               <input
@@ -552,70 +565,32 @@ const TicketLifecycleWidget: React.FC = () => {
                 Week
               </button>
             </div>
+          </div>
 
-            {/* Time Mode */}
+          {/* Time Mode - moved to right side and made smaller */}
+          <div className="flex items-center space-x-2">
             <div className="flex bg-gray-600 rounded p-0.5">
               <button
                 onClick={() => setHoursMode('business')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
+                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
                   hoursMode === 'business' 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
-                Business Hours
+                Business
               </button>
               <button
                 onClick={() => setHoursMode('wall')}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
+                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
                   hoursMode === 'wall' 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
-                Wall Hours
+                Wall
               </button>
             </div>
-          </div>
-
-          {/* Quick buttons */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={async () => {
-                try {
-                  const response = await fetch('/api/ticket-lifecycle/date-range');
-                  if (response.ok) {
-                    const data = await response.json();
-                    if (data.hasData) {
-                      setFromDate(data.fromFormatted);
-                      setToDate(data.toFormatted);
-                      setSelectedPreset('knownData');
-                      setIsCustomRange(false);
-                    } else {
-                      console.log('No ticket lifecycle data available yet');
-                    }
-                  }
-                } catch (error) {
-                  console.error('Error fetching known data range:', error);
-                }
-              }}
-              className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition-colors"
-            >
-              Known Data
-            </button>
-            <button
-              onClick={() => {
-                const today = dayjs();
-                const weekAgo = today.subtract(7, 'day');
-                setFromDate(weekAgo.format('YYYY-MM-DD'));
-                setToDate(today.format('YYYY-MM-DD'));
-                setSelectedPreset('');
-                setIsCustomRange(true);
-              }}
-              className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
-            >
-              Last 7 Days
-            </button>
           </div>
         </div>
         
@@ -679,6 +654,19 @@ const TicketLifecycleWidget: React.FC = () => {
       {/* Compact filtering controls */}
       <div className="mb-4 flex items-center justify-between bg-gray-700/30 rounded-lg p-3 border border-gray-600/30">
         <div className="flex items-center space-x-3">
+          {/* Time period dropdown - moved to front */}
+          <select
+            value={selectedPreset}
+            onChange={(e) => handlePresetChange(e.target.value)}
+            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="current-week">Current Week</option>
+            <option value="current-month">Current Month</option>
+            <option value="last-week">Last Week</option>
+            <option value="last-month">Last Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
+
           {/* Date inputs */}
           <div className="flex items-center space-x-2">
             <input
@@ -719,45 +707,32 @@ const TicketLifecycleWidget: React.FC = () => {
               Week
             </button>
           </div>
+        </div>
 
-          {/* Time Mode */}
+        {/* Time Mode - moved to right side and made smaller */}
+        <div className="flex items-center space-x-2">
           <div className="flex bg-gray-600 rounded p-0.5">
             <button
               onClick={() => setHoursMode('business')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
+              className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
                 hoursMode === 'business' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-300 hover:text-white'
               }`}
             >
-              Business Hours
+              Business
             </button>
             <button
               onClick={() => setHoursMode('wall')}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
+              className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
                 hoursMode === 'wall' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-300 hover:text-white'
               }`}
             >
-              Wall Hours
+              Wall
             </button>
           </div>
-        </div>
-
-        {/* Time period dropdown */}
-        <div className="flex items-center space-x-2">
-          <select
-            value={selectedPreset}
-            onChange={(e) => handlePresetChange(e.target.value)}
-            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="current-week">Current Week</option>
-            <option value="current-month">Current Month</option>
-            <option value="last-week">Last Week</option>
-            <option value="last-month">Last Month</option>
-            <option value="custom">Custom Range</option>
-          </select>
         </div>
       </div>
 
@@ -825,7 +800,10 @@ const TicketLifecycleWidget: React.FC = () => {
               formatter={(value, name, props) => {
                 console.log('Tooltip formatter - value:', value, 'name:', name, 'props:', props);
                 console.log('Tooltip payload:', props.payload);
-                return [formatDuration(value as number), name];
+                // Use the payload data instead of the value parameter
+                const actualValue = props.payload?.[name] || value;
+                console.log('Actual value from payload:', actualValue);
+                return [formatDuration(actualValue as number), name];
               }}
             />
             <Legend />
