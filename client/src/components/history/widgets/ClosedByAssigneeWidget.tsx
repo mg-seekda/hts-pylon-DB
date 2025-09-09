@@ -257,7 +257,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] flex flex-col"
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2 text-gray-400">
@@ -274,7 +274,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] flex flex-col"
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex items-center space-x-2 text-red-400">
@@ -291,7 +291,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] flex flex-col"
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -411,7 +411,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1005px] flex flex-col"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -517,7 +517,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       )}
 
       {/* Chart */}
-      <div className="h-80">
+      <div className="flex-1 min-h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />

@@ -500,7 +500,7 @@ const TicketLifecycleWidget: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] flex flex-col"
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -662,7 +662,7 @@ const TicketLifecycleWidget: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800 rounded-lg p-6 border border-gray-700"
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] flex flex-col"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -793,7 +793,7 @@ const TicketLifecycleWidget: React.FC = () => {
       )}
 
       {/* Chart */}
-      <div className="h-80">
+      <div className="flex-1 min-h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
