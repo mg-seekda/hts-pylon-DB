@@ -119,7 +119,10 @@ const TicketLifecycleWidget: React.FC = () => {
       });
 
       if (selectedStatuses.length > 0) {
-        params.append('status', selectedStatuses.join(','));
+        console.log('Selected statuses before join:', selectedStatuses);
+        const statusString = selectedStatuses.join(',');
+        console.log('Status string after join:', statusString);
+        params.append('status', statusString);
       }
 
       const url = `/api/ticket-lifecycle/data?${params}`;
@@ -146,6 +149,7 @@ const TicketLifecycleWidget: React.FC = () => {
       const response = await fetch('/api/ticket-lifecycle/statuses');
       if (response.ok) {
         const result = await response.json();
+        console.log('Statuses received from API:', result.statuses);
         setAvailableStatuses(result.statuses);
         setSelectedStatuses(result.statuses); // Select all by default
       }
