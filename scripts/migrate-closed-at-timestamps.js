@@ -22,8 +22,8 @@ async function migrateClosedAtTimestamps() {
     const eventsWithoutClosedAt = await database.query(`
       SELECT id, ticket_id, status, occurred_at_utc, closed_at_utc
       FROM ticket_status_events 
-      WHERE (status = 'closed' OR status = 'cancelled') 
-        AND (closed_at_utc IS NULL OR closed_at_utc = '')
+      WHERE (LOWER(status) = 'closed' OR LOWER(status) = 'cancelled') 
+        AND (closed_at_utc IS NULL OR closed_at_utc = '' OR closed_at_utc = 'null')
       ORDER BY occurred_at_utc DESC
     `);
 
@@ -33,7 +33,7 @@ async function migrateClosedAtTimestamps() {
     const allClosedCancelled = await database.query(`
       SELECT id, ticket_id, status, occurred_at_utc, closed_at_utc
       FROM ticket_status_events 
-      WHERE (status = 'closed' OR status = 'cancelled')
+      WHERE (LOWER(status) = 'closed' OR LOWER(status) = 'cancelled')
       ORDER BY occurred_at_utc DESC
       LIMIT 5
     `);
