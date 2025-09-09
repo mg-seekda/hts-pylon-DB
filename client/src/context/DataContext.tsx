@@ -330,7 +330,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     if (!state.analytics?.dailyFlow) {
       dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
     }
-    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
       const response = await apiService.getDailyFlow();
       
@@ -363,7 +362,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     if (!state.analytics?.hourlyHeatmap) {
       dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
     }
-    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
       // Refreshing hourly heatmap data
       const response = await apiService.getHourlyHeatmap();
@@ -393,13 +391,14 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   }, [state.analytics?.hourlyHeatmap]);
 
   const refreshAll = useCallback(async () => {
-    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     await Promise.all([
       fetchKPIs(),
       fetchAssignmentTable(),
       refreshDailyFlow(),
       refreshHourlyHeatmap(),
     ]);
+    // Update timestamp only once after all data is refreshed
+    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
   }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap]);
 
   // Initial data fetch
@@ -413,10 +412,12 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     refreshHourlyHeatmap();
     
     // Set up auto-refresh every 30 minutes to avoid rate limiting
-    const interval = setInterval(refreshAll, 30 * 60 * 1000);
+    const interval = setInterval(() => {
+      refreshAll();
+    }, 30 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap, refreshAll]);
+  }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap]);
 
   const value: DataContextType = {
     state,

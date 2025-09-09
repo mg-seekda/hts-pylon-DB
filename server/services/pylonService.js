@@ -8,6 +8,8 @@ class PylonService {
     this.baseURL = process.env.PYLON_API_URL;
     this.apiToken = process.env.PYLON_API_TOKEN;
     this.isConfigured = !!(this.baseURL && this.apiToken);
+    this.lastRequestTime = 0;
+    this.minRequestInterval = 1000; // 1 second between requests
     
     if (!this.isConfigured) {
       console.error('❌ Pylon API configuration missing! Please check your .env file.');
@@ -27,23 +29,51 @@ class PylonService {
     });
   }
 
-  // Generic API call method
-  async apiCall(endpoint, method = 'GET', data = null, params = null) {
+  // Rate limiting helper
+  async waitForRateLimit() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minRequestInterval) {
+      const waitTime = this.minRequestInterval - timeSinceLastRequest;
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    this.lastRequestTime = Date.now();
+  }
+
+  // Generic API call method with rate limiting and retry logic
+  async apiCall(endpoint, method = 'GET', data = null, params = null, retries = 3) {
     if (!this.isConfigured) {
       throw new Error('Pylon API not configured. Please check your environment variables.');
     }
-    
-    try {
-      const response = await this.client({
-        method,
-        url: endpoint,
-        data,
-        params
-      });
-      return response.data;
-    } catch (error) {
-      logError(`Pylon API Error (${endpoint})`, error);
-      throw error;
+
+    // Apply rate limiting
+    await this.waitForRateLimit();
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await this.client({
+          method,
+          url: endpoint,
+          data,
+          params
+        });
+        return response.data;
+      } catch (error) {
+        // Handle rate limiting (429) with exponential backoff
+        if (error.response?.status === 429) {
+          if (attempt < retries) {
+            const backoffTime = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+            console.log(`⏳ Rate limited, retrying in ${backoffTime}ms (attempt ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, backoffTime));
+            continue;
+          }
+        }
+        
+        logError(`Pylon API Error (${endpoint})`, error);
+        throw error;
+      }
     }
   }
 
