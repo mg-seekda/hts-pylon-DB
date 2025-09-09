@@ -314,6 +314,9 @@ class TicketLifecycleAggregationService {
     }
 
     const result = await databaseService.query(query, queryParams);
+    console.log('SQL query result:', result);
+    console.log('Result rows:', result.rows);
+    console.log('Result rowCount:', result.rowCount);
     
     // Transform data for frontend
     const data = result.rows.map(row => {
