@@ -278,6 +278,8 @@ class TicketLifecycleAggregationService {
         ORDER BY bucket_date, status
       `;
       queryParams = status && status.length > 0 ? [startDate, endDate, status] : [startDate, endDate];
+      console.log('Daily query params:', queryParams);
+      console.log('Status array:', status);
     } else {
       query = `
         SELECT 
