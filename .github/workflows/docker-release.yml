@@ -88,7 +88,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/hts-pylon-db
+          images: ghcr.io/${{ github.repository_owner }}/hts-pylon-db
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -152,9 +152,9 @@ jobs:
             
             🏷️ **Tags created**:
             \`\`\`
-            ghcr.io/${{ github.repository }}/hts-pylon-db:latest
-            ghcr.io/${{ github.repository }}/hts-pylon-db:${{ github.run_number }}
-            ghcr.io/${{ github.repository }}/hts-pylon-db:${{ github.ref_name }}-${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/hts-pylon-db:latest
+            ghcr.io/${{ github.repository_owner }}/hts-pylon-db:${{ github.run_number }}
+            ghcr.io/${{ github.repository_owner }}/hts-pylon-db:${{ github.ref_name }}-${{ github.sha }}
             \`\`\`
             
             📦 **Registry**: [GitHub Container Registry](https://github.com/${{ github.repository }}/pkgs/container/hts-pylon-db)
