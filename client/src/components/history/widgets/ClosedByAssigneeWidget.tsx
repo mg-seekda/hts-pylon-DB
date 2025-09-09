@@ -31,6 +31,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [assignees, setAssignees] = useState<string[]>([]);
   const [hiddenAssignees, setHiddenAssignees] = useState<Set<string>>(new Set());
+  const [selectedPreset, setSelectedPreset] = useState<string>('current-week');
 
   // Color palette for assignees
   const colors = [
@@ -93,12 +94,56 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     };
   };
 
+  // Handle preset selection
+  const handlePresetChange = (preset: string) => {
+    setSelectedPreset(preset);
+    switch (preset) {
+      case 'current-week':
+        setDateRange(getCurrentWeekRange());
+        break;
+      case 'current-month':
+        setDateRange(getCurrentMonthRange());
+        break;
+      case 'last-week':
+        setDateRange(getLastWeekRange());
+        break;
+      case 'last-month':
+        setDateRange(getLastMonthRange());
+        break;
+      case 'custom':
+        // Don't change date range for custom, let user select manually
+        break;
+      default:
+        break;
+    }
+  };
+
   // Initialize with current week on mount
   useEffect(() => {
     if (!dateRange.from || !dateRange.to) {
       setDateRange(getCurrentWeekRange());
     }
   }, []);
+
+  // Update preset selection when date range changes manually
+  useEffect(() => {
+    const currentWeek = getCurrentWeekRange();
+    const currentMonth = getCurrentMonthRange();
+    const lastWeek = getLastWeekRange();
+    const lastMonth = getLastMonthRange();
+
+    if (JSON.stringify(dateRange) === JSON.stringify(currentWeek)) {
+      setSelectedPreset('current-week');
+    } else if (JSON.stringify(dateRange) === JSON.stringify(currentMonth)) {
+      setSelectedPreset('current-month');
+    } else if (JSON.stringify(dateRange) === JSON.stringify(lastWeek)) {
+      setSelectedPreset('last-week');
+    } else if (JSON.stringify(dateRange) === JSON.stringify(lastMonth)) {
+      setSelectedPreset('last-month');
+    } else {
+      setSelectedPreset('custom');
+    }
+  }, [dateRange]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -439,48 +484,19 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
           </div>
         </div>
 
-        {/* Time period buttons */}
+        {/* Time period dropdown */}
         <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setDateRange(getCurrentWeekRange())}
-            className={`px-2 py-1 rounded text-xs transition-colors ${
-              JSON.stringify(dateRange) === JSON.stringify(getCurrentWeekRange())
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
-            }`}
+          <select
+            value={selectedPreset}
+            onChange={(e) => handlePresetChange(e.target.value)}
+            className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            Current Week
-          </button>
-          <button
-            onClick={() => setDateRange(getCurrentMonthRange())}
-            className={`px-2 py-1 rounded text-xs transition-colors ${
-              JSON.stringify(dateRange) === JSON.stringify(getCurrentMonthRange())
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            Current Month
-          </button>
-          <button
-            onClick={() => setDateRange(getLastWeekRange())}
-            className={`px-2 py-1 rounded text-xs transition-colors ${
-              JSON.stringify(dateRange) === JSON.stringify(getLastWeekRange())
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            Last Week
-          </button>
-          <button
-            onClick={() => setDateRange(getLastMonthRange())}
-            className={`px-2 py-1 rounded text-xs transition-colors ${
-              JSON.stringify(dateRange) === JSON.stringify(getLastMonthRange())
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            Last Month
-          </button>
+            <option value="current-week">Current Week</option>
+            <option value="current-month">Current Month</option>
+            <option value="last-week">Last Week</option>
+            <option value="last-month">Last Month</option>
+            <option value="custom">Custom Range</option>
+          </select>
         </div>
       </div>
 
