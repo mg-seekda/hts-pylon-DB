@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const path = require('path');
 const fs = require('fs');
+const logger = require('./utils/logger');
 require('dotenv').config();
 
 const pylonService = require('./services/pylonService');
@@ -69,6 +70,12 @@ app.use('/api/ticket-lifecycle', require('./routes/ticketLifecycle'));
 
 // Health check
 app.get('/api/health', (req, res) => {
+  logger.info('Health check requested', { 
+    user: req.user?.email || 'anonymous',
+    ip: req.ip,
+    userAgent: req.get('User-Agent')
+  });
+  
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -116,7 +123,7 @@ async function startServer() {
     await database.init();
     
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      logger.info(`🚀 Server running on port ${PORT}`);
       
       // Start daily ingestion scheduler
       if (process.env.NODE_ENV === 'production') {
@@ -124,21 +131,21 @@ async function startServer() {
         setTimeout(() => {
           try {
             dailyIngestion.scheduleDailyIngestion();
-            console.log('📅 Daily ingestion scheduler started');
+            logger.info('📅 Daily ingestion scheduler started');
           } catch (error) {
-            console.error('Error starting daily ingestion scheduler:', error);
+            logger.error('Error starting daily ingestion scheduler:', error);
           }
         }, 1000);
       } else {
-        console.log('📝 Daily ingestion disabled in development mode');
+        logger.info('📝 Daily ingestion disabled in development mode');
       }
       
       // Start assignee sync service
       assigneeSyncService.startPeriodicSync();
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error.message || error);
-    console.error('Stack trace:', error.stack);
+    logger.error('❌ Failed to start server:', error.message || error);
+    logger.error('Stack trace:', error.stack);
     process.exit(1);
   }
 }
@@ -147,13 +154,15 @@ startServer();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('\n🛑 Shutting down gracefully...');
+  logger.info('\n🛑 Shutting down gracefully...');
   await database.close();
+  logger.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('\n🛑 Shutting down gracefully...');
+  logger.info('\n🛑 Shutting down gracefully...');
   await database.close();
+  logger.close();
   process.exit(0);
 });
