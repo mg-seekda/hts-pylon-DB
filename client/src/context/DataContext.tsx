@@ -297,16 +297,11 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     try {
-      console.log('Refreshing daily flow data...');
       const response = await apiService.getDailyFlow();
-      console.log('Daily flow response received:', response);
       
       // Extract the dailyFlow data and cache metadata from the response
       const dailyFlow = response.dailyFlow;
       const cacheMetadata = response.cacheMetadata;
-      
-      console.log('Daily flow data extracted:', dailyFlow);
-      console.log('Cache metadata:', cacheMetadata);
       
       // Update only the daily flow part of analytics
       dispatch({ type: 'UPDATE_DAILY_FLOW', payload: dailyFlow });

@@ -24,7 +24,6 @@ class TicketLifecycleAggregationService {
     const targetDate = dayjs(date).tz(this.timezone).startOf('day');
     const nextDay = targetDate.add(1, 'day');
     
-    console.log(`🔄 Running daily aggregation for ${targetDate.format('YYYY-MM-DD')}...`);
 
     try {
       // Get all segments that ended on this date
@@ -41,7 +40,6 @@ class TicketLifecycleAggregationService {
       `, [this.timezone, targetDate.format('YYYY-MM-DD')]);
 
       if (segments.rows.length === 0) {
-        console.log(`   No segments found for ${targetDate.format('YYYY-MM-DD')}`);
         return;
       }
 
@@ -99,11 +97,9 @@ class TicketLifecycleAggregationService {
             validSegments
           ]);
 
-          console.log(`   ✅ ${status}: ${validSegments} segments, avg wall: ${this.businessHours.formatDurationShort(avgWallSeconds)}, avg business: ${this.businessHours.formatDurationShort(avgBusinessSeconds)}`);
         }
       }
 
-      console.log(`✅ Daily aggregation completed for ${targetDate.format('YYYY-MM-DD')}`);
 
     } catch (error) {
       console.error(`❌ Daily aggregation failed for ${targetDate.format('YYYY-MM-DD')}:`, error);
@@ -117,7 +113,6 @@ class TicketLifecycleAggregationService {
    * @param {number} week - ISO week number
    */
   async runWeeklyAggregation(year, week) {
-    console.log(`🔄 Running weekly aggregation for ${year}-W${week.toString().padStart(2, '0')}...`);
 
     try {
       // Get all segments that ended in this week
@@ -135,7 +130,6 @@ class TicketLifecycleAggregationService {
       `, [this.timezone, year, week]);
 
       if (segments.rows.length === 0) {
-        console.log(`   No segments found for ${year}-W${week.toString().padStart(2, '0')}`);
         return;
       }
 
@@ -194,11 +188,9 @@ class TicketLifecycleAggregationService {
             validSegments
           ]);
 
-          console.log(`   ✅ ${status}: ${validSegments} segments, avg wall: ${this.businessHours.formatDurationShort(avgWallSeconds)}, avg business: ${this.businessHours.formatDurationShort(avgBusinessSeconds)}`);
         }
       }
 
-      console.log(`✅ Weekly aggregation completed for ${year}-W${week.toString().padStart(2, '0')}`);
 
     } catch (error) {
       console.error(`❌ Weekly aggregation failed for ${year}-W${week.toString().padStart(2, '0')}:`, error);
@@ -216,7 +208,6 @@ class TicketLifecycleAggregationService {
     const start = dayjs(fromDate).tz(this.timezone);
     const end = dayjs(toDate).tz(this.timezone);
 
-    console.log(`🔄 Running ${grouping} aggregation from ${start.format('YYYY-MM-DD')} to ${end.format('YYYY-MM-DD')}...`);
 
     if (grouping === 'day') {
       let current = start;
@@ -242,7 +233,6 @@ class TicketLifecycleAggregationService {
       }
     }
 
-    console.log(`✅ ${grouping} aggregation completed for range`);
   }
 
   /**
@@ -259,14 +249,6 @@ class TicketLifecycleAggregationService {
       status = null
     } = params;
 
-    console.log('=== getAggregationData called ===');
-    console.log('from:', from);
-    console.log('to:', to);
-    console.log('grouping:', grouping);
-    console.log('hoursMode:', hoursMode);
-    console.log('status:', status);
-    console.log('status type:', typeof status);
-    console.log('status length:', status ? status.length : 'null');
 
     const startDate = dayjs(from).tz(this.timezone).format('YYYY-MM-DD');
     const endDate = dayjs(to).tz(this.timezone).format('YYYY-MM-DD');
@@ -287,9 +269,6 @@ class TicketLifecycleAggregationService {
         ORDER BY bucket_date, status
       `;
       queryParams = status && status.length > 0 ? [startDate, endDate, ...status] : [startDate, endDate];
-      console.log('Daily query params:', queryParams);
-      console.log('Status array:', status);
-      console.log('Final SQL query:', query);
     } else {
       query = `
         SELECT 
@@ -314,9 +293,6 @@ class TicketLifecycleAggregationService {
     }
 
     const result = await databaseService.query(query, queryParams);
-    console.log('SQL query result:', result);
-    console.log('Result rows:', result.rows);
-    console.log('Result rowCount:', result.rowCount);
     
     // Transform data for frontend
     const data = result.rows.map(row => {

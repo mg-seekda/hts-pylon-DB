@@ -61,7 +61,6 @@ const HistoryControls: React.FC<HistoryControlsProps> = ({
         const validatedRange = TimezoneUtils.validateDateRange(customFrom, customTo);
         onRangeChange(validatedRange, bucket);
       } catch (error) {
-        console.error('Invalid date range:', error);
         // You might want to show an error message to the user
       }
     }

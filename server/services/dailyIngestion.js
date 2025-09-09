@@ -12,12 +12,10 @@ class DailyIngestionService {
 
   async runDailyIngestion() {
     if (this.isRunning) {
-      console.log('⏳ Daily ingestion already running, skipping...');
       return;
     }
 
     this.isRunning = true;
-    console.log('🚀 Starting daily ingestion...');
 
     try {
       // Get yesterday in Vienna timezone
@@ -25,10 +23,8 @@ class DailyIngestionService {
       const dayStart = TimezoneUtils.getStartOfDayUTC(yesterday);
       const dayEnd = TimezoneUtils.getEndOfDayUTC(yesterday);
 
-      console.log(`Processing tickets closed on ${yesterday.format('YYYY-MM-DD')}...`);
 
       // Fetch all users to get assignee names
-      console.log('Fetching users from Pylon API...');
       const usersResponse = await pylonService.getUsers();
       const users = usersResponse.data || [];
       
@@ -40,7 +36,6 @@ class DailyIngestionService {
         }
       });
       
-      console.log(`Found ${Object.keys(assigneeMap).length} users for assignee mapping`);
 
       // Query Pylon for closed tickets on yesterday
       const filter = {
@@ -67,7 +62,6 @@ class DailyIngestionService {
       const response = await pylonService.getIssues(filter);
       const tickets = response.data || [];
 
-      console.log(`Found ${tickets.length} closed tickets for ${yesterday.format('YYYY-MM-DD')}`);
 
       // DISABLED: Assignee counting now handled by periodic Pylon API sync for data consistency
       // This ensures only one source of truth for closed_by_assignee data
@@ -111,15 +105,12 @@ class DailyIngestionService {
       //   `, [assigneeId, assigneeName, new Date().toISOString()]);
       // }
 
-      console.log('ℹ️  Assignee counting disabled - now handled by webhooks for real-time updates');
 
       // Run ticket lifecycle aggregations
-      console.log('🔄 Running ticket lifecycle aggregations...');
       
       try {
         // Daily aggregation for yesterday
         await this.aggregationService.runDailyAggregation(yesterday.toDate());
-        console.log('✅ Daily lifecycle aggregation completed');
       } catch (error) {
         console.error('❌ Daily lifecycle aggregation failed:', error);
         // Don't throw here, continue with the rest of the process
@@ -131,7 +122,6 @@ class DailyIngestionService {
         const year = previousWeek.isoYear();
         const week = previousWeek.isoWeek();
         await this.aggregationService.runWeeklyAggregation(year, week);
-        console.log(`✅ Weekly lifecycle aggregation completed for ${year}-W${week.toString().padStart(2, '0')}`);
       } catch (error) {
         // Get year and week for error message, with fallback if calculation fails
         let yearStr = 'unknown';
@@ -148,7 +138,6 @@ class DailyIngestionService {
       }
 
       this.lastRun = new Date();
-      console.log(`✅ Daily ingestion completed: ${tickets.length} tickets processed`);
 
     } catch (error) {
       console.error('❌ Daily ingestion failed:', error);
@@ -164,7 +153,6 @@ class DailyIngestionService {
     const nextRun = now.add(1, 'day').startOf('day').add(1, 'hour'); // 1 AM tomorrow
     const delay = nextRun.diff(now);
 
-    console.log(`📅 Daily ingestion scheduled for ${nextRun.format('YYYY-MM-DD HH:mm:ss')} Vienna time`);
 
     setTimeout(() => {
       this.runDailyIngestion();

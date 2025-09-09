@@ -88,10 +88,7 @@ router.post('/backfill', async (req, res) => {
     // Validate dates but allow future dates for historical data
     const { from: validFrom, to: validTo } = TimezoneUtils.validateDateRange(from, to, true);
 
-    console.log(`Starting backfill from ${validFrom} to ${validTo}`);
-
     // Fetch all users to get assignee names
-    console.log('Fetching users from Pylon API...');
     const usersResponse = await pylonService.getUsers();
     const users = usersResponse.data || [];
     
@@ -103,7 +100,6 @@ router.post('/backfill', async (req, res) => {
       }
     });
     
-    console.log(`Found ${Object.keys(assigneeMap).length} users for assignee mapping`);
 
     // Process day by day
     const fromDate = TimezoneUtils.toVienna(validFrom);
@@ -117,7 +113,6 @@ router.post('/backfill', async (req, res) => {
         const dayStart = TimezoneUtils.getStartOfDayUTC(currentDate);
         const dayEnd = TimezoneUtils.getEndOfDayUTC(currentDate);
         
-        console.log(`Processing ${currentDate.format('YYYY-MM-DD')}...`);
 
         // Query Pylon for closed tickets on this day
         const filter = {
@@ -145,9 +140,6 @@ router.post('/backfill', async (req, res) => {
         const tickets = response.data || [];
 
         // Debug: Log first ticket to see structure
-        if (tickets.length > 0) {
-          console.log(`   Sample ticket assignee:`, JSON.stringify(tickets[0].assignee, null, 2));
-        }
 
         // Process tickets and group by assignee
         const assigneeCounts = {};
@@ -171,7 +163,6 @@ router.post('/backfill', async (req, res) => {
           // Check if this date is recent (within last 7 days) - if so, skip to avoid overwriting periodic sync data
           const daysDiff = dayjs().diff(currentDate, 'day');
           if (daysDiff <= 7) {
-            console.log(`   Skipping ${currentDate.format('YYYY-MM-DD')} for assignee ${assigneeName} - too recent, periodic sync data takes precedence`);
             continue;
           }
           
@@ -199,7 +190,6 @@ router.post('/backfill', async (req, res) => {
         processedDays++;
         totalTickets += tickets.length;
         
-        console.log(`Processed ${currentDate.format('YYYY-MM-DD')}: ${tickets.length} tickets, ${Object.keys(assigneeCounts).length} assignees`);
 
         // Move to next day
         currentDate = currentDate.add(1, 'day');

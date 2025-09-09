@@ -33,7 +33,6 @@ class DatabaseService {
       client.release();
       
       this.isConnected = true;
-      console.log('✅ PostgreSQL connected successfully');
       
       // Run migrations
       await this.runMigrations();
@@ -62,7 +61,6 @@ class DatabaseService {
       client.release();
       
       this.isConnected = true;
-      console.log('✅ PostgreSQL connected successfully');
       
       // Skip migrations - they will be handled manually
     } catch (error) {
@@ -233,7 +231,6 @@ class DatabaseService {
       `);
 
       client.release();
-      console.log('✅ Database migrations completed');
     } catch (error) {
       console.error('❌ Migration failed:', error);
       throw error;
@@ -289,7 +286,6 @@ class DatabaseService {
       try {
         await this.pool.end();
         this.isConnected = false;
-        console.log('✅ PostgreSQL connection closed');
       } catch (error) {
         console.warn('⚠️ Error closing database connection:', error.message);
       }

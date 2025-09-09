@@ -11,9 +11,6 @@ const DailyFlowChart: React.FC = () => {
   const { state, refreshDailyFlow } = useData();
   const { analytics, loading, cacheStatus } = state;
 
-  // Debug logging
-  console.log('DailyFlowChart - analytics:', analytics);
-  console.log('DailyFlowChart - dailyFlow data:', analytics?.dailyFlow?.data);
 
   const formatDate = (dateString: string) => {
     return dayjs(dateString).format('MMM DD');

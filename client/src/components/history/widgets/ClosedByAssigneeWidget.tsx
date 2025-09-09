@@ -156,7 +156,6 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       // Process data for chart
       processChartData(fetchedData);
     } catch (err) {
-      console.error('Error fetching closed by assignee data:', err);
       setError('Failed to load data');
     } finally {
       setLoading(false);

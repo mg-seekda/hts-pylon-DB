@@ -103,11 +103,8 @@ const TicketLifecycleWidget: React.FC = () => {
   const fetchData = useCallback(async () => {
     // Don't fetch if dates are not set
     if (!fromDate || !toDate) {
-      console.log('Skipping fetch - dates not set yet', { fromDate, toDate });
       return;
     }
-
-    console.log('Fetching ticket lifecycle data...', { fromDate, toDate, grouping, hoursMode, selectedStatuses });
     setLoading(true);
     setError(null);
 
@@ -120,14 +117,11 @@ const TicketLifecycleWidget: React.FC = () => {
       });
 
       if (selectedStatuses.length > 0) {
-        console.log('Selected statuses before join:', selectedStatuses);
         const statusString = selectedStatuses.join(',');
-        console.log('Status string after join:', statusString);
         params.append('status', statusString);
       }
 
       const url = `/api/ticket-lifecycle/data?${params}`;
-      console.log('API URL:', url);
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -135,9 +129,6 @@ const TicketLifecycleWidget: React.FC = () => {
       }
 
       const result: TicketLifecycleResponse = await response.json();
-      console.log('Ticket lifecycle data received:', result);
-      console.log('Result.data:', result.data);
-      console.log('Result.data length:', result.data ? result.data.length : 'null');
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
@@ -152,7 +143,6 @@ const TicketLifecycleWidget: React.FC = () => {
       const response = await fetch('/api/ticket-lifecycle/statuses');
       if (response.ok) {
         const result = await response.json();
-        console.log('Statuses received from API:', result.statuses);
         setAvailableStatuses(result.statuses);
         setSelectedStatuses(result.statuses); // Select all by default
       }
@@ -182,20 +172,14 @@ const TicketLifecycleWidget: React.FC = () => {
   };
 
   const formatDuration = (seconds: number) => {
-    console.log('formatDuration called with:', seconds, 'type:', typeof seconds);
-    
     // If less than a minute, show seconds
     if (seconds < 60) {
-      const result = `${seconds}s`;
-      console.log('formatDuration result (seconds):', result);
-      return result;
+      return `${seconds}s`;
     }
     
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    const result = `${hours}h ${minutes}m`;
-    console.log('formatDuration result (hours/minutes):', result);
-    return result;
+    return `${hours}h ${minutes}m`;
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -243,12 +227,7 @@ const TicketLifecycleWidget: React.FC = () => {
       groupedData[key][`${item.status}_count`] = Number(item.countSegments);
     });
 
-    const result = Object.values(groupedData);
-    console.log('Chart data transformation:', result);
-    console.log('Original data:', data.data);
-    console.log('First item structure:', data.data[0]);
-    console.log('Grouped data keys:', Object.keys(groupedData));
-    return result;
+    return Object.values(groupedData);
   }, [data]);
 
   const handleStatusToggle = (status: string) => {
@@ -385,8 +364,6 @@ const TicketLifecycleWidget: React.FC = () => {
       );
     }
 
-    console.log('Rendering chart, data state:', { data, hasData: !!data, dataLength: data?.data?.length });
-    
     if (!data || data.data.length === 0) {
       return (
         <div className="flex items-center justify-center h-64">
@@ -394,14 +371,10 @@ const TicketLifecycleWidget: React.FC = () => {
             <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <div className="text-lg mb-2">No data yet</div>
             <div className="text-sm">Lifecycle tracking started on deployment date</div>
-            <div className="text-xs mt-2">Debug: data={JSON.stringify(data)}</div>
           </div>
         </div>
       );
     }
-
-    console.log('Rendering chart with data:', chartData);
-    console.log('Selected statuses for chart:', selectedStatuses);
     
     return (
       <>

@@ -525,8 +525,6 @@ class PylonService {
 
       // Convert to array format with averages
       const result = [];
-      console.log('Day occurrences in period:', dayOccurrences);
-      console.log('Total tickets processed:', response.data.length);
       
       for (let day = 0; day < 7; day++) {
         for (let hour = 0; hour < 24; hour++) {
@@ -544,7 +542,6 @@ class PylonService {
       }
       
       // Heatmap data generated
-      console.log('Sample data points:', result.slice(0, 5));
 
       return { data: result };
     } catch (error) {

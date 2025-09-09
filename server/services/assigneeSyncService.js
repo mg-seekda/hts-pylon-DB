@@ -26,13 +26,9 @@ class AssigneeSyncService {
    */
   startPeriodicSync() {
     if (this.todaySyncInterval || this.historicalSyncInterval) {
-      console.log('Assignee sync service already running');
       return;
     }
 
-    console.log('🔄 Starting assignee sync service');
-    console.log('   📅 Today sync: every 5 minutes');
-    console.log('   📚 Historical sync: every 1 hour');
     
     // Run immediately on start
     this.syncToday().catch(error => {
@@ -69,7 +65,6 @@ class AssigneeSyncService {
       clearInterval(this.historicalSyncInterval);
       this.historicalSyncInterval = null;
     }
-    console.log('🛑 Stopped assignee sync service');
   }
 
   /**
@@ -77,17 +72,14 @@ class AssigneeSyncService {
    */
   async syncToday() {
     if (this.isRunning) {
-      console.log('⏳ Today sync already running, skipping...');
       return;
     }
 
     this.isRunning = true;
-    console.log('🔄 Syncing today\'s data...');
 
     try {
       const today = TimezoneUtils.toVienna();
       await this.syncDateRange(today, today);
-      console.log('✅ Today sync completed successfully');
     } catch (error) {
       console.error('❌ Today sync failed:', error);
     } finally {
@@ -100,12 +92,10 @@ class AssigneeSyncService {
    */
   async syncHistorical() {
     if (this.isRunning) {
-      console.log('⏳ Historical sync already running, skipping...');
       return;
     }
 
     this.isRunning = true;
-    console.log('🔄 Syncing historical data (last 30 days)...');
 
     try {
       const today = TimezoneUtils.toVienna();
@@ -113,7 +103,6 @@ class AssigneeSyncService {
       await this.syncDateRange(thirtyDaysAgo, today.subtract(1, 'day'));
       
       this.lastSync = new Date();
-      console.log('✅ Historical sync completed successfully');
     } catch (error) {
       console.error('❌ Historical sync failed:', error);
     } finally {
@@ -133,7 +122,6 @@ class AssigneeSyncService {
    * Sync closed by assignee data for a specific date range
    */
   async syncDateRange(fromDate, toDate) {
-    console.log(`🔄 Syncing assignee data from ${fromDate.format('YYYY-MM-DD')} to ${toDate.format('YYYY-MM-DD')}`);
 
     // Fetch all users for assignee mapping
     const usersResponse = await pylonService.getUsers();
@@ -146,7 +134,6 @@ class AssigneeSyncService {
       }
     });
 
-    console.log(`📋 Found ${Object.keys(assigneeMap).length} users for assignee mapping`);
 
     // Process in 5-day batches to avoid hitting the 1000 limit
     const batchSize = 5;
@@ -156,7 +143,6 @@ class AssigneeSyncService {
       const potentialEnd = currentBatchStart.add(batchSize - 1, 'day');
       const currentBatchEnd = potentialEnd.isAfter(toDate) ? toDate : potentialEnd;
       
-      console.log(`   📦 Processing batch: ${currentBatchStart.format('YYYY-MM-DD')} to ${currentBatchEnd.format('YYYY-MM-DD')}`);
       
       await this.syncBatch(currentBatchStart, currentBatchEnd, assigneeMap);
       
@@ -196,11 +182,9 @@ class AssigneeSyncService {
     const tickets = response.data || [];
 
     if (tickets.length === 0) {
-      console.log(`     📅 No closed tickets found in batch`);
       return;
     }
 
-    console.log(`     📊 Found ${tickets.length} closed tickets in batch`);
 
     // Group tickets by date and assignee
     const ticketsByDate = {};
@@ -229,7 +213,6 @@ class AssigneeSyncService {
       if (Object.keys(dayTickets).length > 0) {
         await this.updateDayData(currentDate, dayTickets, assigneeMap);
       } else {
-        console.log(`     📅 ${dateStr}: No closed tickets found`);
       }
       
       currentDate = currentDate.add(1, 'day');
@@ -254,7 +237,6 @@ class AssigneeSyncService {
         const currentCount = currentCounts[assigneeId] || 0;
 
         if (newCount !== currentCount) {
-          console.log(`   🔄 ${dateStr} - ${assigneeName}: ${currentCount} → ${newCount}`);
           
           // Update the database
           await database.query(`
@@ -284,7 +266,6 @@ class AssigneeSyncService {
       for (const [assigneeId, currentCount] of Object.entries(currentCounts)) {
         if (!assigneeCounts[assigneeId] && currentCount > 0) {
           const assigneeName = assigneeId === 'unassigned' ? 'Unassigned' : assigneeMap[assigneeId] || 'Unknown';
-          console.log(`   🗑️  ${dateStr} - ${assigneeName}: ${currentCount} → 0 (removed)`);
           
           await database.query(`
             UPDATE closed_by_assignee 
@@ -298,11 +279,6 @@ class AssigneeSyncService {
         }
       }
 
-      if (!hasChanges) {
-        console.log(`   ✅ ${dateStr}: No changes needed`);
-      } else {
-        console.log(`   ✅ ${dateStr}: Updated`);
-      }
 
     } catch (error) {
       console.error(`❌ Error updating ${dateStr}:`, error);

@@ -6,7 +6,6 @@ const { cache } = require('../middleware/cache');
 // Background refresh functions for stale-while-revalidate
 async function refreshDailyFlowInBackground(cacheKey) {
   try {
-    console.log('Background refresh: Daily flow data');
     const dailyFlowData = await pylonService.getDailyFlowData();
     
     const result = {
@@ -18,7 +17,6 @@ async function refreshDailyFlowInBackground(cacheKey) {
     };
 
     await cache.setWithMetadata(cacheKey, result, 60, 60);
-    console.log('Background refresh completed: Daily flow data');
   } catch (error) {
     console.error('Background refresh failed: Daily flow data', error);
   }
@@ -85,7 +83,6 @@ router.get('/daily-flow', async (req, res) => {
     try {
       await cache.setWithMetadata(cacheKey, result, 60, 60);
     } catch (cacheError) {
-      console.log('Cache not available, skipping cache set');
     }
     
     res.json({
@@ -160,7 +157,6 @@ router.get('/hourly-heatmap', async (req, res) => {
     try {
       await cache.setWithMetadata(cacheKey, result, 3600, 3600);
     } catch (cacheError) {
-      console.log('Cache not available, skipping cache set');
     }
     
     res.json({

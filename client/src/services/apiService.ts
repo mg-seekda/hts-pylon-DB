@@ -11,14 +11,12 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor for logging
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
-    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -29,8 +27,6 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('API Response Error:', error.response?.data || error.message);
-    
     if (error.response?.status === 401) {
       // Handle authentication errors
       window.location.href = '/login';

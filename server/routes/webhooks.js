@@ -23,7 +23,6 @@ const verifyWebhookSignature = (req, res, next) => {
   // Webhook authentication logging removed for production
 
   if (!signature || !webhookSecret) {
-    console.log('❌ Missing webhook authentication');
     return res.status(401).json({ error: 'Missing webhook authentication' });
   }
 
@@ -33,7 +32,6 @@ const verifyWebhookSignature = (req, res, next) => {
     const webhookTime = parseInt(timestamp);
     
     if (Math.abs(now - webhookTime) > 300) { // 5 minutes
-      console.log('❌ Request timestamp too old:', { now, webhookTime, diff: Math.abs(now - webhookTime) });
       return res.status(401).json({ error: 'Request timestamp too old' });
     }
   }
@@ -48,7 +46,6 @@ const verifyWebhookSignature = (req, res, next) => {
     .digest('hex');
 
   if (expectedSignature !== signature) {
-    console.log('❌ Invalid webhook signature');
     return res.status(401).json({ error: 'Invalid webhook signature' });
   }
 
@@ -210,7 +207,6 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
     const finalAssigneeId = assigneeId || 'unassigned';
     const finalAssigneeName = assigneeName || 'Unassigned';
 
-    console.log(`Processing ticket ${ticketId}: ${finalAssigneeName} (${newStatus})`);
 
     // Get the previous status for this ticket
     const previousEvent = await databaseService.query(`
@@ -276,7 +272,6 @@ async function updateAssigneeCounts(ticketId, newStatus, assigneeId, assigneeNam
         updated_at = EXCLUDED.updated_at
     `, [finalAssigneeId, finalAssigneeName, new Date().toISOString()]);
 
-    console.log(`✅ Updated assignee counts for ticket ${ticketId}: ${finalAssigneeName} (${newStatus})`);
 
   } catch (error) {
     console.error(`Error updating assignee counts for ticket ${ticketId}:`, error);
