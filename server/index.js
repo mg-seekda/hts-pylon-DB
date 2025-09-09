@@ -120,7 +120,15 @@ async function startServer() {
       
       // Start daily ingestion scheduler
       if (process.env.NODE_ENV === 'production') {
-        dailyIngestion.scheduleDailyIngestion();
+        // Add a small delay to ensure database is fully ready
+        setTimeout(() => {
+          try {
+            dailyIngestion.scheduleDailyIngestion();
+            console.log('📅 Daily ingestion scheduler started');
+          } catch (error) {
+            console.error('Error starting daily ingestion scheduler:', error);
+          }
+        }, 1000);
       } else {
         console.log('📝 Daily ingestion disabled in development mode');
       }
@@ -129,7 +137,8 @@ async function startServer() {
       assigneeSyncService.startPeriodicSync();
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('❌ Failed to start server:', error.message || error);
+    console.error('Stack trace:', error.stack);
     process.exit(1);
   }
 }

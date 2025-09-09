@@ -8,9 +8,7 @@ class DailyIngestionService {
     this.isRunning = false;
     this.lastRun = null;
     this.aggregationService = new TicketLifecycleAggregationService();
-    
-    // Initialize last run date from database on startup
-    this.initializeLastRun();
+    this.initialized = false;
   }
 
   // Initialize last run date from database on startup
@@ -24,6 +22,8 @@ class DailyIngestionService {
       }
     } catch (error) {
       console.error('Error initializing daily ingestion service:', error);
+      // Don't throw - allow service to continue without last run date
+      this.lastRun = null;
     }
   }
 
@@ -44,12 +44,13 @@ class DailyIngestionService {
       }
     } catch (error) {
       // Table might not exist yet, this is expected on first run
-      if (error.message.includes('relation "ingestion_metadata" does not exist')) {
+      if (error.message && error.message.includes('relation "ingestion_metadata" does not exist')) {
         console.log('📅 ingestion_metadata table does not exist yet, will be created on first run');
       } else {
-        console.error('Error loading last run from database:', error);
+        console.error('Error loading last run from database:', error.message || error);
       }
       // Continue without last run date if database query fails
+      this.lastRun = null;
     }
   }
 
@@ -66,8 +67,9 @@ class DailyIngestionService {
         DO UPDATE SET last_run = EXCLUDED.last_run, created_at = NOW()
       `;
       await database.query(query, [this.lastRun.toISOString()]);
+      console.log(`📅 Last run date saved to database: ${this.lastRun.toISOString()}`);
     } catch (error) {
-      console.error('Error saving last run to database:', error);
+      console.error('Error saving last run to database:', error.message || error);
       // Continue even if database save fails
     }
   }
@@ -91,9 +93,10 @@ class DailyIngestionService {
         ON ingestion_metadata(last_run DESC);
       `;
       await database.query(query);
+      console.log('📅 ingestion_metadata table ensured');
     } catch (error) {
-      console.error('Error creating ingestion_metadata table:', error);
-      throw error;
+      console.error('Error creating ingestion_metadata table:', error.message || error);
+      // Don't throw - allow service to continue without persistence
     }
   }
 
@@ -255,9 +258,10 @@ class DailyIngestionService {
 
   // Get ingestion status
   async getStatus() {
-    // Load from database if not available in memory
-    if (!this.lastRun) {
-      await this.loadLastRunFromDatabase();
+    // Initialize if not done yet
+    if (!this.initialized) {
+      await this.initializeLastRun();
+      this.initialized = true;
     }
     
     return {
