@@ -5,19 +5,33 @@ This repository includes a flexible GitHub Actions workflow for building and pub
 ## Workflow Overview
 
 ### Docker Build (`docker-release.yml`)
-**Trigger:** Manual only (workflow_dispatch)
+**Triggers:** 
+- **Manual**: workflow_dispatch (existing functionality)
+- **Automatic**: Pull requests merged to main branch
 
-- **Flexible branch selection**: Choose which branch to build from
+- **Flexible branch selection**: Choose which branch to build from (manual only)
 - **Custom Docker tagging**: Specify custom tags or use 'latest' as default
 - **Optional registry push**: Choose whether to push to registry or just build locally
 - **Multi-tag support**: Automatically creates multiple tags for better versioning
 - **Build caching**: Uses GitHub Actions cache for faster builds
 - **Single platform**: linux/amd64 for speed and compatibility
+- **PR integration**: Automatically builds and comments on merged PRs
 
 ## Usage
 
+### Automatic Build (Merged PR)
+The workflow automatically triggers when:
+1. A pull request is **merged** into the `main` branch
+2. Changes are made to files (excluding documentation files)
+
+The workflow will:
+- Build the Docker image from the merged code
+- Always tag as `latest` plus additional version tags
+- Push to GitHub Container Registry with multiple tags
+- Comment on the PR with build details and image tags
+
 ### Manual Build
-To build and push a Docker image:
+To build and push a Docker image manually:
 1. Go to Actions tab in GitHub
 2. Select "Build and Push Docker Image" workflow
 3. Click "Run workflow"
@@ -34,15 +48,28 @@ To build and push a Docker image:
 
 ### Docker Tags
 The workflow creates multiple tags automatically:
+
+**Manual builds:**
 - **Custom tag** (if provided) or `latest` (if empty)
 - **Branch-specific**: `{branch}-{run_number}` (e.g., `dev-123`)
 - **Commit-based**: `{branch}-{short-sha}` (e.g., `main-a1b2c3d`)
 
+**Automatic PR builds (merged PRs):**
+- **latest** - Always tagged as latest for merged PR builds
+- **Run number**: `{run_number}` (e.g., `123`)
+- **Branch-commit**: `{branch}-{short-sha}` (e.g., `main-a1b2c3d`)
+
 ### Example Images
 ```
+# Manual builds
 ghcr.io/mg-seekda/hts-pylon-db:latest
 ghcr.io/mg-seekda/hts-pylon-db:v1.2.3
 ghcr.io/mg-seekda/hts-pylon-db:dev-123
+ghcr.io/mg-seekda/hts-pylon-db:main-a1b2c3d
+
+# Automatic PR builds (merged PRs)
+ghcr.io/mg-seekda/hts-pylon-db:latest
+ghcr.io/mg-seekda/hts-pylon-db:123
 ghcr.io/mg-seekda/hts-pylon-db:main-a1b2c3d
 ```
 
@@ -117,6 +144,28 @@ The workflow requires these permissions:
 - `contents: read` - To checkout code
 - `packages: write` - To push to GHCR
 
+## PR Workflow
+
+### How to trigger automatic builds
+1. Create a pull request targeting the `main` branch
+2. **Merge** the pull request into `main`
+3. The workflow will automatically:
+   - Build the Docker image from the merged code
+   - Always tag as `latest` plus additional version tags
+   - Push it to GitHub Container Registry
+   - Comment on the PR with build details and image tags
+
+### PR Comments
+When a build is triggered by a merged PR, the workflow will:
+- Post a comment with build status and image tags
+- Include links to the build logs and registry
+- Show that the build was triggered by a merged PR
+
+### Build Behavior
+- **Only merged PRs**: Builds only trigger when PRs are merged, not when opened/updated
+- **Always latest tag**: Merged PRs are always tagged as `latest`
+- **No labels required**: No need to add any labels to trigger builds
+
 ## Monitoring
 
 ### Build Status
@@ -124,6 +173,12 @@ Check build status in the Actions tab:
 - ✅ Green: Build successful
 - ❌ Red: Build failed
 - 🟡 Yellow: Build in progress
+
+### PR Builds
+- Check the PR comments for build results (after merging)
+- View detailed logs in the Actions tab
+- Monitor the GitHub Container Registry for new images
+- Builds only occur when PRs are merged, not on every update
 
 ## Troubleshooting
 

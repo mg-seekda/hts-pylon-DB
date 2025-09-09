@@ -1,6 +1,7 @@
 name: Build and Push Docker Image
 
 on:
+  # Manual trigger (existing functionality)
   workflow_dispatch:
     inputs:
       branch:
@@ -16,37 +17,64 @@ on:
         description: 'Docker tag (leave empty for latest)'
         required: false
         type: string
+        default: ''
       push_to_registry:
         description: 'Push to registry'
         required: true
-        default: true
         type: boolean
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/hts-pylon-db
+        default: true
+  
+  # Automatic trigger for PRs merged into main
+  pull_request:
+    branches: [main]
+    types: [closed]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
 
 jobs:
-  build-and-push:
+  # Check if PR was merged (not just closed)
+  check-pr-merged:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
+    outputs:
+      should_build: ${{ steps.check-merged.outputs.should_build }}
     steps:
-      - name: Checkout repository
+      - name: Check if PR was merged
+        id: check-merged
+        run: |
+          # Check if the PR was merged (not just closed)
+          if [ "${{ github.event.pull_request.merged }}" = "true" ]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            echo "✅ PR was merged - will trigger build with 'latest' tag"
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ PR was closed but not merged - skipping build"
+          fi
+
+  # Build and push Docker image
+  build-and-push:
+    needs: check-pr-merged
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.event_name == 'pull_request' && needs.check-pr-merged.outputs.should_build == 'true')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Container Registry
-        if: ${{ github.event.inputs.push_to_registry == 'true' }}
+      - name: Log in to GitHub Container Registry
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_registry == 'true' || github.event_name == 'pull_request' }}
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
@@ -54,30 +82,91 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ghcr.io/${{ github.repository }}/hts-pylon-db
           tags: |
-            type=raw,value=${{ github.event.inputs.docker_tag || 'latest' }}
-            type=raw,value=${{ github.event.inputs.branch }}-${{ github.run_number }}
+            type=ref,event=branch
+            type=ref,event=pr
             type=sha,prefix={{branch}}-
+            type=raw,value=${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.docker_tag || 'latest') || 'latest' }}
+            type=raw,value=${{ github.run_number }}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ github.event.inputs.push_to_registry == 'true' }}
+          push: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_registry == 'true' || github.event_name == 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Output image details
-        if: ${{ github.event.inputs.push_to_registry == 'true' }}
         run: |
-          echo "🚀 Docker image built and pushed successfully!"
-          echo "📦 Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
-          echo "🏷️  Tags:"
-          echo "${{ steps.meta.outputs.tags }}" | sed 's/^/  - /'
-          echo ""
-          echo "💡 To pull the image:"
-          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.inputs.docker_tag || 'latest' }}"
+          echo "🏷️ Built tags:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | sed 's/^/  - /'
+          
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "🚀 Automatic build triggered by merged PR"
+            echo "📋 PR: ${{ github.event.pull_request.html_url }}"
+            echo "👤 Author: ${{ github.event.pull_request.user.login }}"
+            echo "🏷️ Always tagged as 'latest' for merged PRs"
+          else
+            echo "🔧 Manual build triggered"
+            echo "🌿 Branch: ${{ github.event.inputs.branch }}"
+            echo "🏷️ Tag: ${{ github.event.inputs.docker_tag || 'latest' }}"
+            echo "📤 Push to registry: ${{ github.event.inputs.push_to_registry }}"
+          fi
+
+  # Comment on PR with build results
+  pr-comment:
+    if: github.event_name == 'pull_request' && needs.check-pr-merged.outputs.should_build == 'true'
+    needs: [check-pr-merged, build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🐳 Docker build triggered')
+            );
+            
+            const commentBody = `🐳 **Docker build triggered by merged PR**
+            
+            ✅ **Status**: Build completed successfully
+            
+            🏷️ **Tags created**:
+            \`\`\`
+            ghcr.io/${{ github.repository }}/hts-pylon-db:latest
+            ghcr.io/${{ github.repository }}/hts-pylon-db:${{ github.run_number }}
+            ghcr.io/${{ github.repository }}/hts-pylon-db:${{ github.ref_name }}-${{ github.sha }}
+            \`\`\`
+            
+            📦 **Registry**: [GitHub Container Registry](https://github.com/${{ github.repository }}/pkgs/container/hts-pylon-db)
+            
+            🔗 **Build details**: [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
