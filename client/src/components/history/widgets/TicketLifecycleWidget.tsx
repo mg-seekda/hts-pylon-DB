@@ -118,10 +118,9 @@ const TicketLifecycleWidget: React.FC = () => {
         hoursMode
       });
 
-      // Temporarily disable status filtering to debug
-      // if (selectedStatuses.length > 0) {
-      //   params.append('status', selectedStatuses.join(','));
-      // }
+      if (selectedStatuses.length > 0) {
+        params.append('status', selectedStatuses.join(','));
+      }
 
       const url = `/api/ticket-lifecycle/data?${params}`;
       console.log('API URL:', url);

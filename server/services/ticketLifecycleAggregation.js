@@ -274,7 +274,7 @@ class TicketLifecycleAggregationService {
           count_segments
         FROM ticket_status_agg_daily
         WHERE bucket_date >= $1 AND bucket_date <= $2
-        ${status && status.length > 0 ? 'AND status IN (' + status.map((_, i) => `$${i + 3}`).join(',') + ')' : ''}
+        ${status && status.length > 0 ? 'AND status = ANY($3)' : ''}
         ORDER BY bucket_date, status
       `;
       queryParams = status && status.length > 0 ? [startDate, endDate, status] : [startDate, endDate];
@@ -295,7 +295,7 @@ class TicketLifecycleAggregationService {
           SELECT EXTRACT(ISOYEAR FROM $2::date AT TIME ZONE $4), 
                  EXTRACT(WEEK FROM $2::date AT TIME ZONE $4)
         )
-        ${status && status.length > 0 ? 'AND status IN (' + status.map((_, i) => `$${i + 3}`).join(',') + ')' : ''}
+        ${status && status.length > 0 ? 'AND status = ANY($3)' : ''}
         ORDER BY bucket_iso_year, bucket_iso_week, status
       `;
       queryParams = status && status.length > 0 ? [startDate, endDate, status, this.timezone] : [startDate, endDate, this.timezone];
