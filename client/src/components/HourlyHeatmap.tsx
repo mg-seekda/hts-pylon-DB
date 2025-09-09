@@ -76,7 +76,8 @@ const HourlyHeatmap: React.FC = () => {
     return `${startHour}:00-${endHour}:00`;
   };
 
-  if (loading.hourlyHeatmap) {
+  // Only show loading if we have no data at all (stale-while-revalidate pattern)
+  if (loading.hourlyHeatmap && !analytics?.hourlyHeatmap) {
     return (
       <div className="card h-full flex flex-col">
         <div className="card-header">

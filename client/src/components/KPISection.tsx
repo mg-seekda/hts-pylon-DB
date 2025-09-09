@@ -5,10 +5,11 @@ import { useData } from '../context/DataContext';
 import { openPylon, PYLON_VIEWS } from '../utils/pylonUtils';
 import InfoIcon from './InfoIcon';
 import Tooltip from './Tooltip';
+import CacheStatus from './CacheStatus';
 
 const KPISection: React.FC = () => {
   const { state, refreshKPIs } = useData();
-  const { kpis, loading } = state;
+  const { kpis, loading, cacheStatus } = state;
   const [openModalId, setOpenModalId] = useState<string | null>(null);
 
   const handleCardClick = (viewKey: keyof typeof PYLON_VIEWS) => {
@@ -174,7 +175,13 @@ const KPISection: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Key Performance Indicators</h2>
+        <div>
+          <h2 className="text-xl font-semibold text-white">Key Performance Indicators</h2>
+          <CacheStatus 
+            metadata={cacheStatus.kpis} 
+            className="mt-1" 
+          />
+        </div>
         <button
           onClick={refreshKPIs}
           disabled={loading.kpis}

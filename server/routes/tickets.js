@@ -9,10 +9,25 @@ const dayjs = require('dayjs');
 router.get('/kpis', async (req, res) => {
   try {
     const cacheKey = 'tickets:kpis';
-    const cached = await cache.get(cacheKey);
+    const cached = await cache.getWithMetadata(cacheKey);
     
+    // Always return cached data immediately if available (stale-while-revalidate)
     if (cached) {
-      return res.json(cached);
+      const response = {
+        ...cached.data,
+        cacheMetadata: {
+          cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
+          isStale: cached.metadata.isStale,
+          servingCached: true
+        }
+      };
+      
+      // Trigger background refresh if stale
+      if (cached.metadata.isStale) {
+        // Background refresh would go here if needed
+      }
+      
+      return res.json(response);
     }
 
     let openTickets, ticketsCreatedToday, onHoldTickets, openOver24h, closedTodayTickets, closedTicketsLast30Days, newTickets, allOpenTickets, externalIssuesTickets;
@@ -105,11 +120,19 @@ router.get('/kpis', async (req, res) => {
 
     // Try to cache, but don't fail if Redis is not available
     try {
-      await cache.set(cacheKey, kpis, 60); // Cache for 60 seconds
+      await cache.setWithMetadata(cacheKey, kpis, 60, 60); // Cache for 60 seconds, 60 seconds stale
     } catch (cacheError) {
       // Cache not available, skipping cache set
     }
-    res.json(kpis);
+    
+    res.json({
+      ...kpis,
+      cacheMetadata: {
+        cachedAt: new Date().toISOString(),
+        isStale: false,
+        servingCached: false
+      }
+    });
   } catch (error) {
     console.error('Error fetching KPIs:', error);
     res.status(500).json({ error: 'Failed to fetch KPIs' });
@@ -120,10 +143,25 @@ router.get('/kpis', async (req, res) => {
 router.get('/assignment-table', async (req, res) => {
   try {
     const cacheKey = 'tickets:assignment-table';
-    const cached = await cache.get(cacheKey);
+    const cached = await cache.getWithMetadata(cacheKey);
     
+    // Always return cached data immediately if available (stale-while-revalidate)
     if (cached) {
-      return res.json(cached);
+      const response = {
+        ...cached.data,
+        cacheMetadata: {
+          cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
+          isStale: cached.metadata.isStale,
+          servingCached: true
+        }
+      };
+      
+      // Trigger background refresh if stale
+      if (cached.metadata.isStale) {
+        // Background refresh would go here if needed
+      }
+      
+      return res.json(response);
     }
 
     // Get all users and open tickets
@@ -217,11 +255,19 @@ router.get('/assignment-table', async (req, res) => {
 
     // Try to cache, but don't fail if Redis is not available
     try {
-      await cache.set(cacheKey, assignmentTable, 60); // Cache for 60 seconds
+      await cache.setWithMetadata(cacheKey, assignmentTable, 60, 60); // Cache for 60 seconds, 60 seconds stale
     } catch (cacheError) {
       // Cache not available, skipping cache set
     }
-    res.json(assignmentTable);
+    
+    res.json({
+      ...assignmentTable,
+      cacheMetadata: {
+        cachedAt: new Date().toISOString(),
+        isStale: false,
+        servingCached: false
+      }
+    });
   } catch (error) {
     console.error('Error fetching assignment table:', error);
     res.status(500).json({ error: 'Failed to fetch assignment table' });

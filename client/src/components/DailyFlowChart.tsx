@@ -25,7 +25,8 @@ const DailyFlowChart: React.FC = () => {
     }
   };
 
-  if (loading.dailyFlow) {
+  // Only show loading if we have no data at all (stale-while-revalidate pattern)
+  if (loading.dailyFlow && !analytics?.dailyFlow) {
     return (
       <div className="card h-full flex flex-col">
         <div className="card-header">

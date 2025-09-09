@@ -22,6 +22,11 @@ interface TicketLifecycleResponse {
   from: string;
   to: string;
   totalSamples: number;
+  ingestionMetadata?: {
+    lastIngestionDate: string | null;
+    nextScheduledRun: string | null;
+    isRunning: boolean;
+  };
 }
 
 const TicketLifecycleWidget: React.FC = () => {
@@ -31,6 +36,11 @@ const TicketLifecycleWidget: React.FC = () => {
   const [hoursMode, setHoursMode] = useState<'wall' | 'business'>('business');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
+  const [ingestionMetadata, setIngestionMetadata] = useState<{
+    lastIngestionDate: string | null;
+    nextScheduledRun: string | null;
+    isRunning: boolean;
+  } | null>(null);
   
   // Date range and grouping state
   const [fromDate, setFromDate] = useState<string>('');
@@ -41,6 +51,26 @@ const TicketLifecycleWidget: React.FC = () => {
   const [isPresetOpen, setIsPresetOpen] = useState<boolean>(false);
 
   const presets = TimezoneUtils.getDatePresets();
+
+  // Component to display last ingestion date
+  const LastIngestionInfo = () => {
+    if (!ingestionMetadata?.lastIngestionDate) return null;
+
+    const formatDate = (dateString: string) => {
+      return dayjs(dateString).format('MMM DD, YYYY [at] HH:mm');
+    };
+
+    return (
+      <div className="text-xs text-gray-400 mt-1">
+        <span className="text-yellow-400">⚠️</span> Last data ingestion: {formatDate(ingestionMetadata.lastIngestionDate)}
+        {ingestionMetadata.nextScheduledRun && (
+          <span className="ml-2">
+            • Next run: {dayjs(ingestionMetadata.nextScheduledRun).format('MMM DD, HH:mm')}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   // Initialize with default values - fetch actual data range
   useEffect(() => {
@@ -130,6 +160,7 @@ const TicketLifecycleWidget: React.FC = () => {
 
       const result: TicketLifecycleResponse = await response.json();
       setData(result);
+      setIngestionMetadata(result.ingestionMetadata || null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
       console.error('Error fetching ticket lifecycle data:', err);
@@ -481,7 +512,10 @@ const TicketLifecycleWidget: React.FC = () => {
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
+            <div>
+              <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
+              <LastIngestionInfo />
+            </div>
             <button
               onClick={handleRefresh}
               disabled={loading}
@@ -619,7 +653,7 @@ const TicketLifecycleWidget: React.FC = () => {
         {/* Info Icon */}
         <InfoIcon
           title="Ticket Lifecycle"
-          description="Shows average time spent in each ticket status over time. Tracks how long tickets remain in different states, helping identify bottlenecks and process efficiency."
+          description="Shows average time spent in each ticket status over time. Tracks how long tickets remain in different states, helping identify bottlenecks and process efficiency. Data is processed once daily for the previous day/week, so today's data may not be available yet."
           features={[
             'Stacked bars show time distribution across statuses',
             'Business Hours: Only counts Mon-Fri 9-17 Vienna time',
@@ -627,7 +661,10 @@ const TicketLifecycleWidget: React.FC = () => {
             'Status filters: Toggle individual statuses on/off',
             'Day/Week view: Switch between daily and weekly aggregation',
             'Hover bars for detailed time breakdowns',
-            'Color-coded statuses for easy identification'
+            'Color-coded statuses for easy identification',
+            'Data updates once daily for previous day/week',
+            'Today\'s data may not be available until next day',
+            'Last ingestion date shown above the chart'
           ]}
           position="bottom-right"
         />
@@ -644,9 +681,12 @@ const TicketLifecycleWidget: React.FC = () => {
       {/* Header - Sticky to top */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-2">
-            <Clock className="w-5 h-5 text-green-400" />
-            <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
+          <div>
+            <div className="flex items-center space-x-2">
+              <Clock className="w-5 h-5 text-green-400" />
+              <h3 className="text-xl font-semibold text-white">Ticket Lifecycle</h3>
+            </div>
+            <LastIngestionInfo />
           </div>
           <button
             onClick={handleRefresh}
@@ -840,7 +880,7 @@ const TicketLifecycleWidget: React.FC = () => {
       {/* Info Icon */}
       <InfoIcon
         title="Ticket Lifecycle"
-        description="Shows average time spent in each ticket status over time. Tracks how long tickets remain in different states, helping identify bottlenecks and process efficiency."
+        description="Shows average time spent in each ticket status over time. Tracks how long tickets remain in different states, helping identify bottlenecks and process efficiency. Data is processed once daily for the previous day/week, so today's data may not be available yet."
         features={[
           'Stacked bars show time distribution across statuses',
           'Business Hours: Only counts Mon-Fri 9-17 Vienna time',
@@ -848,7 +888,10 @@ const TicketLifecycleWidget: React.FC = () => {
           'Status filters: Toggle individual statuses on/off',
           'Day/Week view: Switch between daily and weekly aggregation',
           'Hover bars for detailed time breakdowns',
-          'Color-coded statuses for easy identification'
+          'Color-coded statuses for easy identification',
+          'Data updates once daily for previous day/week',
+          'Today\'s data may not be available until next day',
+          'Last ingestion date shown above the chart'
         ]}
         position="bottom-right"
       />
