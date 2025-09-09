@@ -455,6 +455,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: false } });
       dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: false } });
       dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: false } });
+      
+      // Set initial timestamp
+      dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
     };
     
     loadInitialData();
