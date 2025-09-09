@@ -113,30 +113,24 @@ const TicketLifecycleWidget: React.FC = () => {
             setSelectedPreset('knownData');
           } else {
             // Fallback to current week if no data available
-            const today = dayjs();
-            const weekStart = today.startOf('week').add(1, 'day'); // Monday
-            const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
-            setFromDate(weekStart.format('YYYY-MM-DD'));
-            setToDate(weekEnd.format('YYYY-MM-DD'));
+            const currentWeek = getCurrentWeekRange();
+            setFromDate(currentWeek.from);
+            setToDate(currentWeek.to);
             setSelectedPreset('current-week');
           }
         } else {
           // Fallback to current week if API fails
-          const today = dayjs();
-          const weekStart = today.startOf('week').add(1, 'day'); // Monday
-          const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
-          setFromDate(weekStart.format('YYYY-MM-DD'));
-          setToDate(weekEnd.format('YYYY-MM-DD'));
+          const currentWeek = getCurrentWeekRange();
+          setFromDate(currentWeek.from);
+          setToDate(currentWeek.to);
           setSelectedPreset('current-week');
         }
       } catch (error) {
         console.error('Error fetching known data range:', error);
         // Fallback to current week if error
-        const today = dayjs();
-        const weekStart = today.startOf('week').add(1, 'day'); // Monday
-        const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
-        setFromDate(weekStart.format('YYYY-MM-DD'));
-        setToDate(weekEnd.format('YYYY-MM-DD'));
+        const currentWeek = getCurrentWeekRange();
+        setFromDate(currentWeek.from);
+        setToDate(currentWeek.to);
         setSelectedPreset('current-week');
       }
     };
@@ -663,11 +657,9 @@ const TicketLifecycleWidget: React.FC = () => {
             <div className="mt-4">
               <button
                 onClick={() => {
-                  const today = dayjs();
-                  const weekStart = today.startOf('week').add(1, 'day');
-                  const weekEnd = today.endOf('week').subtract(1, 'day');
-                  setFromDate(weekStart.format('YYYY-MM-DD'));
-                  setToDate(weekEnd.format('YYYY-MM-DD'));
+                  const currentWeek = getCurrentWeekRange();
+                  setFromDate(currentWeek.from);
+                  setToDate(currentWeek.to);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
