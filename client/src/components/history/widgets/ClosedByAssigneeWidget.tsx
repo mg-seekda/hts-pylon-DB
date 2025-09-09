@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Loader2, AlertCircle, BarChart3, Calendar, Filter } from 'lucide-react';
+import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw } from 'lucide-react';
 import { HistoryWidgetProps } from '../historyWidgets';
 import { apiService } from '../../../services/apiService';
 import TimezoneUtils from '../../../utils/timezone';
@@ -21,8 +21,8 @@ interface ChartDataPoint {
 const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
   // Widget manages its own date range and bucket
   const [dateRange, setDateRange] = useState({
-    from: '2025-09-01',
-    to: '2025-09-05'
+    from: '',
+    to: ''
   });
   const [bucket, setBucket] = useState<'day' | 'week'>('day');
   const [data, setData] = useState<ClosedByAssigneeData[]>([]);
@@ -41,6 +41,64 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
   const getAssigneeColor = (index: number) => {
     return colors[index % colors.length];
   };
+
+  // Helper functions for time period options
+  const getCurrentWeekRange = () => {
+    const today = new Date();
+    const monday = new Date(today);
+    const dayOfWeek = today.getDay();
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    monday.setDate(today.getDate() - daysToMonday);
+    
+    return {
+      from: monday.toISOString().split('T')[0],
+      to: today.toISOString().split('T')[0]
+    };
+  };
+
+  const getCurrentMonthRange = () => {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    return {
+      from: firstDay.toISOString().split('T')[0],
+      to: today.toISOString().split('T')[0]
+    };
+  };
+
+  const getLastWeekRange = () => {
+    const today = new Date();
+    const lastWeekEnd = new Date(today);
+    lastWeekEnd.setDate(today.getDate() - 7);
+    
+    const lastWeekStart = new Date(lastWeekEnd);
+    const dayOfWeek = lastWeekEnd.getDay();
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    lastWeekStart.setDate(lastWeekEnd.getDate() - daysToMonday);
+    
+    return {
+      from: lastWeekStart.toISOString().split('T')[0],
+      to: lastWeekEnd.toISOString().split('T')[0]
+    };
+  };
+
+  const getLastMonthRange = () => {
+    const today = new Date();
+    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+    const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    
+    return {
+      from: lastMonthStart.toISOString().split('T')[0],
+      to: lastMonthEnd.toISOString().split('T')[0]
+    };
+  };
+
+  // Initialize with current week on mount
+  useEffect(() => {
+    if (!dateRange.from || !dateRange.to) {
+      setDateRange(getCurrentWeekRange());
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -201,10 +259,15 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-400">Filter</span>
-            </div>
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center space-x-2 px-2 py-1 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+              title="Refresh data"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">Refresh</span>
+            </button>
           </div>
           <p className="text-gray-400 text-sm">
             Tickets closed by assignee over time ({bucket === 'week' ? 'weekly' : 'daily'} view)
@@ -295,18 +358,10 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
             </div>
             <div className="mt-4">
               <button
-                onClick={() => {
-                  // Suggest a different date range with data
-                  const today = new Date();
-                  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                  setDateRange({
-                    from: weekAgo.toISOString().split('T')[0],
-                    to: today.toISOString().split('T')[0]
-                  });
-                }}
+                onClick={() => setDateRange(getCurrentWeekRange())}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Try Last 7 Days
+                Try Current Week
               </button>
             </div>
           </div>
@@ -324,10 +379,15 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
-          <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-400">Filter</span>
-          </div>
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="flex items-center space-x-2 px-2 py-1 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+            title="Refresh data"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className="text-sm">Refresh</span>
+          </button>
         </div>
         <p className="text-gray-400 text-sm">
           Tickets closed by assignee over time ({bucket === 'week' ? 'weekly' : 'daily'} view)
@@ -379,26 +439,47 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
           </div>
         </div>
 
-        {/* Quick buttons */}
+        {/* Time period buttons */}
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setDateRange({ from: '2025-09-01', to: '2025-09-05' })}
-            className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition-colors"
+            onClick={() => setDateRange(getCurrentWeekRange())}
+            className={`px-2 py-1 rounded text-xs transition-colors ${
+              JSON.stringify(dateRange) === JSON.stringify(getCurrentWeekRange())
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
+            }`}
           >
-            Known Data
+            Current Week
           </button>
           <button
-            onClick={() => {
-              const today = new Date();
-              const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-              setDateRange({
-                from: weekAgo.toISOString().split('T')[0],
-                to: today.toISOString().split('T')[0]
-              });
-            }}
-            className="px-2 py-1 bg-gray-600/50 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+            onClick={() => setDateRange(getCurrentMonthRange())}
+            className={`px-2 py-1 rounded text-xs transition-colors ${
+              JSON.stringify(dateRange) === JSON.stringify(getCurrentMonthRange())
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
+            }`}
           >
-            Last 7 Days
+            Current Month
+          </button>
+          <button
+            onClick={() => setDateRange(getLastWeekRange())}
+            className={`px-2 py-1 rounded text-xs transition-colors ${
+              JSON.stringify(dateRange) === JSON.stringify(getLastWeekRange())
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Last Week
+          </button>
+          <button
+            onClick={() => setDateRange(getLastMonthRange())}
+            className={`px-2 py-1 rounded text-xs transition-colors ${
+              JSON.stringify(dateRange) === JSON.stringify(getLastMonthRange())
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-600/50 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Last Month
           </button>
         </div>
       </div>
