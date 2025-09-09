@@ -623,6 +623,22 @@ const TicketLifecycleWidget: React.FC = () => {
             </div>
           </div>
         </div>
+        
+        {/* Info Icon */}
+        <InfoIcon
+          title="Ticket Lifecycle"
+          description="Shows average time spent in each ticket status over time. Tracks how long tickets remain in different states, helping identify bottlenecks and process efficiency."
+          features={[
+            'Stacked bars show time distribution across statuses',
+            'Business Hours: Only counts Mon-Fri 9-17 Vienna time',
+            'Wall Hours: Counts all 24/7 time including weekends',
+            'Status filters: Toggle individual statuses on/off',
+            'Day/Week view: Switch between daily and weekly aggregation',
+            'Hover bars for detailed time breakdowns',
+            'Color-coded statuses for easy identification'
+          ]}
+          position="bottom-right"
+        />
       </motion.div>
     );
   }
@@ -848,6 +864,22 @@ const TicketLifecycleWidget: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Info Icon */}
+      <InfoIcon
+        title="Ticket Lifecycle"
+        description="Shows average time spent in each ticket status over time. Tracks how long tickets remain in different states, helping identify bottlenecks and process efficiency."
+        features={[
+          'Stacked bars show time distribution across statuses',
+          'Business Hours: Only counts Mon-Fri 9-17 Vienna time',
+          'Wall Hours: Counts all 24/7 time including weekends',
+          'Status filters: Toggle individual statuses on/off',
+          'Day/Week view: Switch between daily and weekly aggregation',
+          'Hover bars for detailed time breakdowns',
+          'Color-coded statuses for easy identification'
+        ]}
+        position="bottom-right"
+      />
     </motion.div>
   );
 };

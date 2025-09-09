@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw } from 'lucide-react';
 import { HistoryWidgetProps } from '../historyWidgets';
 import { apiService } from '../../../services/apiService';
+import InfoIcon from '../../InfoIcon';
 import TimezoneUtils from '../../../utils/timezone';
 
 interface ClosedByAssigneeData {
@@ -573,6 +574,22 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
           </div>
         </div>
       </div>
+      
+      {/* Info Icon */}
+      <InfoIcon
+        title="Closed by Assignee"
+        description="Shows ticket closure distribution across team members over time. Tracks individual performance and workload distribution to identify top performers and capacity planning."
+        features={[
+          'Stacked bars show tickets closed by each assignee',
+          'Color-coded assignees for easy identification',
+          'Click assignee filters to show/hide specific team members',
+          'Day/Week view: Switch between daily and weekly aggregation',
+          'Hover bars for detailed closure statistics',
+          'Summary shows total tickets, assignees, and averages',
+          'Time presets: Quick selection of common date ranges'
+        ]}
+        position="bottom-right"
+      />
     </motion.div>
   );
 };
