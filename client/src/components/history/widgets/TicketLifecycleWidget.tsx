@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Clock, RefreshCw, Calendar, BarChart3, ChevronDown, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -48,7 +48,35 @@ const TicketLifecycleWidget: React.FC = () => {
   const [grouping, setGrouping] = useState<'day' | 'week'>('day');
   const [selectedPreset, setSelectedPreset] = useState<string>('');
   const [isCustomRange, setIsCustomRange] = useState<boolean>(false);
+  
+  // Refs to access current values without causing re-renders
+  const fromDateRef = useRef(fromDate);
+  const toDateRef = useRef(toDate);
+  const groupingRef = useRef(grouping);
+  const hoursModeRef = useRef(hoursMode);
+  const selectedStatusesRef = useRef(selectedStatuses);
   const [isPresetOpen, setIsPresetOpen] = useState<boolean>(false);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    fromDateRef.current = fromDate;
+  }, [fromDate]);
+
+  useEffect(() => {
+    toDateRef.current = toDate;
+  }, [toDate]);
+
+  useEffect(() => {
+    groupingRef.current = grouping;
+  }, [grouping]);
+
+  useEffect(() => {
+    hoursModeRef.current = hoursMode;
+  }, [hoursMode]);
+
+  useEffect(() => {
+    selectedStatusesRef.current = selectedStatuses;
+  }, [selectedStatuses]);
 
   const presets = TimezoneUtils.getDatePresets();
 
@@ -132,7 +160,7 @@ const TicketLifecycleWidget: React.FC = () => {
 
   const fetchData = useCallback(async () => {
     // Don't fetch if dates are not set
-    if (!fromDate || !toDate) {
+    if (!fromDateRef.current || !toDateRef.current) {
       return;
     }
     setLoading(true);
@@ -140,14 +168,14 @@ const TicketLifecycleWidget: React.FC = () => {
 
     try {
       const params = new URLSearchParams({
-        from: fromDate,
-        to: toDate,
-        grouping,
-        hoursMode
+        from: fromDateRef.current,
+        to: toDateRef.current,
+        grouping: groupingRef.current,
+        hoursMode: hoursModeRef.current
       });
 
-      if (selectedStatuses.length > 0) {
-        const statusString = selectedStatuses.join(',');
+      if (selectedStatusesRef.current.length > 0) {
+        const statusString = selectedStatusesRef.current.join(',');
         params.append('status', statusString);
       }
 
@@ -290,9 +318,8 @@ const TicketLifecycleWidget: React.FC = () => {
 
   // Helper functions for time period options
   const getCurrentWeekRange = () => {
-    const today = dayjs();
-    const weekStart = today.startOf('week').add(1, 'day'); // Monday
-    const weekEnd = today.endOf('week').subtract(1, 'day'); // Sunday
+    const weekStart = TimezoneUtils.getStartOfWeek();
+    const weekEnd = TimezoneUtils.getEndOfWeek();
     
     return {
       from: weekStart.format('YYYY-MM-DD'),

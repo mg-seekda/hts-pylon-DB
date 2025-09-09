@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-// Extend dayjs with timezone support
+// Configure dayjs
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -31,12 +31,18 @@ export class TimezoneUtils {
 
   // Get start of week (Monday) in Vienna timezone
   static getStartOfWeek(date?: string | Date | dayjs.Dayjs) {
-    return this.toVienna(date).startOf('week');
+    const viennaDate = this.toVienna(date);
+    const dayOfWeek = viennaDate.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Calculate days to Monday
+    return viennaDate.add(daysToMonday, 'day').startOf('day');
   }
 
   // Get end of week (Sunday) in Vienna timezone
   static getEndOfWeek(date?: string | Date | dayjs.Dayjs) {
-    return this.toVienna(date).endOf('week');
+    const viennaDate = this.toVienna(date);
+    const dayOfWeek = viennaDate.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek; // Calculate days to Sunday
+    return viennaDate.add(daysToSunday, 'day').endOf('day');
   }
 
   // Get date presets for the UI

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw, Users } from 'lucide-react';
@@ -29,17 +29,14 @@ interface CacheMetadata {
 }
 
 const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
-  // Get current week as default (Monday to current day)
+  // Get current week as default (Monday to Sunday)
   const getCurrentWeekRange = () => {
-    const today = new Date();
-    const monday = new Date(today);
-    const dayOfWeek = today.getDay();
-    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, so 6 days back
-    monday.setDate(today.getDate() - daysToMonday);
+    const weekStart = TimezoneUtils.getStartOfWeek();
+    const weekEnd = TimezoneUtils.getEndOfWeek();
     
     return {
-      from: monday.toISOString().split('T')[0],
-      to: today.toISOString().split('T')[0]
+      from: weekStart.format('YYYY-MM-DD'),
+      to: weekEnd.format('YYYY-MM-DD')
     };
   };
 
@@ -54,6 +51,19 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
   const [hiddenAssignees, setHiddenAssignees] = useState<Set<string>>(new Set());
   const [selectedPreset, setSelectedPreset] = useState<string>('current-week');
   const [cacheMetadata, setCacheMetadata] = useState<CacheMetadata | null>(null);
+  
+  // Refs to access current values without causing re-renders
+  const dateRangeRef = useRef(dateRange);
+  const bucketRef = useRef(bucket);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    dateRangeRef.current = dateRange;
+  }, [dateRange]);
+
+  useEffect(() => {
+    bucketRef.current = bucket;
+  }, [bucket]);
 
   // Color palette for assignees
   const colors = [
@@ -153,9 +163,9 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
       setError(null);
 
       const response = await apiService.getClosedByAssignee({
-        from: dateRange.from,
-        to: dateRange.to,
-        bucket: bucket
+        from: dateRangeRef.current.from,
+        to: dateRangeRef.current.to,
+        bucket: bucketRef.current
       });
 
       const fetchedData = response.data || [];
