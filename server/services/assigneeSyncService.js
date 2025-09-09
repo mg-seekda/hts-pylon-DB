@@ -15,73 +15,118 @@ class AssigneeSyncService {
   constructor() {
     this.isRunning = false;
     this.lastSync = null;
-    this.syncInterval = null;
+    this.todaySyncInterval = null;
+    this.historicalSyncInterval = null;
   }
 
   /**
-   * Start the periodic sync service (every 5 minutes)
+   * Start the periodic sync service
+   * - Today: every 1 minute
+   * - Historical (last 30 days): every 1 hour
    */
   startPeriodicSync() {
-    if (this.syncInterval) {
+    if (this.todaySyncInterval || this.historicalSyncInterval) {
       console.log('Assignee sync service already running');
       return;
     }
 
-    console.log('🔄 Starting assignee sync service (every 5 minutes)');
+    console.log('🔄 Starting assignee sync service');
+    console.log('   📅 Today sync: every 1 minute');
+    console.log('   📚 Historical sync: every 1 hour');
     
     // Run immediately on start
-    this.syncClosedByAssignee().catch(error => {
-      console.error('Initial assignee sync failed:', error);
+    this.syncToday().catch(error => {
+      console.error('Initial today sync failed:', error);
+    });
+    this.syncHistorical().catch(error => {
+      console.error('Initial historical sync failed:', error);
     });
 
-    // Then run every 5 minutes
-    this.syncInterval = setInterval(() => {
-      this.syncClosedByAssignee().catch(error => {
-        console.error('Periodic assignee sync failed:', error);
+    // Today sync every 1 minute
+    this.todaySyncInterval = setInterval(() => {
+      this.syncToday().catch(error => {
+        console.error('Today sync failed:', error);
       });
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 1 * 60 * 1000); // 1 minute
+
+    // Historical sync every 1 hour
+    this.historicalSyncInterval = setInterval(() => {
+      this.syncHistorical().catch(error => {
+        console.error('Historical sync failed:', error);
+      });
+    }, 60 * 60 * 1000); // 1 hour
   }
 
   /**
    * Stop the periodic sync service
    */
   stopPeriodicSync() {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-      this.syncInterval = null;
-      console.log('🛑 Stopped assignee sync service');
+    if (this.todaySyncInterval) {
+      clearInterval(this.todaySyncInterval);
+      this.todaySyncInterval = null;
     }
+    if (this.historicalSyncInterval) {
+      clearInterval(this.historicalSyncInterval);
+      this.historicalSyncInterval = null;
+    }
+    console.log('🛑 Stopped assignee sync service');
   }
 
   /**
-   * Sync closed by assignee data from Pylon API
+   * Sync today's data only
    */
-  async syncClosedByAssignee() {
+  async syncToday() {
     if (this.isRunning) {
-      console.log('⏳ Assignee sync already running, skipping...');
+      console.log('⏳ Today sync already running, skipping...');
       return;
     }
 
     this.isRunning = true;
-    console.log('🔄 Starting assignee sync from Pylon API...');
+    console.log('🔄 Syncing today\'s data...');
 
     try {
-      // Sync today's data
       const today = TimezoneUtils.toVienna();
       await this.syncDateRange(today, today);
-
-      // Sync last 30 days in 5-day batches to catch any missed updates
-      const thirtyDaysAgo = today.subtract(30, 'day');
-      await this.syncDateRange(thirtyDaysAgo, today.subtract(1, 'day'));
-
-      this.lastSync = new Date();
-      console.log('✅ Assignee sync completed successfully');
-
+      console.log('✅ Today sync completed successfully');
     } catch (error) {
-      console.error('❌ Assignee sync failed:', error);
+      console.error('❌ Today sync failed:', error);
     } finally {
       this.isRunning = false;
     }
+  }
+
+  /**
+   * Sync historical data (last 30 days)
+   */
+  async syncHistorical() {
+    if (this.isRunning) {
+      console.log('⏳ Historical sync already running, skipping...');
+      return;
+    }
+
+    this.isRunning = true;
+    console.log('🔄 Syncing historical data (last 30 days)...');
+
+    try {
+      const today = TimezoneUtils.toVienna();
+      const thirtyDaysAgo = today.subtract(30, 'day');
+      await this.syncDateRange(thirtyDaysAgo, today.subtract(1, 'day'));
+      
+      this.lastSync = new Date();
+      console.log('✅ Historical sync completed successfully');
+    } catch (error) {
+      console.error('❌ Historical sync failed:', error);
+    } finally {
+      this.isRunning = false;
+    }
+  }
+
+  /**
+   * Sync closed by assignee data from Pylon API (legacy method for manual calls)
+   */
+  async syncClosedByAssignee() {
+    await this.syncToday();
+    await this.syncHistorical();
   }
 
   /**
@@ -108,10 +153,8 @@ class AssigneeSyncService {
     let currentBatchStart = fromDate;
     
     while (currentBatchStart.isSame(toDate, 'day') || currentBatchStart.isBefore(toDate, 'day')) {
-      const currentBatchEnd = dayjs.min(
-        currentBatchStart.add(batchSize - 1, 'day'),
-        toDate
-      );
+      const potentialEnd = currentBatchStart.add(batchSize - 1, 'day');
+      const currentBatchEnd = potentialEnd.isAfter(toDate) ? toDate : potentialEnd;
       
       console.log(`   📦 Processing batch: ${currentBatchStart.format('YYYY-MM-DD')} to ${currentBatchEnd.format('YYYY-MM-DD')}`);
       
@@ -294,7 +337,10 @@ class AssigneeSyncService {
     return {
       isRunning: this.isRunning,
       lastSync: this.lastSync,
-      hasInterval: !!this.syncInterval
+      todaySyncActive: !!this.todaySyncInterval,
+      historicalSyncActive: !!this.historicalSyncInterval,
+      todayInterval: '1 minute',
+      historicalInterval: '1 hour'
     };
   }
 }

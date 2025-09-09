@@ -125,9 +125,9 @@ async function startServer() {
         console.log('📝 Daily ingestion disabled in development mode');
       }
       
-      // Start assignee sync service (every 5 minutes)
+      // Start assignee sync service
       assigneeSyncService.startPeriodicSync();
-      console.log('🔄 Assignee sync service started (every 5 minutes)');
+      console.log('🔄 Assignee sync service started (today: 1min, historical: 1hr)');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

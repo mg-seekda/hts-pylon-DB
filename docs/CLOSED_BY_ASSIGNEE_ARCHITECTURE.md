@@ -27,10 +27,10 @@ The following services have been **completely disabled** from writing to `closed
 ## Active Service
 ### AssigneeSyncService (`server/services/assigneeSyncService.js`)
 - ✅ **ONLY SERVICE** that writes to `closed_by_assignee`
-- 🔄 **Runs every 5 minutes** automatically
+- 🔄 **Today sync: every 1 minute** (most important data)
+- 📚 **Historical sync: every 1 hour** (last 30 days in 5-day batches)
 - 📊 **Uses Pylon API** as source of truth
 - 🔍 **Smart comparison** - only updates when data changes
-- 📅 **Syncs today + last 30 days** to catch missed updates
 
 ## Data Flow
 ```
@@ -44,9 +44,11 @@ Closed by Assignee Widget
 ```
 
 ## API Efficiency
-- **1 API call** for users (assignee mapping)
-- **7 API calls** for closed tickets (30 days in 5-day batches)
-- **Total: 8 API calls every 5 minutes** (optimized from 32 calls)
+- **Today sync (every 1 minute):**
+  - 1 API call for users + 1 API call for today = **2 calls/minute**
+- **Historical sync (every 1 hour):**
+  - 1 API call for users + 6 API calls for 30 days in 5-day batches = **7 calls/hour**
+- **Total: ~2 calls/minute + 7 calls/hour** (much more efficient!)
 - **Batch size: 5 days** to stay well under the 1000 ticket limit
 
 ## API Endpoints
