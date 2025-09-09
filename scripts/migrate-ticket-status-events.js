@@ -8,6 +8,14 @@ dayjs.extend(timezone);
 async function migrateTicketStatusEvents() {
   try {
     console.log('🔄 Starting migration of ticket_status_events...\n');
+    
+    // Initialize database connection
+    console.log('🔌 Connecting to database...');
+    await database.init();
+    if (!database.isConnected) {
+      throw new Error('Failed to connect to database');
+    }
+    console.log('✅ Database connected successfully\n');
 
     // Step 1: Add new columns to existing table (if they don't exist)
     console.log('1. Adding new columns to ticket_status_events table...');
@@ -129,7 +137,13 @@ async function migrateTicketStatusEvents() {
 
   } catch (error) {
     console.error('❌ Migration failed:', error);
+    process.exit(1);
   } finally {
+    // Close database connection
+    if (database.isConnected) {
+      await database.close();
+      console.log('🔌 Database connection closed');
+    }
     process.exit(0);
   }
 }

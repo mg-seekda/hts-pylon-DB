@@ -247,10 +247,14 @@ class DatabaseService {
   }
 
   async close() {
-    if (this.pool) {
-      await this.pool.end();
-      this.isConnected = false;
-      console.log('✅ PostgreSQL connection closed');
+    if (this.pool && this.isConnected) {
+      try {
+        await this.pool.end();
+        this.isConnected = false;
+        console.log('✅ PostgreSQL connection closed');
+      } catch (error) {
+        console.warn('⚠️ Error closing database connection:', error.message);
+      }
     }
   }
 }

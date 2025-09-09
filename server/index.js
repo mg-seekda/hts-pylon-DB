@@ -108,16 +108,29 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  
-  // Start daily ingestion scheduler
-  if (process.env.NODE_ENV === 'production') {
-    dailyIngestion.scheduleDailyIngestion();
-  } else {
-    console.log('📝 Daily ingestion disabled in development mode');
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Initialize database connection
+    await database.init();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      
+      // Start daily ingestion scheduler
+      if (process.env.NODE_ENV === 'production') {
+        dailyIngestion.scheduleDailyIngestion();
+      } else {
+        console.log('📝 Daily ingestion disabled in development mode');
+      }
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
   }
-});
+}
+
+startServer();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

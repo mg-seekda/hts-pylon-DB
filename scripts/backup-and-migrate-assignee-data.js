@@ -7,6 +7,14 @@ dayjs.extend(timezone);
 async function backupAndMigrateAssigneeData() {
   try {
     console.log('🔄 Starting backup and migration of assignee data...\n');
+    
+    // Initialize database connection
+    console.log('🔌 Connecting to database...');
+    await database.init();
+    if (!database.isConnected) {
+      throw new Error('Failed to connect to database');
+    }
+    console.log('✅ Database connected successfully\n');
 
     // Step 1: Backup existing closed_by_assignee data
     console.log('1. Backing up existing closed_by_assignee data...');
@@ -144,7 +152,13 @@ async function backupAndMigrateAssigneeData() {
 
   } catch (error) {
     console.error('❌ Migration failed:', error);
+    process.exit(1);
   } finally {
+    // Close database connection
+    if (database.isConnected) {
+      await database.close();
+      console.log('🔌 Database connection closed');
+    }
     process.exit(0);
   }
 }

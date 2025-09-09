@@ -3,6 +3,14 @@ const database = require('../server/services/database');
 async function debugLifecycleData() {
   try {
     console.log('🔍 Checking ticket lifecycle data...\n');
+    
+    // Initialize database connection
+    console.log('🔌 Connecting to database...');
+    await database.init();
+    if (!database.isConnected) {
+      throw new Error('Failed to connect to database');
+    }
+    console.log('✅ Database connected successfully\n');
 
     // Check if tables exist
     console.log('1. Checking if tables exist:');
@@ -95,7 +103,13 @@ async function debugLifecycleData() {
 
   } catch (error) {
     console.error('❌ Error checking lifecycle data:', error);
+    process.exit(1);
   } finally {
+    // Close database connection
+    if (database.isConnected) {
+      await database.close();
+      console.log('🔌 Database connection closed');
+    }
     process.exit(0);
   }
 }

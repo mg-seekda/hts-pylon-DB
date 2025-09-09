@@ -8,6 +8,14 @@ dayjs.extend(timezone);
 async function updateExistingAggregations() {
   try {
     console.log('🔄 Updating existing aggregations with new formatting...\n');
+    
+    // Initialize database connection
+    console.log('🔌 Connecting to database...');
+    await database.init();
+    if (!database.isConnected) {
+      throw new Error('Failed to connect to database');
+    }
+    console.log('✅ Database connected successfully\n');
 
     const aggregationService = new TicketLifecycleAggregationService();
 
@@ -40,7 +48,13 @@ async function updateExistingAggregations() {
 
   } catch (error) {
     console.error('❌ Error updating aggregations:', error);
+    process.exit(1);
   } finally {
+    // Close database connection
+    if (database.isConnected) {
+      await database.close();
+      console.log('🔌 Database connection closed');
+    }
     process.exit(0);
   }
 }
