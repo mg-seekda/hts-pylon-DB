@@ -18,7 +18,7 @@ router.get('/kpis', async (req, res) => {
         cacheMetadata: {
           cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
           isStale: cached.metadata.isStale,
-          servingCached: true
+          servingCached: cached.metadata.isStale // Only show "refreshing" when actually stale
         }
       };
       
@@ -152,7 +152,7 @@ router.get('/assignment-table', async (req, res) => {
         cacheMetadata: {
           cachedAt: new Date(cached.metadata.cachedAt).toISOString(),
           isStale: cached.metadata.isStale,
-          servingCached: true
+          servingCached: cached.metadata.isStale // Only show "refreshing" when actually stale
         }
       };
       
