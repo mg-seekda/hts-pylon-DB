@@ -15,6 +15,7 @@ const Dashboard: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       className="ml-64 p-6"
+      style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}
     >
       <motion.div
         initial={{ y: 20, opacity: 0 }}
