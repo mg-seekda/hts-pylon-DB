@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { apiService } from '../services/apiService';
 
 // Types
@@ -270,6 +270,7 @@ interface DataProviderProps {
 
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchKPIs = useCallback(async () => {
     // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
@@ -326,16 +327,18 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
 
   const refreshDailyFlow = useCallback(async () => {
-    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
-    if (!state.analytics?.dailyFlow) {
-      dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
-    }
     try {
       const response = await apiService.getDailyFlow();
+      console.log('Daily flow response:', response);
       
       // Extract the dailyFlow data and cache metadata from the response
-      const dailyFlow = response.dailyFlow;
-      const cacheMetadata = response.cacheMetadata;
+      const dailyFlow = response?.dailyFlow;
+      const cacheMetadata = response?.cacheMetadata;
+      
+      if (!dailyFlow) {
+        console.error('No dailyFlow data in response:', response);
+        throw new Error('Invalid response: missing dailyFlow data');
+      }
       
       // Update only the daily flow part of analytics
       dispatch({ type: 'UPDATE_DAILY_FLOW', payload: dailyFlow });
@@ -352,23 +355,32 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_ERROR', payload: null });
     } catch (error) {
       console.error('Error refreshing daily flow:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        response: (error as any)?.response?.data,
+        status: (error as any)?.response?.status,
+        fullError: error
+      });
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch daily flow data';
       dispatch({ type: 'SET_ERROR', payload: `Daily Flow: ${errorMessage}` });
     }
-  }, [state.analytics?.dailyFlow]);
+  }, []); // Remove dependency to prevent infinite loops
 
   const refreshHourlyHeatmap = useCallback(async () => {
-    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
-    if (!state.analytics?.hourlyHeatmap) {
-      dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
-    }
     try {
       // Refreshing hourly heatmap data
       const response = await apiService.getHourlyHeatmap();
+      console.log('Hourly heatmap response:', response);
       
       // Extract the hourlyHeatmap data and cache metadata from the response
-      const hourlyHeatmap = response.hourlyHeatmap;
-      const cacheMetadata = response.cacheMetadata;
+      const hourlyHeatmap = response?.hourlyHeatmap;
+      const cacheMetadata = response?.cacheMetadata;
+      
+      if (!hourlyHeatmap) {
+        console.error('No hourlyHeatmap data in response:', response);
+        throw new Error('Invalid response: missing hourlyHeatmap data');
+      }
       
       // Update only the hourly heatmap part of analytics
       dispatch({ type: 'UPDATE_HOURLY_HEATMAP', payload: hourlyHeatmap });
@@ -385,10 +397,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       dispatch({ type: 'SET_ERROR', payload: null });
     } catch (error) {
       console.error('Error refreshing hourly heatmap:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        response: (error as any)?.response?.data,
+        status: (error as any)?.response?.status,
+        fullError: error
+      });
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch hourly heatmap data';
       dispatch({ type: 'SET_ERROR', payload: `Hourly Heatmap: ${errorMessage}` });
     }
-  }, [state.analytics?.hourlyHeatmap]);
+  }, []); // Remove dependency to prevent infinite loops
 
   const refreshAll = useCallback(async () => {
     await Promise.all([
@@ -401,19 +420,41 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
   }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap]);
 
+  // Debounced refresh to prevent rapid successive calls
+  const debouncedRefreshAll = useCallback(() => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+    refreshTimeoutRef.current = setTimeout(() => {
+      refreshAll();
+    }, 1000); // 1 second debounce
+  }, [refreshAll]);
+
   // Initial data fetch
   useEffect(() => {
-    // Fetch KPIs and assignment table with loading states (these don't use stale-while-revalidate)
-    fetchKPIs();
-    fetchAssignmentTable();
+    const loadInitialData = async () => {
+      // Set loading states for initial load
+      dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
+      dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
+      
+      // Fetch all data
+      await Promise.all([
+        fetchKPIs(),
+        fetchAssignmentTable(),
+        refreshDailyFlow(),
+        refreshHourlyHeatmap(),
+      ]);
+      
+      // Clear loading states
+      dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: false } });
+      dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: false } });
+    };
     
-    // Fetch analytics data without loading states (stale-while-revalidate pattern)
-    refreshDailyFlow();
-    refreshHourlyHeatmap();
+    loadInitialData();
     
     // Set up auto-refresh every 30 minutes to avoid rate limiting
     const interval = setInterval(() => {
-      refreshAll();
+      debouncedRefreshAll();
     }, 30 * 60 * 1000);
     
     return () => clearInterval(interval);
