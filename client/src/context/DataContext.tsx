@@ -273,10 +273,6 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchKPIs = useCallback(async () => {
-    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
-    if (!state.kpis) {
-      dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: true } });
-    }
     try {
       const response = await apiService.getKPIs();
       const { cacheMetadata, ...kpis } = response;
@@ -284,13 +280,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch KPIs' });
     }
-  }, [state.kpis]);
+  }, []); // Remove dependency to prevent infinite loops
 
   const fetchAssignmentTable = useCallback(async () => {
-    // Only set loading if we don't have any data yet (stale-while-revalidate pattern)
-    if (!state.assignmentTable) {
-      dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: true } });
-    }
     try {
       const response = await apiService.getAssignmentTable();
       const { cacheMetadata, ...assignmentTable } = response;
@@ -298,32 +290,11 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to fetch assignment table' });
     }
-  }, [state.assignmentTable]);
+  }, []); // Remove dependency to prevent infinite loops
 
 
 
 
-  const refreshKPIs = useCallback(async () => {
-    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
-    try {
-      const response = await apiService.getKPIs();
-      const { cacheMetadata, ...kpis } = response;
-      dispatch({ type: 'SET_KPIS', payload: { kpis, cacheMetadata } });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to refresh KPIs' });
-    }
-  }, []);
-
-  const refreshAssignmentTable = useCallback(async () => {
-    dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
-    try {
-      const response = await apiService.getAssignmentTable();
-      const { cacheMetadata, ...assignmentTable } = response;
-      dispatch({ type: 'SET_ASSIGNMENT_TABLE', payload: { assignmentTable, cacheMetadata } });
-    } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to refresh assignment table' });
-    }
-  }, []);
 
 
   const refreshDailyFlow = useCallback(async () => {
@@ -409,13 +380,45 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     }
   }, []); // Remove dependency to prevent infinite loops
 
+  // Individual refresh functions with loading states
+  const refreshKPIs = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: true } });
+    try {
+      await fetchKPIs();
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: false } });
+    }
+  }, [fetchKPIs]);
+
+  const refreshAssignmentTable = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: true } });
+    try {
+      await fetchAssignmentTable();
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: false } });
+    }
+  }, [fetchAssignmentTable]);
+
   const refreshAll = useCallback(async () => {
+    // Set loading states for refresh
+    dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: true } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: true } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
+    
     await Promise.all([
       fetchKPIs(),
       fetchAssignmentTable(),
       refreshDailyFlow(),
       refreshHourlyHeatmap(),
     ]);
+    
+    // Clear loading states
+    dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: false } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: false } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: false } });
+    dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: false } });
+    
     // Update timestamp only once after all data is refreshed
     dispatch({ type: 'SET_LAST_UPDATED', payload: new Date().toISOString() });
   }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap]);
@@ -434,6 +437,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   useEffect(() => {
     const loadInitialData = async () => {
       // Set loading states for initial load
+      dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: true } });
+      dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: true } });
       dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: true } });
       dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: true } });
       
@@ -446,6 +451,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       ]);
       
       // Clear loading states
+      dispatch({ type: 'SET_LOADING', payload: { key: 'kpis', value: false } });
+      dispatch({ type: 'SET_LOADING', payload: { key: 'assignmentTable', value: false } });
       dispatch({ type: 'SET_LOADING', payload: { key: 'dailyFlow', value: false } });
       dispatch({ type: 'SET_LOADING', payload: { key: 'hourlyHeatmap', value: false } });
     };
