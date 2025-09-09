@@ -142,7 +142,7 @@ const TicketLifecycleWidget: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [fromDate, toDate, grouping, hoursMode, selectedStatuses]);
+  }, [fromDate, toDate, grouping, hoursMode]);
 
   const fetchStatuses = async () => {
     try {
@@ -158,15 +158,18 @@ const TicketLifecycleWidget: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (fromDate && toDate) {
-      fetchData();
-    }
-  }, [fetchData, fromDate, toDate]);
+  // Removed initial fetchData call - now handled by selectedStatuses useEffect
 
   useEffect(() => {
     fetchStatuses();
   }, []);
+
+  // Fetch data when selectedStatuses changes
+  useEffect(() => {
+    if (fromDate && toDate && selectedStatuses.length > 0) {
+      fetchData();
+    }
+  }, [selectedStatuses, fetchData, fromDate, toDate]);
 
   const formatDate = (dateString: string) => {
     if (grouping === 'week') {
