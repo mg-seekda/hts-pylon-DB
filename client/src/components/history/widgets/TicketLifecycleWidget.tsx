@@ -198,6 +198,35 @@ const TicketLifecycleWidget: React.FC = () => {
     return result;
   };
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      // Calculate total duration from all payload entries
+      const totalDuration = payload.reduce((sum: number, entry: any) => {
+        const value = entry.value;
+        return sum + (typeof value === 'number' ? value : 0);
+      }, 0);
+      
+      return (
+        <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-lg">
+          <p className="text-white font-medium mb-2">
+            {formatDate(label)}
+          </p>
+          <p className="text-blue-300 text-sm mb-2">
+            Total: {formatDuration(totalDuration)}
+          </p>
+          {payload
+            .filter((entry: any) => entry.value > 0) // Only show statuses with duration
+            .map((entry: any, index: number) => (
+              <p key={index} className="text-sm" style={{ color: entry.color }}>
+                {entry.name}: {formatDuration(entry.value)}
+              </p>
+            ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   // Transform data for chart
   const chartData = React.useMemo(() => {
     if (!data?.data) return [];
@@ -390,32 +419,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 tick={{ fill: '#9CA3AF', fontSize: 12 }}
                 tickFormatter={(value) => formatDuration(value)}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#111827', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F9FAFB',
-                  fontSize: '12px',
-                  padding: '8px 12px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                }}
-                labelStyle={{
-                  color: '#F9FAFB',
-                  fontSize: '12px',
-                  fontWeight: '500'
-                }}
-                itemStyle={{
-                  color: '#F9FAFB',
-                  fontSize: '12px'
-                }}
-                labelFormatter={(value) => `Date: ${formatDate(value)}`}
-                formatter={(value, name, props) => {
-                  console.log('Tooltip formatter - value:', value, 'name:', name, 'props:', props);
-                  console.log('Tooltip payload:', props.payload);
-                  return [formatDuration(value as number), name];
-                }}
-              />
+              <Tooltip content={<CustomTooltip />} />
               <Legend />
               {selectedStatuses.map(status => (
                 <Bar
@@ -808,35 +812,7 @@ const TicketLifecycleWidget: React.FC = () => {
               fontSize={12}
               tickFormatter={(value) => formatDuration(value)}
             />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#111827', 
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#F9FAFB',
-                fontSize: '12px',
-                padding: '8px 12px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-              }}
-              labelStyle={{
-                color: '#F9FAFB',
-                fontSize: '12px',
-                fontWeight: '500'
-              }}
-              itemStyle={{
-                color: '#F9FAFB',
-                fontSize: '12px'
-              }}
-              labelFormatter={(value) => `Date: ${formatDate(value)}`}
-              formatter={(value, name, props) => {
-                console.log('Tooltip formatter - value:', value, 'name:', name, 'props:', props);
-                console.log('Tooltip payload:', props.payload);
-                // Use the payload data instead of the value parameter
-                const actualValue = props.payload?.[name] || value;
-                console.log('Actual value from payload:', actualValue);
-                return [formatDuration(actualValue as number), name];
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Legend />
             {selectedStatuses.map(status => (
               <Bar

@@ -6,6 +6,7 @@ import { HistoryWidgetProps } from '../historyWidgets';
 import { apiService } from '../../../services/apiService';
 import InfoIcon from '../../InfoIcon';
 import TimezoneUtils from '../../../utils/timezone';
+import dayjs from 'dayjs';
 
 interface ClosedByAssigneeData {
   bucket_start: string;
@@ -249,7 +250,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
     const date = new Date(tickItem);
     return bucket === 'week'
       ? `W${Math.ceil(date.getDate() / 7)}`
-      : date.getDate().toString();
+      : dayjs(tickItem).format('MMM DD');
   };
 
   if (loading) {
