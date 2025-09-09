@@ -64,8 +64,6 @@ class DailyIngestionService {
       const query = `
         INSERT INTO ingestion_metadata (service_name, last_run, created_at)
         VALUES ('daily_ingestion', $1, NOW())
-        ON CONFLICT (service_name, last_run::date) 
-        DO UPDATE SET last_run = EXCLUDED.last_run, created_at = NOW()
       `;
       await database.query(query, [this.lastRun.toISOString()]);
       console.log(`📅 Last run date saved to database: ${this.lastRun.toISOString()}`);
@@ -83,8 +81,7 @@ class DailyIngestionService {
           id SERIAL PRIMARY KEY,
           service_name VARCHAR(100) NOT NULL,
           last_run TIMESTAMP WITH TIME ZONE NOT NULL,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          UNIQUE(service_name, last_run::date)
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
         
         CREATE INDEX IF NOT EXISTS idx_ingestion_metadata_service_name 
@@ -109,8 +106,6 @@ class DailyIngestionService {
     this.isRunning = true;
 
     try {
-      // Load last run from database
-      await this.loadLastRunFromDatabase();
       // Get yesterday in Vienna timezone
       const yesterday = TimezoneUtils.getYesterday();
       const dayStart = TimezoneUtils.getStartOfDayUTC(yesterday);

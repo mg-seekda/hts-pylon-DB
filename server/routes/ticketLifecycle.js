@@ -12,7 +12,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const aggregationService = new TicketLifecycleAggregationService();
-const dailyIngestionService = new DailyIngestionService();
+const dailyIngestionService = require('../services/dailyIngestion');
 
 // GET /api/ticket-lifecycle/data
 router.get('/data', async (req, res) => {
