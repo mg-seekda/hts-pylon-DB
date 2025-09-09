@@ -54,22 +54,30 @@ async function syncClosedByAssignee() {
       console.log(`   📅 Processing ${dateStr}...`);
 
       try {
-        // Get closed tickets for this day
+        // Get closed tickets for this day using search API
         const dayStart = currentDate.startOf('day');
         const dayEnd = currentDate.endOf('day');
         
-        const filter = {
+        const searchFilter = {
           limit: 1000,
-          start_time: dayStart.toISOString(),
-          end_time: dayEnd.toISOString(),
-          include: ['custom_fields'],
           filter: {
             field: 'closed_at',
-            operator: 'is_not_null'
+            operator: 'time_range',
+            value: {
+              start: dayStart.toISOString(),
+              end: dayEnd.toISOString()
+            },
+            subfilters: [
+              {
+                field: 'state',
+                operator: 'equals',
+                value: 'closed'
+              }
+            ]
           }
         };
 
-        const response = await pylonService.apiCall('/issues', 'GET', null, filter);
+        const response = await pylonService.apiCall('/issues/search', 'POST', searchFilter);
         const tickets = response.data || [];
 
         // Group by assignee
@@ -126,9 +134,10 @@ async function syncClosedByAssignee() {
         console.log(`     ✅ ${dayCount} closed tickets processed for ${dateStr}`);
         totalProcessed += dayCount;
 
-        // Add delay to avoid rate limiting
+        // Add delay to avoid rate limiting (2 seconds between days)
         if (i < 29) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log(`     ⏳ Waiting 2 seconds to avoid rate limiting...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
       } catch (error) {

@@ -236,34 +236,50 @@ class PylonService {
       const createdResponse = await this.apiCall('/issues', 'GET', null, createdFilter);
       const createdTickets = createdResponse.data || [];
 
-      // Get closed tickets from Pylon API
+      // Get closed tickets from Pylon API using search endpoint
       const closedFilter = {
         limit: 2000,
-        start_time: startDate.startOf('day').toISOString(),
-        end_time: endDate.endOf('day').toISOString(),
-        include: ['custom_fields'],
         filter: {
           field: 'closed_at',
-          operator: 'is_not_null'
+          operator: 'time_range',
+          value: {
+            start: startDate.startOf('day').toISOString(),
+            end: endDate.endOf('day').toISOString()
+          },
+          subfilters: [
+            {
+              field: 'state',
+              operator: 'equals',
+              value: 'closed'
+            }
+          ]
         }
       };
       
-      const closedResponse = await this.apiCall('/issues', 'GET', null, closedFilter);
+      const closedResponse = await this.apiCall('/issues/search', 'POST', closedFilter);
       const closedTickets = closedResponse.data || [];
 
-      // Get cancelled tickets from Pylon API
+      // Get cancelled tickets from Pylon API using search endpoint
       const cancelledFilter = {
         limit: 2000,
-        start_time: startDate.startOf('day').toISOString(),
-        end_time: endDate.endOf('day').toISOString(),
-        include: ['custom_fields'],
         filter: {
           field: 'closed_at',
-          operator: 'is_not_null'
+          operator: 'time_range',
+          value: {
+            start: startDate.startOf('day').toISOString(),
+            end: endDate.endOf('day').toISOString()
+          },
+          subfilters: [
+            {
+              field: 'state',
+              operator: 'equals',
+              value: 'cancelled'
+            }
+          ]
         }
       };
       
-      const cancelledResponse = await this.apiCall('/issues', 'GET', null, cancelledFilter);
+      const cancelledResponse = await this.apiCall('/issues/search', 'POST', cancelledFilter);
       const cancelledTickets = cancelledResponse.data || [];
 
       // Group tickets by date
