@@ -500,7 +500,7 @@ const TicketLifecycleWidget: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] relative"
+        className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[1050px] relative"
       >
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -662,7 +662,7 @@ const TicketLifecycleWidget: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gray-800 rounded-lg p-6 border border-gray-700 min-h-[1050px] relative"
+      className="bg-gray-800 rounded-lg p-6 border border-gray-700 h-[1050px] relative"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

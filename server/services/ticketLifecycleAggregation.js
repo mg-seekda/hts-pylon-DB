@@ -301,16 +301,16 @@ class TicketLifecycleAggregationService {
           count_segments
         FROM ticket_status_agg_weekly
         WHERE (bucket_iso_year, bucket_iso_week) >= (
-          SELECT EXTRACT(ISOYEAR FROM $1::date AT TIME ZONE $4), 
-                 EXTRACT(WEEK FROM $1::date AT TIME ZONE $4)
+          SELECT EXTRACT(ISOYEAR FROM $1::date AT TIME ZONE $3), 
+                 EXTRACT(WEEK FROM $1::date AT TIME ZONE $3)
         ) AND (bucket_iso_year, bucket_iso_week) <= (
-          SELECT EXTRACT(ISOYEAR FROM $2::date AT TIME ZONE $4), 
-                 EXTRACT(WEEK FROM $2::date AT TIME ZONE $4)
+          SELECT EXTRACT(ISOYEAR FROM $2::date AT TIME ZONE $3), 
+                 EXTRACT(WEEK FROM $2::date AT TIME ZONE $3)
         )
-        ${status && status.length > 0 ? 'AND status IN (' + status.map((_, i) => `$${i + 3}`).join(',') + ')' : ''}
+        ${status && status.length > 0 ? 'AND status IN (' + status.map((_, i) => `$${i + 4}`).join(',') + ')' : ''}
         ORDER BY bucket_iso_year, bucket_iso_week, status
       `;
-      queryParams = status && status.length > 0 ? [startDate, endDate, ...status, this.timezone] : [startDate, endDate, this.timezone];
+      queryParams = status && status.length > 0 ? [startDate, endDate, this.timezone, ...status] : [startDate, endDate, this.timezone];
     }
 
     const result = await databaseService.query(query, queryParams);
