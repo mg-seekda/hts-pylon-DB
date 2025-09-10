@@ -6,12 +6,13 @@ const HistoryPage: React.FC = () => {
   const enabledWidgets = getEnabledWidgets();
 
   return (
-    <motion.div
+    <div className="ml-64 min-h-screen flex items-center justify-center">
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="ml-64 p-6"
-        style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}
+        className="p-6 w-full"
+        style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}
       >
 
         {/* Widgets Grid */}
@@ -64,6 +65,7 @@ const HistoryPage: React.FC = () => {
           </div>
         </motion.div>
       </motion.div>
+    </div>
   );
 };
 
