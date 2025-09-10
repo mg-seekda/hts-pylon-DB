@@ -11,8 +11,8 @@ const HistoryPage: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full"
-        style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}
+        className="w-full max-w-7xl"
+        style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
 
         <div className="px-6 py-0 space-y-6">
