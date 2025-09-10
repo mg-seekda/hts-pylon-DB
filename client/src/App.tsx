@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
         className="w-full flex flex-col"
-        style={{ transform: 'scale(0.85)', transformOrigin: 'top left' }}
+        style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
       <div className="pt-6 pb-1 flex-1 flex flex-col" style={{ height: 'calc(100vh / 0.85)' }}>
         <motion.div
