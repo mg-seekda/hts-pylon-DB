@@ -11,14 +11,10 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to build from'
+        description: 'Branch to build from (e.g., main, dev, feature-branch)'
         required: true
         default: 'main'
-        type: choice
-        options:
-          - main
-          - dev
-          - dev-history_closed_by_assignee
+        type: string
       docker_tag:
         description: 'Docker tag (leave empty for latest)'
         required: false
@@ -52,6 +48,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
+
+      - name: Validate branch exists
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          BRANCH_NAME="${{ github.event.inputs.branch }}"
+          if ! git show-ref --verify --quiet refs/remotes/origin/$BRANCH_NAME; then
+            echo "❌ Branch '$BRANCH_NAME' does not exist!"
+            echo "Available branches:"
+            git branch -r --format='%(refname:short)' | sed 's/origin\///' | sort
+            exit 1
+          else
+            echo "✅ Branch '$BRANCH_NAME' found"
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
