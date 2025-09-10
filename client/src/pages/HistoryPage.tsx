@@ -6,7 +6,7 @@ const HistoryPage: React.FC = () => {
   const enabledWidgets = getEnabledWidgets();
 
   return (
-    <div className="ml-64 flex justify-center" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div className="ml-64 flex justify-center" style={{ height: '100vh', overflow: 'auto' }}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -15,13 +15,13 @@ const HistoryPage: React.FC = () => {
         style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
 
-        <div className="pt-6 pb-1 flex-1 flex flex-col" style={{ height: 'calc(100vh / 0.85)' }}>
+        <div className="pt-6 pb-6 flex-1 flex flex-col" style={{ minHeight: 'calc(100vh / 0.85)' }}>
           {/* Widgets Grid */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
           >
           {enabledWidgets.length === 0 ? (
             <div className="col-span-1 lg:col-span-2 bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
@@ -54,7 +54,7 @@ const HistoryPage: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="pt-6 border-t border-gray-700"
+            className="pt-6 pb-6 border-t border-gray-700"
           >
             <div className="text-center text-sm text-gray-500">
               <p>
