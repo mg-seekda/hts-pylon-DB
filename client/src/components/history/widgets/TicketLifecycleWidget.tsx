@@ -219,7 +219,7 @@ const TicketLifecycleWidget: React.FC = () => {
           <p className="text-white font-medium mb-2">
             {formatDate(label)}
           </p>
-          <p className="text-blue-300 text-sm mb-2">
+          <p className="text-highlight text-sm mb-2">
             Total: {formatDuration(totalDuration)}
           </p>
           {payload
@@ -416,7 +416,7 @@ const TicketLifecycleWidget: React.FC = () => {
             <select
               value={selectedPreset}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
             >
               <option value="current-week">Current Week</option>
               <option value="current-month">Current Month</option>
@@ -431,14 +431,14 @@ const TicketLifecycleWidget: React.FC = () => {
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
               <span className="text-gray-400 text-xs">to</span>
               <input
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
             </div>
             
@@ -448,7 +448,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => handleBucketChange('day')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   grouping === 'day' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -458,7 +458,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => handleBucketChange('week')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   grouping === 'week' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -474,7 +474,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => setHoursMode('business')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   hoursMode === 'business' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -484,7 +484,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => setHoursMode('wall')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   hoursMode === 'wall' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -518,7 +518,7 @@ const TicketLifecycleWidget: React.FC = () => {
                   setFromDate(currentWeek.from);
                   setToDate(currentWeek.to);
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-highlight text-white rounded-lg hover:bg-highlight/90 transition-colors"
               >
                 Try Current Week
               </button>
@@ -589,7 +589,7 @@ const TicketLifecycleWidget: React.FC = () => {
             <select
               value={selectedPreset}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
             >
               <option value="current-week">Current Week</option>
               <option value="current-month">Current Month</option>
@@ -604,14 +604,14 @@ const TicketLifecycleWidget: React.FC = () => {
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
               <span className="text-gray-400 text-xs">to</span>
               <input
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
             </div>
             
@@ -621,7 +621,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => handleBucketChange('day')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   grouping === 'day' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -631,7 +631,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => handleBucketChange('week')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   grouping === 'week' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -647,7 +647,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => setHoursMode('business')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   hoursMode === 'business' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -657,7 +657,7 @@ const TicketLifecycleWidget: React.FC = () => {
                 onClick={() => setHoursMode('wall')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   hoursMode === 'wall' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >

@@ -53,7 +53,7 @@ const DailyFlowChart: React.FC = () => {
         <div className="card-body">
           <div className="flex items-center justify-center py-6" style={{ height: '320px' }}>
             <div className="text-center">
-              <RefreshCw className="w-6 h-6 animate-spin text-blue-400 mx-auto mb-3" />
+              <RefreshCw className="w-6 h-6 animate-spin text-highlight mx-auto mb-3" />
               <p className="text-gray-300">Loading analytics data...</p>
               <p className="text-sm text-gray-300 mt-1">This may take a few seconds</p>
             </div>

@@ -89,14 +89,14 @@ const Sidebar: React.FC = () => {
                 to={item.path}
                 className={`group flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   active
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-highlight text-white'
                     : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
                 <div className="flex-1">
                   <div className="font-medium">{item.label}</div>
-                  <div className={`text-xs ${active ? 'text-blue-100' : 'text-gray-500 group-hover:text-gray-300'}`}>
+                  <div className={`text-xs ${active ? 'text-white/80' : 'text-gray-500 group-hover:text-gray-300'}`}>
                     {item.description}
                   </div>
                 </div>
@@ -119,7 +119,7 @@ const Sidebar: React.FC = () => {
         {/* Global Refresh Button */}
         <button
           onClick={refreshAll}
-          className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+          className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-highlight hover:bg-highlight/90 text-white rounded-lg transition-colors duration-200"
         >
           <RefreshCw className="w-4 h-4" />
           <span>Refresh All</span>

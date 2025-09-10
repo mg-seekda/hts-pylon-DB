@@ -46,7 +46,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-700">
                 <div className="flex items-center gap-2">
-                  <Info className="w-5 h-5 text-blue-400" />
+                  <Info className="w-5 h-5 text-highlight" />
                   <h3 className="text-lg font-semibold text-white">{title}</h3>
                 </div>
                 <button

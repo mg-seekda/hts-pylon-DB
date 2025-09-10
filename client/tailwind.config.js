@@ -6,7 +6,11 @@ module.exports = {
 
   theme: {
     extend: {
+      fontFamily: {
+        'sans': ['Geist', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif'],
+      },
       colors: {
+        highlight: '#0d5669',
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',

@@ -1,14 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   html {
-    @apply font-sans antialiased;
+    font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    @apply antialiased;
   }
   
   body {
-    @apply font-sans antialiased;
+    font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    @apply antialiased;
   }
 }
 
@@ -121,5 +125,30 @@
 @layer utilities {
   .bg-gray-750 {
     background-color: rgb(55 65 81 / 0.5);
+  }
+  
+  .bg-highlight {
+    background-color: #0d5669;
+  }
+  
+  
+  .text-highlight {
+    color: #0d5669;
+  }
+  
+  .border-highlight {
+    border-color: #0d5669;
+  }
+  
+  .hover\:bg-highlight:hover {
+    background-color: #0d5669;
+  }
+  
+  .hover\:text-highlight:hover {
+    color: #0d5669;
+  }
+  
+  .font-geist {
+    font-family: 'Geist', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   }
 }

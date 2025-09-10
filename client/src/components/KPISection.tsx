@@ -98,9 +98,9 @@ const KPISection: React.FC = () => {
       title: 'Total Open',
       value: kpis?.totalOpen || 0,
       icon: Ticket,
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-900/20',
-      borderColor: 'border-blue-700',
+      color: 'text-highlight',
+      bgColor: 'bg-highlight/20',
+      borderColor: 'border-highlight',
       pylonView: 'ALL' as keyof typeof PYLON_VIEWS,
       info: {
         title: 'Total Open',
