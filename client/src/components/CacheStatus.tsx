@@ -25,7 +25,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({ metadata, className = '' }) =
       return <AlertTriangle className="w-3 h-3 text-yellow-400" />;
     }
     if (metadata.servingCached) {
-      return <RefreshCw className="w-3 h-3 text-blue-400" />;
+      return <RefreshCw className="w-3 h-3 text-highlight" />;
     }
     return <CheckCircle className="w-3 h-3 text-green-400" />;
   };
@@ -45,7 +45,7 @@ const CacheStatus: React.FC<CacheStatusProps> = ({ metadata, className = '' }) =
       return 'text-yellow-400';
     }
     if (metadata.servingCached) {
-      return 'text-blue-400';
+      return 'text-highlight';
     }
     return 'text-green-400';
   };

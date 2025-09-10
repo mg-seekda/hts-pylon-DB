@@ -122,4 +122,24 @@
   .bg-gray-750 {
     background-color: rgb(55 65 81 / 0.5);
   }
+  
+  .bg-highlight {
+    background-color: #0d5669;
+  }
+  
+  .text-highlight {
+    color: #0d5669;
+  }
+  
+  .border-highlight {
+    border-color: #0d5669;
+  }
+  
+  .hover\:bg-highlight:hover {
+    background-color: #0d5669;
+  }
+  
+  .hover\:text-highlight:hover {
+    color: #0d5669;
+  }
 }

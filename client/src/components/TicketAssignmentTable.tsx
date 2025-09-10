@@ -329,7 +329,7 @@ const TicketAssignmentTable: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
                         onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
-                        className="text-blue-400 hover:text-blue-300 font-medium transition-colors cursor-pointer"
+                        className="text-highlight hover:text-highlight/80 font-medium transition-colors cursor-pointer"
                         disabled={user.statusCounts[status] === 0}
                         role="button"
                         tabIndex={0}
@@ -402,7 +402,7 @@ const TicketAssignmentTable: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleCellClick({ isTotals: true }, status as 'new' | 'waiting' | 'hold')}
                       onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, status as 'new' | 'waiting' | 'hold')}
-                      className="text-blue-400 hover:text-blue-300 font-bold transition-colors cursor-pointer"
+                      className="text-highlight hover:text-highlight/80 font-bold transition-colors cursor-pointer"
                       role="button"
                       tabIndex={0}
                       aria-label={`Open all ${status} tickets in Pylon`}

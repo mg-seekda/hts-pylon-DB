@@ -143,7 +143,7 @@ const HistoryControls: React.FC<HistoryControlsProps> = ({
               setIsCustomRange(true);
               setSelectedPreset('');
             }}
-            className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-highlight"
           />
         </div>
 
@@ -157,7 +157,7 @@ const HistoryControls: React.FC<HistoryControlsProps> = ({
               setIsCustomRange(true);
               setSelectedPreset('');
             }}
-            className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-highlight"
           />
         </div>
 
@@ -169,7 +169,7 @@ const HistoryControls: React.FC<HistoryControlsProps> = ({
               onClick={() => handleBucketChange('day')}
               className={`px-3 py-1 text-sm rounded transition-colors ${
                 bucket === 'day'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-highlight text-white'
                   : 'text-gray-300 hover:text-white'
               }`}
             >
@@ -179,7 +179,7 @@ const HistoryControls: React.FC<HistoryControlsProps> = ({
               onClick={() => handleBucketChange('week')}
               className={`px-3 py-1 text-sm rounded transition-colors ${
                 bucket === 'week'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-highlight text-white'
                   : 'text-gray-300 hover:text-white'
               }`}
             >

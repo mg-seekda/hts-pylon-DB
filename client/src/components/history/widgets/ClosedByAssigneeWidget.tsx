@@ -249,7 +249,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
           <p className="text-white font-medium mb-2">
             {formatTooltipLabel(label)}
           </p>
-          <p className="text-blue-300 text-sm mb-2">
+          <p className="text-highlight text-sm mb-2">
             Total: {total} tickets
           </p>
           {payload
@@ -346,14 +346,14 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
                 type="date"
                 value={dateRange.from}
                 onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
               <span className="text-gray-400 text-xs">to</span>
               <input
                 type="date"
                 value={dateRange.to}
                 onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
             </div>
             
@@ -363,7 +363,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
                 onClick={() => setBucket('day')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   bucket === 'day' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -373,7 +373,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
                 onClick={() => setBucket('week')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   bucket === 'week' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -386,7 +386,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setDateRange({ from: '2025-09-01', to: '2025-09-05' })}
-              className="px-2 py-1 bg-blue-600/20 text-blue-300 rounded text-xs hover:bg-blue-600/30 transition-colors"
+              className="px-2 py-1 bg-highlight/20 text-highlight rounded text-xs hover:bg-highlight/30 transition-colors"
             >
               Known Data
             </button>
@@ -422,7 +422,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
             <div className="mt-4">
               <button
                 onClick={() => setDateRange(getCurrentWeekRange())}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-highlight text-white rounded-lg hover:bg-highlight/90 transition-colors"
               >
                 Try Current Week
               </button>
@@ -443,7 +443,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
         <div className="flex items-center justify-between mb-2">
           <div>
             <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-blue-400" />
+              <Users className="w-5 h-5 text-highlight" />
               <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
             </div>
             <CacheStatus 
@@ -476,7 +476,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
             <select
               value={selectedPreset}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
             >
               <option value="current-week">Current Week</option>
               <option value="current-month">Current Month</option>
@@ -491,14 +491,14 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
                 type="date"
                 value={dateRange.from}
                 onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
               <span className="text-gray-400 text-xs">to</span>
               <input
                 type="date"
                 value={dateRange.to}
                 onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-highlight"
               />
             </div>
             
@@ -508,7 +508,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
                 onClick={() => setBucket('day')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   bucket === 'day' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -518,7 +518,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
                 onClick={() => setBucket('week')}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   bucket === 'week' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-highlight text-white' 
                     : 'text-gray-300 hover:text-white'
                 }`}
               >

@@ -104,7 +104,7 @@ const HourlyHeatmap: React.FC = () => {
         <div className="card-body">
           <div className="flex items-center justify-center py-6" style={{ height: '320px' }}>
             <div className="text-center">
-              <RefreshCw className="w-6 h-6 animate-spin text-blue-400 mx-auto mb-3" />
+              <RefreshCw className="w-6 h-6 animate-spin text-highlight mx-auto mb-3" />
               <p className="text-gray-300">Loading heatmap data...</p>
             </div>
           </div>
@@ -134,7 +134,7 @@ const HourlyHeatmap: React.FC = () => {
             <Tooltip content="Open all issues in Pylon" position="top">
               <button
                 onClick={() => openPylon(PYLON_VIEWS.ALL)}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-800 hover:bg-blue-700 text-blue-200 rounded-lg border border-blue-600 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-highlight hover:bg-highlight/90 text-white rounded-lg border border-highlight transition-colors"
                 aria-label="Open all issues in Pylon"
               >
                 <ExternalLink className="w-4 h-4" />
