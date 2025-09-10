@@ -309,7 +309,7 @@ const TicketAssignmentTable: React.FC = () => {
                     <div className="group">
                       <div className="text-white">{user.name}</div>
                       {user.email && (
-                        <div className="text-xs text-gray-300">{user.email}</div>
+                        <div className="text-xs text-gray-300 font-normal">{user.email}</div>
                       )}
                       {/* Tooltip for name/email area */}
                       {user.status && (
@@ -329,7 +329,7 @@ const TicketAssignmentTable: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
                         onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
-                        className="text-highlight hover:text-highlight/80 font-semibold transition-colors cursor-pointer"
+                        className="text-highlight hover:text-highlight/80 font-bold transition-colors cursor-pointer"
                         disabled={user.statusCounts[status] === 0}
                         role="button"
                         tabIndex={0}
