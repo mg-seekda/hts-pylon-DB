@@ -44,6 +44,39 @@ const TicketAssignmentTable: React.FC = () => {
     return statusClasses[status] || 'status-new';
   };
 
+  const getStatusTextColor = (status: string) => {
+    const statusColors: Record<string, string> = {
+      'new': 'text-blue-400',
+      'waiting_on_you': 'text-yellow-400',
+      'waiting_on_customer': 'text-orange-400',
+      'on_hold': 'text-red-400',
+      'closed': 'text-green-400',
+    };
+    return statusColors[status] || 'text-blue-400';
+  };
+
+  const getStatusHoverColor = (status: string) => {
+    const statusHoverColors: Record<string, string> = {
+      'new': 'text-blue-300',
+      'waiting_on_you': 'text-yellow-300',
+      'waiting_on_customer': 'text-orange-300',
+      'on_hold': 'text-red-300',
+      'closed': 'text-green-300',
+    };
+    return statusHoverColors[status] || 'text-blue-300';
+  };
+
+  const getStatusBgHoverColor = (status: string) => {
+    const statusBgHoverColors: Record<string, string> = {
+      'new': 'hover:bg-blue-500/20',
+      'waiting_on_you': 'hover:bg-yellow-500/20',
+      'waiting_on_customer': 'hover:bg-orange-500/20',
+      'on_hold': 'hover:bg-red-500/20',
+      'closed': 'hover:bg-green-500/20',
+    };
+    return statusBgHoverColors[status] || 'hover:bg-blue-500/20';
+  };
+
   const formatStatusName = (status: string) => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -329,7 +362,7 @@ const TicketAssignmentTable: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
                         onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
-                        className="text-cyan-300 hover:text-cyan-200 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-cyan-500/20"
+                        className={`${getStatusTextColor(status)} ${getStatusHoverColor(status)} font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded ${getStatusBgHoverColor(status)}`}
                         disabled={user.statusCounts[status] === 0}
                         role="button"
                         tabIndex={0}
@@ -402,7 +435,7 @@ const TicketAssignmentTable: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleCellClick({ isTotals: true }, status as 'new' | 'waiting' | 'hold')}
                       onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, status as 'new' | 'waiting' | 'hold')}
-                      className="text-highlight hover:text-highlight/80 font-bold transition-colors cursor-pointer"
+                      className={`${getStatusTextColor(status)} ${getStatusHoverColor(status)} font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded ${getStatusBgHoverColor(status)}`}
                       role="button"
                       tabIndex={0}
                       aria-label={`Open all ${status} tickets in Pylon`}
