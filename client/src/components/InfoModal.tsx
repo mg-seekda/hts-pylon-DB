@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Info } from 'lucide-react';
 
@@ -17,7 +18,7 @@ const InfoModal: React.FC<InfoModalProps> = ({
   description, 
   features = [] 
 }) => {
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -80,6 +81,11 @@ const InfoModal: React.FC<InfoModalProps> = ({
       )}
     </AnimatePresence>
   );
+
+  // Render modal at the root level using portal
+  return typeof document !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : null;
 };
 
 export default InfoModal;
