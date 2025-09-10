@@ -10,13 +10,14 @@ import { DataProvider } from './context/DataContext';
 
 const Dashboard: React.FC = () => {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="ml-64 p-6"
-      style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}
-    >
+    <div className="ml-64 min-h-screen flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="p-6 w-full"
+        style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}
+      >
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -26,14 +27,15 @@ const Dashboard: React.FC = () => {
         <KPISection />
       </motion.div>
       
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <MainContent />
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <MainContent />
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 };
 
