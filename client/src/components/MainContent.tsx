@@ -6,7 +6,7 @@ import HourlyHeatmap from './HourlyHeatmap';
 
 const MainContent: React.FC = () => {
   return (
-    <div>
+    <div className="flex-1 flex flex-col">
       {/* Row 1: Analytics Charts (Side by Side) */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
         {/* Left Column - Daily Flow Chart */}
@@ -35,7 +35,7 @@ const MainContent: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.5 }}
-        className="mt-4"
+        className="mt-4 flex-1 flex flex-col"
       >
         <TicketAssignmentTable />
       </motion.div>

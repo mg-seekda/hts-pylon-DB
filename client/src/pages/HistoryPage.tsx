@@ -6,16 +6,16 @@ const HistoryPage: React.FC = () => {
   const enabledWidgets = getEnabledWidgets();
 
   return (
-    <div className="ml-64 flex justify-center">
+    <div className="ml-64 flex justify-center min-h-screen">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full"
+        className="w-full flex flex-col"
         style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
 
-        <div className="pt-6 pb-1">
+        <div className="pt-6 pb-1 flex-1 flex flex-col">
           {/* Widgets Grid */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}

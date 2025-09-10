@@ -167,7 +167,7 @@ const TicketAssignmentTable: React.FC = () => {
   });
 
   return (
-    <div className="card relative">
+    <div className="card relative flex-1 flex flex-col">
       <div className="card-header">
         <div className="flex items-center justify-between">
           <div>
@@ -194,7 +194,7 @@ const TicketAssignmentTable: React.FC = () => {
         </div>
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto flex-1">
         <table className="table">
           <thead>
             <tr>
