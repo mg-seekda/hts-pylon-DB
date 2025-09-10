@@ -15,14 +15,14 @@ const Dashboard: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="p-6 w-full"
+        className="w-full"
         style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}
       >
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
-        className="mb-8"
+        className="mb-8 p-6"
       >
         <KPISection />
       </motion.div>
@@ -31,6 +31,7 @@ const Dashboard: React.FC = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
+          className="p-6"
         >
           <MainContent />
         </motion.div>
