@@ -18,23 +18,23 @@ const Dashboard: React.FC = () => {
         className="w-full"
         style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}
       >
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
-        className="mb-4 px-6 pt-6"
-      >
-        <KPISection />
-      </motion.div>
-      
+      <div className="p-6 space-y-6">
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+        >
+          <KPISection />
+        </motion.div>
+        
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="px-6 pb-6"
         >
           <MainContent />
         </motion.div>
+      </div>
       </motion.div>
     </div>
   );

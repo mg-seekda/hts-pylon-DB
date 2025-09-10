@@ -15,13 +15,14 @@ const HistoryPage: React.FC = () => {
         style={{ transform: 'scale(0.85)', transformOrigin: 'center' }}
       >
 
-        {/* Widgets Grid */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6"
-        >
+        <div className="p-6 space-y-6">
+          {/* Widgets Grid */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          >
           {enabledWidgets.length === 0 ? (
             <div className="col-span-1 lg:col-span-2 bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
               <div className="text-gray-400 mb-4">
@@ -46,24 +47,25 @@ const HistoryPage: React.FC = () => {
               </motion.div>
             ))
           )}
-        </motion.div>
+          </motion.div>
 
-        {/* Footer Info */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="mt-8 pt-6 border-t border-gray-700"
-        >
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              Data is cached and refreshed automatically. All times are displayed in Europe/Vienna timezone.
-            </p>
-            <p className="mt-1">
-              Showing {enabledWidgets.length} widget{enabledWidgets.length !== 1 ? 's' : ''} with individual filtering
-            </p>
-          </div>
-        </motion.div>
+          {/* Footer Info */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="pt-6 border-t border-gray-700"
+          >
+            <div className="text-center text-sm text-gray-500">
+              <p>
+                Data is cached and refreshed automatically. All times are displayed in Europe/Vienna timezone.
+              </p>
+              <p className="mt-1">
+                Showing {enabledWidgets.length} widget{enabledWidgets.length !== 1 ? 's' : ''} with individual filtering
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   );
