@@ -443,7 +443,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
         <div className="flex items-center justify-between mb-2">
           <div>
             <div className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-highlight" />
+              <Users className="w-5 h-5 text-white" />
               <h3 className="text-xl font-semibold text-white">Closed by Assignee</h3>
             </div>
             <CacheStatus 
