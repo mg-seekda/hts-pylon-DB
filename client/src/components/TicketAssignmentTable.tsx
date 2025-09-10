@@ -381,7 +381,7 @@ const TicketAssignmentTable: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleCellClick(user, 'closedToday')}
                       onKeyDown={(e) => handleKeyDown(e, user, 'closedToday')}
-                      className="text-success-400 hover:text-success-300 font-medium transition-colors cursor-pointer"
+                      className="text-success-400 hover:text-success-300 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-green-500/20"
                       disabled={user.closedToday === 0}
                       role="button"
                       tabIndex={0}
@@ -399,7 +399,7 @@ const TicketAssignmentTable: React.FC = () => {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleCellClick(user, 'totalOpen')}
                       onKeyDown={(e) => handleKeyDown(e, user, 'totalOpen')}
-                      className="text-white hover:text-gray-300 font-semibold transition-colors cursor-pointer"
+                      className="text-white hover:text-gray-300 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-gray-500/20"
                       role="button"
                       tabIndex={0}
                       aria-label="Open total open tickets in Pylon"
@@ -453,7 +453,7 @@ const TicketAssignmentTable: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleCellClick({ isTotals: true }, 'closedToday')}
                     onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'closedToday')}
-                    className="text-success-400 hover:text-success-300 font-bold transition-colors cursor-pointer"
+                    className="text-success-400 hover:text-success-300 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-green-500/20"
                     role="button"
                     tabIndex={0}
                     aria-label="Open all closed today tickets in Pylon"
@@ -470,7 +470,7 @@ const TicketAssignmentTable: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleCellClick({ isTotals: true }, 'totalOpen')}
                     onKeyDown={(e) => handleKeyDown(e, { isTotals: true }, 'totalOpen')}
-                    className="text-white hover:text-gray-300 font-bold transition-colors cursor-pointer"
+                    className="text-white hover:text-gray-300 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-gray-500/20"
                     role="button"
                     tabIndex={0}
                     aria-label="Open all total open tickets in Pylon"
