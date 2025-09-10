@@ -329,7 +329,7 @@ const TicketAssignmentTable: React.FC = () => {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleCellClick(user, status as 'new' | 'waiting' | 'hold')}
                         onKeyDown={(e) => handleKeyDown(e, user, status as 'new' | 'waiting' | 'hold')}
-                        className="text-highlight hover:text-highlight/90 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-highlight/10"
+                        className="text-cyan-300 hover:text-cyan-200 font-bold text-base transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-cyan-500/20"
                         disabled={user.statusCounts[status] === 0}
                         role="button"
                         tabIndex={0}
