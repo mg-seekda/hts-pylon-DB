@@ -451,7 +451,7 @@ const TicketAssignmentTable: React.FC = () => {
         </table>
       </div>
       
-      <div className="py-3 border-t border-gray-700">
+      <div className="px-4 py-3 border-t border-gray-700">
         <p className="text-xs text-gray-300 flex items-center">
           <ExternalLink className="w-3 h-3 mr-1" />
           Click numbers to view tickets in Pylon
