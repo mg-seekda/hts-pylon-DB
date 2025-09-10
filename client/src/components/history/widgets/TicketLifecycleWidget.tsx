@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Clock, RefreshCw, Calendar, BarChart3, ChevronDown, AlertCircle } from 'lucide-react';
+import { Clock, RefreshCw, BarChart3, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import InfoIcon from '../../InfoIcon';
-import CacheStatus from '../../CacheStatus';
 import TimezoneUtils from '../../../utils/timezone';
 
 interface TicketLifecycleData {
@@ -47,7 +46,6 @@ const TicketLifecycleWidget: React.FC = () => {
   const [toDate, setToDate] = useState<string>('');
   const [grouping, setGrouping] = useState<'day' | 'week'>('day');
   const [selectedPreset, setSelectedPreset] = useState<string>('current-week');
-  const [isCustomRange, setIsCustomRange] = useState<boolean>(false);
   
   // Refs to access current values without causing re-renders
   const fromDateRef = useRef(fromDate);
@@ -55,7 +53,6 @@ const TicketLifecycleWidget: React.FC = () => {
   const groupingRef = useRef(grouping);
   const hoursModeRef = useRef(hoursMode);
   const selectedStatusesRef = useRef(selectedStatuses);
-  const [isPresetOpen, setIsPresetOpen] = useState<boolean>(false);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -190,7 +187,7 @@ const TicketLifecycleWidget: React.FC = () => {
     if (fromDate && toDate && selectedStatuses.length > 0) {
       fetchData();
     }
-  }, [selectedStatuses, fromDate, toDate, grouping, hoursMode]); // Depend on actual values, not the function
+  }, [fetchData, selectedStatuses, fromDate, toDate, grouping, hoursMode]); // Include fetchData in dependencies
 
   const formatDate = (dateString: string) => {
     if (grouping === 'week') {
@@ -270,16 +267,6 @@ const TicketLifecycleWidget: React.FC = () => {
     fetchData();
   };
 
-  const handlePresetSelect = (presetKey: string) => {
-    const preset = presets[presetKey as keyof typeof presets];
-    if (preset) {
-      setSelectedPreset(presetKey);
-      setFromDate(preset.from);
-      setToDate(preset.to);
-      setIsCustomRange(false);
-      setIsPresetOpen(false);
-    }
-  };
 
   const handleBucketChange = (newBucket: 'day' | 'week') => {
     setGrouping(newBucket);
@@ -360,110 +347,6 @@ const TicketLifecycleWidget: React.FC = () => {
     }
   };
 
-  // Render content based on state
-  const renderContent = () => {
-    if (loading && !data) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <div className="flex items-center gap-2 text-gray-400">
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            Loading lifecycle data...
-          </div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="text-red-400 mb-2">Error loading data</div>
-            <div className="text-gray-400 text-sm mb-4">{error}</div>
-            <button
-              onClick={handleRefresh}
-              className="btn btn-primary btn-sm"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (!data || data.data.length === 0) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center text-gray-400">
-            <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <div className="text-lg mb-2">No data yet</div>
-            <div className="text-sm">Lifecycle tracking started on deployment date</div>
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <>
-        {/* Chart */}
-        <div style={{ height: '400px' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={formatDate}
-              />
-              <YAxis 
-                tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                tickFormatter={(value) => formatDuration(value)}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              {selectedStatuses.map(status => (
-                <Bar
-                  key={status}
-                  dataKey={status}
-                  stackId="status"
-                  fill={statusColors[status] || '#6B7280'}
-                  name={status}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="mt-4 pt-4 border-t border-gray-700">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <div className="text-gray-400">Total Samples</div>
-              <div className="text-white font-semibold">
-                {data.totalSamples.toLocaleString()}
-              </div>
-            </div>
-            <div>
-              <div className="text-gray-400">Statuses</div>
-              <div className="text-white font-semibold">{selectedStatuses.length}</div>
-            </div>
-            <div>
-              <div className="text-gray-400">Period</div>
-              <div className="text-white font-semibold">
-                {chartData.length} {grouping === 'week' ? 'weeks' : 'days'}
-              </div>
-            </div>
-            <div>
-              <div className="text-gray-400">Avg per {grouping === 'week' ? 'week' : 'day'}</div>
-              <div className="text-white font-semibold">
-                {chartData.length > 0 ? Math.round(data.totalSamples / chartData.length) : 0}
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  };
 
   if (loading) {
     return (

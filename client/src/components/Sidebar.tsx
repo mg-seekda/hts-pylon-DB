@@ -6,8 +6,6 @@ import {
   History, 
   RefreshCw, 
   ExternalLink,
-  Home,
-  Calendar,
   Users,
   User,
   AlertCircle,
@@ -72,7 +70,7 @@ const Sidebar: React.FC = () => {
           <img 
             src="/Seekda_Aspire_Logo_23_1_no_outline-2.svg" 
             alt="Seekda Aspire Logo" 
-            className="w-full h-auto mx-auto mb-3 px-4"
+            className="w-full h-auto mx-auto mb-3 px-2"
           />
           <h1 className="text-sm font-medium text-white">HTS Dashboard</h1>
         </div>

@@ -468,7 +468,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     }, 30 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap]);
+  }, [fetchKPIs, fetchAssignmentTable, refreshDailyFlow, refreshHourlyHeatmap, debouncedRefreshAll]);
 
   const value: DataContextType = {
     state,
