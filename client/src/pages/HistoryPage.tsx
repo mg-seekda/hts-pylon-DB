@@ -15,7 +15,7 @@ const HistoryPage: React.FC = () => {
         style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
 
-        <div className="px-1 pt-6 pb-0 space-y-6">
+        <div className="pt-6 space-y-6">
           {/* Widgets Grid */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
