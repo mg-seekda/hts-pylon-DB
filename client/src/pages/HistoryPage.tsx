@@ -6,7 +6,7 @@ const HistoryPage: React.FC = () => {
   const enabledWidgets = getEnabledWidgets();
 
   return (
-    <div className="ml-64 flex justify-center" style={{ height: '100vh', overflow: 'hidden' }}>
+    <div className="ml-64 flex justify-center" style={{ height: '100vh', overflow: 'auto' }}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -15,7 +15,7 @@ const HistoryPage: React.FC = () => {
         style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
 
-        <div className="pt-6 pb-1 flex-1 flex flex-col" style={{ height: 'calc(100vh / 0.85)' }}>
+        <div className="pt-6 pb-1 flex-1 flex flex-col" style={{ minHeight: 'calc(100vh / 0.85)' }}>
           {/* Widgets Grid */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
