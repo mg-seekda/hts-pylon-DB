@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { TimezoneUtils } = require('../utils/timezone');
 
 /**
  * Simple console-to-file logger that doesn't fail on startup
@@ -55,7 +56,7 @@ class SimpleLogger {
 
       // Enhanced logging with better formatting
       const writeLog = (level, args, stream) => {
-        const timestamp = new Date().toISOString();
+        const timestamp = TimezoneUtils.toVienna(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]');
         const formattedMessage = formatArgs(args);
         const logEntry = `[${timestamp}] [${level}] ${formattedMessage}\n`;
         
