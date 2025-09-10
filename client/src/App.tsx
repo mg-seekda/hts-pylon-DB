@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
         className="w-full"
         style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}
       >
-      <div className="pt-6 space-y-6">
+      <div className="pt-6 pb-0 space-y-6">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
