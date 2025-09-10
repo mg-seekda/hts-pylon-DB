@@ -10,7 +10,7 @@ import { DataProvider } from './context/DataContext';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="ml-64 min-h-screen flex justify-center">
+    <div className="ml-64 flex justify-center">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
