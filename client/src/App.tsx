@@ -10,7 +10,7 @@ import { DataProvider } from './context/DataContext';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="ml-64 min-h-screen flex justify-center">
+    <div className="ml-64 min-h-screen flex justify-center p-6">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -22,7 +22,6 @@ const Dashboard: React.FC = () => {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
-        className="mb-8 p-6"
       >
         <KPISection />
       </motion.div>
@@ -31,7 +30,6 @@ const Dashboard: React.FC = () => {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="p-6"
         >
           <MainContent />
         </motion.div>
