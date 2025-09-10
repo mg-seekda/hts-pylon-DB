@@ -55,16 +55,7 @@ class SimpleLogger {
 
       // Enhanced logging with better formatting
       const writeLog = (level, args, stream) => {
-        const timestamp = new Date().toLocaleString('en-US', {
-          timeZone: 'Europe/Vienna',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false
-        }).replace(/(\d+)\/(\d+)\/(\d+),?\s*(\d+):(\d+):(\d+)/, '$3-$1-$2T$4:$5:$6.000Z');
+        const timestamp = new Date().toISOString();
         const formattedMessage = formatArgs(args);
         const logEntry = `[${timestamp}] [${level}] ${formattedMessage}\n`;
         
