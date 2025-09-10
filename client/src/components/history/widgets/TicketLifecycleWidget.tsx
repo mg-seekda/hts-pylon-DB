@@ -75,7 +75,6 @@ const TicketLifecycleWidget: React.FC = () => {
     selectedStatusesRef.current = selectedStatuses;
   }, [selectedStatuses]);
 
-  const presets = TimezoneUtils.getDatePresets();
 
   // Component to display last ingestion date
   const LastIngestionInfo = () => {
