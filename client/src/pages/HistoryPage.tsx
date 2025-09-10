@@ -54,7 +54,7 @@ const HistoryPage: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="pt-6 border-t border-gray-700"
+            className="pt-6 pb-6 border-t border-gray-700"
           >
             <div className="text-center text-sm text-gray-500">
               <p>
