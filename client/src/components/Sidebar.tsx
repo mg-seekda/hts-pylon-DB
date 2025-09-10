@@ -6,8 +6,6 @@ import {
   History, 
   RefreshCw, 
   ExternalLink,
-  Home,
-  Calendar,
   Users,
   User,
   AlertCircle,

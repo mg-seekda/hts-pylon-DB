@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Loader2, AlertCircle, BarChart3, Calendar, RefreshCw, Users } from 'lucide-react';
+import { Loader2, AlertCircle, BarChart3, RefreshCw, Users } from 'lucide-react';
 import { HistoryWidgetProps } from '../historyWidgets';
 import { apiService } from '../../../services/apiService';
 import InfoIcon from '../../InfoIcon';
@@ -184,7 +184,7 @@ const ClosedByAssigneeWidget: React.FC<HistoryWidgetProps> = () => {
 
   useEffect(() => {
     fetchData();
-  }, [dateRange.from, dateRange.to, bucket]); // Depend on actual values, not the function
+  }, [fetchData, dateRange.from, dateRange.to, bucket]); // Include fetchData in dependencies
 
   const processChartData = (rawData: ClosedByAssigneeData[]) => {
     // Group data by bucket_start
