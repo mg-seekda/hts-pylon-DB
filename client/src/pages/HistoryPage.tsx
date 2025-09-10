@@ -21,7 +21,7 @@ const HistoryPage: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"
           >
           {enabledWidgets.length === 0 ? (
             <div className="col-span-1 lg:col-span-2 bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
